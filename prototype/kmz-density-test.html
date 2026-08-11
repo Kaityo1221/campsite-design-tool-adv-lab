@@ -4,6 +4,25 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Campsite ADV Lab - KMZ Council</title>
+  <link rel="preload" as="image" href="./assets/backgrounds/strategy_room_idle.png" fetchpriority="high">
+  <script>
+    document.documentElement.classList.add('strategy-visual-loading');
+    (()=>{
+      let settled=false;
+      const reveal=()=>{
+        if(settled)return;
+        settled=true;
+        document.documentElement.classList.remove('strategy-visual-loading');
+        document.documentElement.classList.add('strategy-visual-ready');
+      };
+      const bg=new Image();
+      bg.onload=reveal;
+      bg.onerror=reveal;
+      bg.src='./assets/backgrounds/strategy_room_idle.png';
+      if(bg.decode)bg.decode().then(reveal).catch(()=>{});
+      window.setTimeout(reveal,2500);
+    })();
+  </script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <style>
     :root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic",sans-serif;color:#e5eef7;background:#07111c}
@@ -19,6 +38,9 @@
     .focus-btn{background:linear-gradient(135deg,#5b21b6,#312e81);border-color:rgba(196,181,253,.55)}
     .focus-btn:disabled{opacity:.4;cursor:not-allowed}
     .orientation-note{font-size:11px;color:#9fb0c4;width:100%}
+
+    html.strategy-visual-loading .strategy-scene{opacity:0}
+    html.strategy-visual-ready .strategy-scene{opacity:1;transition:opacity .18s ease}
 
     .strategy-scene{position:relative;width:100%;aspect-ratio:3/2;overflow:hidden;border-radius:18px;border:1px solid rgba(251,191,36,.28);background-image:url('./assets/backgrounds/strategy_room_idle.png');background-size:cover;background-position:center;box-shadow:0 22px 70px rgba(0,0,0,.45);isolation:isolate}
     .strategy-scene.signal-cut{background-image:url('./assets/backgrounds/strategy_room_signal_cut.png')}
@@ -220,14 +242,14 @@
     body.focus-mode.mobile-portrait-adv .strategy-scene[data-speaker="riku"] .dialog-text,
     body.focus-mode.mobile-portrait-adv .strategy-scene[data-speaker="mina"] .dialog-text,
     body.focus-mode.mobile-portrait-adv .strategy-scene[data-speaker="system"] .dialog-text{
-      top:39%!important;
+      top:35%!important;
       bottom:auto!important;
       left:7%!important;
       right:7%!important;
       transform:none!important;
       margin:0!important;
       padding:0!important;
-      max-height:4.3em!important;
+      max-height:5.35em!important;
       overflow:hidden!important;
       background:none!important;
       border:0!important;
@@ -235,9 +257,9 @@
       box-shadow:none!important;
       color:#2b2018!important;
       text-align:left!important;
-      font-size:clamp(14px,4.15vw,18px)!important;
+      font-size:clamp(12.5px,3.6vw,15.5px)!important;
       font-weight:850;
-      line-height:1.42;
+      line-height:1.28;
       text-shadow:none!important;
     }
     body.focus-mode.mobile-portrait-adv .strategy-scene[data-speaker="system"] .dialog-layer{
