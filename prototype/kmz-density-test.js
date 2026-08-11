@@ -29,6 +29,55 @@
     mina: document.getElementById('actorMina')
   };
 
+  const controls = el.next?.parentElement;
+  const backBtn = document.createElement('button');
+  backBtn.id = 'backBtn';
+  backBtn.type = 'button';
+  backBtn.textContent = '◀ 戻る';
+  backBtn.disabled = true;
+  controls?.insertBefore(backBtn, el.next);
+  el.next.textContent = '次へ ▶';
+
+  const style = document.createElement('style');
+  style.textContent = `
+    .strategy-scene[data-speaker="mina"] .dialog-text{
+      text-align:left!important;
+      margin-left:auto;
+    }
+    .controls #backBtn{background:#17263a;color:#dbeafe;border:1px solid rgba(148,163,184,.25)}
+    body.focus-mode .controls{
+      left:50%!important;
+      right:auto!important;
+      bottom:calc(env(safe-area-inset-bottom) + 18px)!important;
+      transform:translateX(-50%);
+      gap:12px!important;
+    }
+    body.focus-mode .controls #backBtn,
+    body.focus-mode .controls #nextBtn{
+      display:block!important;
+      min-width:132px!important;
+      padding:13px 22px!important;
+      border-radius:999px!important;
+      font-size:15px!important;
+      font-weight:900!important;
+      box-shadow:0 8px 28px rgba(0,0,0,.45)!important;
+      backdrop-filter:blur(12px);
+    }
+    body.focus-mode .controls #backBtn{
+      background:rgba(15,23,42,.88)!important;
+      color:#f8fafc!important;
+      border:1px solid rgba(255,255,255,.32)!important;
+    }
+    body.focus-mode .controls #nextBtn{
+      background:rgba(239,246,255,.96)!important;
+      color:#0f172a!important;
+      border:2px solid rgba(255,255,255,.85)!important;
+    }
+    body.focus-mode .controls #restartBtn{display:none!important}
+    body.focus-mode.focus-ui-hidden .controls{opacity:.18!important;pointer-events:auto!important}
+  `;
+  document.head.appendChild(style);
+
   let points = [];
   let analysis = null;
   let sequence = [];
@@ -449,12 +498,14 @@
     if (step.focus === 'warning') focusWarning(analysis?.distanceWarnings?.active?.[0]);
     if (step.focus === 'context') focusContext(analysis?.contextHotspot);
 
+    backBtn.disabled = index <= 0;
     el.next.disabled = index >= sequence.length - 1;
     el.restart.disabled = sequence.length === 0;
   }
 
   async function handleFile(file) {
     setStatus('KMZを解析しています…');
+    backBtn.disabled = true;
     el.next.disabled = true;
     el.restart.disabled = true;
     el.dialog.textContent = '地図を読み込んでいます。';
@@ -499,7 +550,12 @@
       el.speaker.textContent = 'SYSTEM';
       el.dialog.textContent = '別のKMZ / KMLで試してください。';
       setActiveActor('system');
+      backBtn.disabled = true;
     }
+  });
+
+  backBtn.addEventListener('click', () => {
+    if (stepIndex > 0) renderStep(stepIndex - 1);
   });
 
   el.next.addEventListener('click', () => {
