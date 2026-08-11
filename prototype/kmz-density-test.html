@@ -53,8 +53,8 @@
     details.debug{margin-top:8px;border:1px solid rgba(148,163,184,.18);border-radius:12px;background:rgba(7,17,30,.66);color:#cbd5e1}details.debug summary{cursor:pointer;padding:10px 12px;font-size:12px;font-weight:800}.facts{padding:0 12px 12px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.fact{font-size:11px;color:#b8c7d8;padding:8px 9px;border-radius:9px;background:#0b1928;border:1px solid #23364a}
     .rotate-hint{display:none;position:fixed;z-index:900;left:50%;bottom:18px;transform:translateX(-50%);max-width:min(90vw,520px);padding:10px 14px;border-radius:999px;background:rgba(2,8,18,.92);border:1px solid rgba(125,211,252,.45);color:#e0f2fe;font-size:12px;font-weight:800;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4)}.rotate-hint.show{display:block}
 
-    .focus-exit{display:none;position:fixed;z-index:1002;top:calc(env(safe-area-inset-top) + 12px);right:calc(env(safe-area-inset-right) + 14px);width:42px;height:42px;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:rgba(0,0,0,.48);color:#fff;font-size:22px;font-weight:800;backdrop-filter:blur(10px);cursor:pointer}
-    .focus-caption{display:none;position:fixed;z-index:1001;left:50%;top:calc(env(safe-area-inset-top) + 16px);transform:translateX(-50%);padding:6px 12px;border-radius:999px;background:rgba(0,0,0,.42);color:rgba(255,255,255,.82);font-size:11px;font-weight:800;letter-spacing:.05em;pointer-events:none;backdrop-filter:blur(8px)}
+    .focus-exit{display:none;position:fixed;z-index:1002;top:calc(env(safe-area-inset-top) + 10px);right:calc(env(safe-area-inset-right) + 12px);width:34px;height:34px;border:1px solid rgba(255,255,255,.22);border-radius:999px;background:rgba(0,0,0,.38);color:#fff;font-size:18px;font-weight:800;backdrop-filter:blur(10px);cursor:pointer;opacity:1;transition:opacity .35s ease,transform .2s ease}
+    .focus-exit:active{transform:scale(.92)}
 
     @media(max-width:760px){
       .page{padding:8px}.labbar{padding:8px}.strategy-scene{border-radius:12px}
@@ -84,13 +84,14 @@
     }
 
     body.focus-mode{overflow:hidden;background:#000;overscroll-behavior:none;touch-action:manipulation}
-    body.focus-mode .page{position:fixed;z-index:1000;inset:0;width:100%;max-width:none;height:100%;margin:0;padding:0;background:#000;display:flex;align-items:center;justify-content:center}
+    body.focus-mode .page{position:fixed;z-index:1000;inset:0;width:100%;max-width:none;height:100%;margin:0;padding:0;background:#000;display:flex;align-items:center;justify-content:flex-end}
     body.focus-mode .labbar,body.focus-mode .status,body.focus-mode details.debug{display:none!important}
     body.focus-mode .strategy-scene{flex:none;margin:0;border:0;border-radius:0;box-shadow:none}
-    body.focus-mode .controls{position:fixed;z-index:1002;right:calc(env(safe-area-inset-right) + 16px);bottom:calc(env(safe-area-inset-bottom) + 14px);width:auto!important;height:auto;margin:0;display:flex;gap:8px}
-    body.focus-mode .controls #nextBtn{flex:none;min-width:116px;padding:10px 18px;border-radius:999px;background:rgba(235,245,255,.90);color:#102033;box-shadow:0 10px 34px rgba(0,0,0,.45);backdrop-filter:blur(10px)}
+    body.focus-mode .controls{position:fixed;z-index:1002;right:calc(env(safe-area-inset-right) + 16px);bottom:calc(env(safe-area-inset-bottom) + 14px);width:auto!important;height:auto;margin:0;display:flex;gap:8px;opacity:1;transition:opacity .35s ease,transform .35s ease}
+    body.focus-mode .controls #nextBtn{flex:none;min-width:102px;padding:9px 16px;border-radius:999px;background:rgba(235,245,255,.82);color:#102033;box-shadow:0 8px 28px rgba(0,0,0,.42);backdrop-filter:blur(12px)}
     body.focus-mode .controls #restartBtn{display:none}
-    body.focus-mode .focus-exit,body.focus-mode .focus-caption{display:block}
+    body.focus-mode .focus-exit{display:block}
+    body.focus-mode.focus-ui-hidden .controls,body.focus-mode.focus-ui-hidden .focus-exit{opacity:0;pointer-events:none}
     body.focus-mode .actor{width:29%;max-height:64%}
     body.focus-mode .speech-image{width:80%;bottom:-31%}
     body.focus-mode .strategy-scene[data-speaker="riku"] .dialog-text{left:24%;right:13%;bottom:5.8%;font-size:clamp(10px,1.25vw,18px);line-height:1.2}
@@ -127,7 +128,6 @@
   </main>
 
   <button id="focusExitBtn" class="focus-exit" type="button" aria-label="集中モードを終了">×</button>
-  <div class="focus-caption">Campsite Strategy Council</div>
   <div id="rotateHint" class="rotate-hint">📱 端末を横向きにしてください。横向きになると作戦会議画面を広く表示します。</div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -163,6 +163,7 @@
       const orientationBtn=document.getElementById('orientationBtn');
       const focusBtn=document.getElementById('focusBtn');
       const focusExitBtn=document.getElementById('focusExitBtn');
+      const nextBtn=document.getElementById('nextBtn');
       const rotateHint=document.getElementById('rotateHint');
       if(!scene||!speaker)return;
 
@@ -196,6 +197,7 @@
       }
 
       let locked=false;
+      let uiTimer=null;
       const showRotateHint=()=>{
         rotateHint?.classList.add('show');
         window.setTimeout(()=>rotateHint?.classList.remove('show'),3600);
@@ -207,15 +209,25 @@
         orientationBtn.classList.toggle('active',isLandscape());
       };
 
+      const scheduleUiHide=()=>{
+        if(!document.body.classList.contains('focus-mode'))return;
+        window.clearTimeout(uiTimer);
+        document.body.classList.remove('focus-ui-hidden');
+        uiTimer=window.setTimeout(()=>document.body.classList.add('focus-ui-hidden'),2400);
+      };
+      const revealFocusUi=()=>{
+        if(!document.body.classList.contains('focus-mode'))return;
+        scheduleUiHide();
+      };
+
       const fitViewport=()=>{
         updateOrientationButton();
         const focus=document.body.classList.contains('focus-mode');
         const {width:vw,height:vh}=visualSize();
 
         if(focus){
-          const maxW=vw;
-          const maxH=vh;
-          const width=Math.floor(Math.min(maxW,maxH*1.5));
+          const overscan=1.12;
+          const width=Math.floor(Math.min(vw,vh*1.5*overscan));
           const height=Math.floor(width/1.5);
           scene.style.width=`${width}px`;
           scene.style.height=`${height}px`;
@@ -266,17 +278,22 @@
 
       const enterFocus=async()=>{
         document.body.classList.add('focus-mode');
+        document.body.classList.remove('focus-ui-hidden');
         try{
           if(!document.fullscreenElement&&document.documentElement.requestFullscreen){
             await document.documentElement.requestFullscreen({navigationUI:'hide'});
           }
         }catch(e){}
         await requestLandscape();
-        window.setTimeout(fitViewport,180);
+        window.setTimeout(()=>{
+          fitViewport();
+          scheduleUiHide();
+        },180);
       };
 
       const exitFocus=async()=>{
-        document.body.classList.remove('focus-mode');
+        window.clearTimeout(uiTimer);
+        document.body.classList.remove('focus-mode','focus-ui-hidden');
         try{screen.orientation?.unlock?.()}catch(e){}
         locked=false;
         try{if(document.fullscreenElement)await document.exitFullscreen?.()}catch(e){}
@@ -284,10 +301,16 @@
       };
 
       focusBtn?.addEventListener('click',enterFocus);
-      focusExitBtn?.addEventListener('click',exitFocus);
+      focusExitBtn?.addEventListener('click',event=>{event.stopPropagation();exitFocus()});
+      nextBtn?.addEventListener('click',event=>{event.stopPropagation();scheduleUiHide()});
+      document.addEventListener('pointerdown',event=>{
+        if(!document.body.classList.contains('focus-mode'))return;
+        if(event.target.closest('button'))return;
+        revealFocusUi();
+      },{passive:true});
+
       document.addEventListener('fullscreenchange',()=>{
-        if(!document.fullscreenElement&&document.body.classList.contains('focus-mode')){
-          document.body.classList.remove('focus-mode');
+        if(!document.fullscreenElement&&document.body.classList.contains('focus-mode')&&document.fullscreenEnabled){
           window.setTimeout(fitViewport,120);
         }
       });
