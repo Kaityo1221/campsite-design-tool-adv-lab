@@ -56,6 +56,17 @@
   desktopNav.append(desktopBackBtn, desktopNextBtn);
   el.scene?.appendChild(desktopNav);
 
+  const mobileGate = document.createElement('div');
+  mobileGate.className = 'mobile-focus-gate';
+  mobileGate.innerHTML = `
+    <div class="mobile-focus-card">
+      <div class="mobile-focus-title">🎬 作戦会議を開始</div>
+      <div class="mobile-focus-copy">スマホでは集中モードで表示します。<br>横画面にすると会話が読みやすくなります。</div>
+      <button type="button" class="mobile-focus-start">集中モードで開始</button>
+    </div>`;
+  el.scene?.appendChild(mobileGate);
+  const mobileStartBtn = mobileGate.querySelector('.mobile-focus-start');
+
   const style = document.createElement('style');
   style.textContent = `
     .strategy-scene[data-speaker="mina"] .dialog-text{
@@ -68,6 +79,45 @@
     .controls #backBtn{background:#17263a;color:#dbeafe;border:1px solid rgba(148,163,184,.25)}
 
     .desktop-hover-nav{display:none}
+
+    .mobile-focus-gate{
+      display:none;
+      position:absolute;
+      inset:0;
+      z-index:28;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      background:rgba(2,8,18,.46);
+      backdrop-filter:blur(3px);
+    }
+    .mobile-focus-card{
+      width:min(88%,420px);
+      padding:18px 16px;
+      border-radius:18px;
+      background:rgba(7,17,30,.94);
+      border:1px solid rgba(125,211,252,.34);
+      box-shadow:0 18px 54px rgba(0,0,0,.48);
+      text-align:center;
+      color:#e5eef7;
+    }
+    .mobile-focus-title{font-size:18px;font-weight:900;margin-bottom:8px}
+    .mobile-focus-copy{font-size:12px;line-height:1.6;color:#b8c7d8;margin-bottom:14px}
+    .mobile-focus-start{
+      width:100%;
+      border:0;
+      border-radius:999px;
+      padding:12px 16px;
+      font-weight:900;
+      color:#102033;
+      background:linear-gradient(135deg,#dbeafe,#bfdbfe);
+      box-shadow:0 8px 24px rgba(0,0,0,.28);
+      cursor:pointer;
+    }
+    body.mobile-adv-gated:not(.focus-mode) .mobile-focus-gate{display:flex}
+    body.mobile-adv-gated:not(.focus-mode) .controls #backBtn,
+    body.mobile-adv-gated:not(.focus-mode) .controls #nextBtn{display:none!important}
+    body.focus-mode .mobile-focus-gate{display:none!important}
 
     @media (hover:hover) and (pointer:fine) and (min-width:761px){
       body:not(.focus-mode) .controls #backBtn,
@@ -162,6 +212,21 @@
   let analysis = null;
   let sequence = [];
   let stepIndex = 0;
+
+  const isMobileADV = () => window.matchMedia('(max-width: 760px), (pointer: coarse)').matches;
+  const focusModeActive = () => document.body.classList.contains('focus-mode');
+  const showMobileGate = () => {
+    if (!isMobileADV() || !sequence.length || focusModeActive()) return false;
+    document.body.classList.add('mobile-adv-gated');
+    return true;
+  };
+  const clearMobileGate = () => document.body.classList.remove('mobile-adv-gated');
+
+  mobileStartBtn?.addEventListener('click', () => {
+    clearMobileGate();
+    const focusBtn = document.getElementById('focusBtn');
+    focusBtn?.click();
+  });
 
   const supportRegex = /(トイレ|便所|restroom|toilet|水飲|給水|water fountain|休憩|ベンチ|bench|東屋|あずまや|四阿|売店|カフェ|cafe|案内所|information)/i;
   const addedRegex = /(追加|追加希望|希望|新規|候補|add|addition|proposed|candidate|new|cagym|capokestop|capowerspot)/i;
@@ -492,7 +557,7 @@
       base.push(
         {
           speaker: 'riku',
-          text: `さらに、名称上は約${Math.round(nearest.distance)}m先に「${nearest.name}」を休憩・支援候補として拾える。\n条件は悪くない。`
+          text: `さらに、約${Math.round(nearest.distance)}m先に「${nearest.name}」。\n休憩・支援候補として拾える。条件は悪くない。`
         },
         { speaker: 'mina', text: 'おおっ、ここなら休みながら遊べそうだね！' }
       );
@@ -592,6 +657,7 @@
   }
 
   async function handleFile(file) {
+    clearMobileGate();
     setStatus('KMZを解析しています…');
     backBtn.disabled = true;
     desktopBackBtn.disabled = true;
@@ -621,6 +687,7 @@
     );
 
     renderStep(0);
+    showMobileGate();
   }
 
   el.file.addEventListener('change', async event => {
@@ -630,6 +697,7 @@
       await handleFile(file);
     } catch (error) {
       console.error(error);
+      clearMobileGate();
       points = [];
       analysis = null;
       sequence = [];
@@ -647,10 +715,12 @@
   });
 
   const goBack = () => {
+    if (showMobileGate()) return;
     if (stepIndex > 0) renderStep(stepIndex - 1);
   };
 
   const goNext = () => {
+    if (showMobileGate()) return;
     if (stepIndex < sequence.length - 1) renderStep(stepIndex + 1);
   };
 
@@ -661,7 +731,12 @@
 
   el.restart.addEventListener('click', () => {
     if (!sequence.length) return;
+    if (showMobileGate()) return;
     drawAllPoints(points);
     renderStep(0);
+  });
+
+  document.addEventListener('fullscreenchange', () => {
+    if (!focusModeActive() && isMobileADV() && sequence.length) showMobileGate();
   });
 })();
