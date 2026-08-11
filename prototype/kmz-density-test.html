@@ -78,6 +78,13 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script>
+    const originalTileLayer = L.tileLayer.bind(L);
+    L.tileLayer = (url, options) => originalTileLayer(
+      url.replace('{z}/{y}/{x}', '{z}/{x}/{y}'),
+      options
+    );
+  </script>
   <script src="./kmz-density-test.js"></script>
 </body>
 </html>
