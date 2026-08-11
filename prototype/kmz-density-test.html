@@ -34,7 +34,20 @@
     .actor.active{opacity:1;filter:brightness(1.04) saturate(1.05);transform:translateY(0) scale(1.015)}
     .signal-cut .actor{opacity:.12;filter:brightness(.25) saturate(.4)}
 
-    .speech-image{position:absolute;z-index:14;left:0;bottom:-26%;width:100%;height:auto;transform:none;transform-origin:center bottom;opacity:0;pointer-events:none;user-select:none;transition:opacity .16s ease}
+    .speech-image{
+  position:absolute;
+  z-index:14;
+  left:50%;
+  bottom:-26%;
+  width:90%;
+  height:auto;
+  transform:translateX(-50%);
+  transform-origin:center bottom;
+  opacity:0;
+  pointer-events:none;
+  user-select:none;
+  transition:opacity .16s ease;
+}
     .strategy-scene[data-speaker="riku"] .speech-riku-layout,
     .strategy-scene[data-speaker="mina"] .speech-riku-layout{opacity:1}
     .signal-cut .speech-image{opacity:0!important}
