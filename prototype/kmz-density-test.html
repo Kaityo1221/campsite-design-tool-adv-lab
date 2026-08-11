@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Campsite ADV Lab - KMZ Density Council</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    :root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic",sans-serif;color:#e5eef7;background:#08111f}
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(circle at top,#13263d 0,#08111f 56%,#050a12 100%);min-height:100vh}
+    .wrap{max-width:1180px;margin:0 auto;padding:18px}
+    .head{display:flex;gap:12px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
+    h1{font-size:22px;margin:0}.sub{color:#9fb0c4;font-size:13px;margin-top:5px}
+    .filebox{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 12px;border:1px solid #2b4058;border-radius:12px;background:#0d1a2a}
+    input[type=file]{max-width:280px;color:#cbd5e1}.pill{padding:5px 9px;border-radius:999px;background:#142338;color:#a8bad0;font-size:12px}
+    .grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(320px,.9fr);gap:14px}
+    #map{height:620px;border-radius:16px;border:1px solid #263a51;overflow:hidden;background:#0b1624}
+    .panel{border:1px solid #263a51;border-radius:16px;background:rgba(9,19,32,.95);overflow:hidden;display:flex;flex-direction:column;min-height:620px}
+    .status{padding:12px 14px;border-bottom:1px solid #23364b;color:#c8d5e3;font-size:13px;line-height:1.6}
+    .actors{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px}
+    .actor{border:1px solid #2a3e55;border-radius:16px;background:#0b1726;padding:14px;min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;opacity:.46;transform:scale(.97);transition:.22s ease}
+    .actor.active{opacity:1;transform:scale(1.02);box-shadow:0 0 0 1px rgba(255,255,255,.04),0 10px 32px rgba(0,0,0,.35)}
+    .portrait{width:92px;height:92px;border-radius:50%;display:grid;place-items:center;font-size:32px;font-weight:800;border:2px solid rgba(255,255,255,.12);background:linear-gradient(145deg,#1c3147,#0d1a28)}
+    .actor[data-id=riku] .portrait{background:linear-gradient(145deg,#243149,#4a1730)}
+    .actor[data-id=mina] .portrait{background:linear-gradient(145deg,#a73d72,#315e85)}
+    .name{font-weight:800}.role{font-size:11px;color:#91a5bb;text-align:center}
+    .dialog{margin:0 16px 16px;padding:16px;border:1px solid #334a62;border-radius:14px;background:#07111e;min-height:150px;position:relative}
+    .speaker{font-size:12px;color:#8fa9c3;font-weight:700;margin-bottom:6px}.text{font-size:18px;line-height:1.75;font-weight:700;white-space:pre-wrap}
+    .next{margin-top:auto;padding:0 16px 16px;display:flex;gap:8px}.next button{flex:1;border:0;border-radius:11px;padding:12px 14px;font-weight:800;cursor:pointer;background:#d7e9ff;color:#0c1a29}.next button:disabled{opacity:.38;cursor:not-allowed}
+    .facts{padding:0 16px 16px;display:grid;gap:7px}.fact{font-size:12px;color:#b3c3d4;padding:8px 10px;border-radius:10px;background:#0c1928;border:1px solid #23364a}
+    .warn{color:#ffccb0}.ok{color:#aee9bd}
+    @media(max-width:860px){.grid{grid-template-columns:1fr}#map{height:420px}.panel{min-height:auto}.actors{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <h1>🗺️ ADV Lab / KMZ 密集軍議プロトタイプ</h1>
+        <div class="sub">実KMZ・KMLを読み込み、追加POIの密集地点を検出してリク＆ミナの軍議を自動発火する。</div>
+      </div>
+      <div class="filebox">
+        <input id="kmzFile" type="file" accept=".kmz,.kml,application/vnd.google-earth.kmz,application/vnd.google-earth.kml+xml">
+        <span class="pill">密集基準: 40m / 6POI</span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div id="map"></div>
+      <aside class="panel">
+        <div id="status" class="status">KMZまたはKMLを選択してください。</div>
+        <div class="actors">
+          <section class="actor" data-id="riku" id="actorRiku">
+            <div class="portrait">R</div>
+            <div class="name">リク</div>
+            <div class="role">リスク / 通行 / 運用 / 改善策</div>
+          </section>
+          <section class="actor" data-id="mina" id="actorMina">
+            <div class="portrait">M</div>
+            <div class="name">ミナ</div>
+            <div class="role">魅力 / にぎわい / 楽しさ / 可能性</div>
+          </section>
+        </div>
+        <div class="dialog">
+          <div id="speaker" class="speaker">SYSTEM</div>
+          <div id="dialogText" class="text">地図を読み込むと軍議が始まります。</div>
+        </div>
+        <div id="facts" class="facts"></div>
+        <div class="next">
+          <button id="nextBtn" disabled>次へ</button>
+          <button id="restartBtn" disabled>軍議を最初から</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="./kmz-density-test.js"></script>
+</body>
+</html>
