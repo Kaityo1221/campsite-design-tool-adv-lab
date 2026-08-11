@@ -2,19 +2,22 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Campsite ADV Lab - KMZ Council</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <style>
     :root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic",sans-serif;color:#e5eef7;background:#07111c}
     *{box-sizing:border-box}
-    body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#18314d 0,#08111f 48%,#04070d 100%)}
+    html,body{margin:0;min-height:100%;background:#050a11}
+    body{min-height:100vh;background:radial-gradient(circle at top,#18314d 0,#08111f 48%,#04070d 100%)}
     button,input{font:inherit}
     .page{max-width:1220px;margin:0 auto;padding:16px}
     .labbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px;padding:10px 12px;border:1px solid rgba(148,163,184,.24);border-radius:14px;background:rgba(7,17,30,.88);backdrop-filter:blur(12px)}
     .labtitle{font-weight:900;letter-spacing:.03em}.labsub{font-size:12px;color:#9fb0c4;margin-top:3px}.filebox{display:flex;gap:8px;align-items:center;flex-wrap:wrap}input[type=file]{max-width:290px;color:#dbeafe}.pill{padding:5px 9px;border-radius:999px;background:#10243b;color:#b8cae0;font-size:11px;border:1px solid rgba(125,211,252,.18)}
-    .orientation-btn{border:1px solid rgba(125,211,252,.4);border-radius:999px;padding:7px 11px;background:linear-gradient(135deg,#163354,#0d2138);color:#e0f2fe;font-weight:900;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.22)}
+    .orientation-btn,.focus-btn{border:1px solid rgba(125,211,252,.4);border-radius:999px;padding:7px 11px;background:linear-gradient(135deg,#163354,#0d2138);color:#e0f2fe;font-weight:900;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.22)}
     .orientation-btn.active{background:linear-gradient(135deg,#164e63,#0f766e);border-color:rgba(94,234,212,.65)}
+    .focus-btn{background:linear-gradient(135deg,#5b21b6,#312e81);border-color:rgba(196,181,253,.55)}
+    .focus-btn:disabled{opacity:.4;cursor:not-allowed}
     .orientation-note{font-size:11px;color:#9fb0c4;width:100%}
 
     .strategy-scene{position:relative;width:100%;aspect-ratio:3/2;overflow:hidden;border-radius:18px;border:1px solid rgba(251,191,36,.28);background-image:url('./assets/backgrounds/strategy_room_idle.png');background-size:cover;background-position:center;box-shadow:0 22px 70px rgba(0,0,0,.45);isolation:isolate}
@@ -48,7 +51,10 @@
     .controls{display:flex;gap:8px;margin-top:12px}.controls button{flex:1;border:0;border-radius:12px;padding:12px 14px;font-weight:900;cursor:pointer;background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#102033;box-shadow:0 8px 24px rgba(0,0,0,.2)}.controls button:last-child{background:#17263a;color:#dbeafe;border:1px solid rgba(148,163,184,.25)}.controls button:disabled{opacity:.36;cursor:not-allowed;box-shadow:none}
     .status{margin-top:10px;padding:10px 12px;border-radius:12px;color:#cbd5e1;background:rgba(7,17,30,.78);border:1px solid rgba(148,163,184,.18);font-size:12px;line-height:1.65}.ok{color:#bbf7d0}.warn{color:#fed7aa}
     details.debug{margin-top:8px;border:1px solid rgba(148,163,184,.18);border-radius:12px;background:rgba(7,17,30,.66);color:#cbd5e1}details.debug summary{cursor:pointer;padding:10px 12px;font-size:12px;font-weight:800}.facts{padding:0 12px 12px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.fact{font-size:11px;color:#b8c7d8;padding:8px 9px;border-radius:9px;background:#0b1928;border:1px solid #23364a}
-    .rotate-hint{display:none;position:fixed;z-index:200;left:50%;bottom:18px;transform:translateX(-50%);max-width:min(90vw,520px);padding:10px 14px;border-radius:999px;background:rgba(2,8,18,.92);border:1px solid rgba(125,211,252,.45);color:#e0f2fe;font-size:12px;font-weight:800;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4)}.rotate-hint.show{display:block}
+    .rotate-hint{display:none;position:fixed;z-index:900;left:50%;bottom:18px;transform:translateX(-50%);max-width:min(90vw,520px);padding:10px 14px;border-radius:999px;background:rgba(2,8,18,.92);border:1px solid rgba(125,211,252,.45);color:#e0f2fe;font-size:12px;font-weight:800;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4)}.rotate-hint.show{display:block}
+
+    .focus-exit{display:none;position:fixed;z-index:1002;top:calc(env(safe-area-inset-top) + 12px);right:calc(env(safe-area-inset-right) + 14px);width:42px;height:42px;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:rgba(0,0,0,.48);color:#fff;font-size:22px;font-weight:800;backdrop-filter:blur(10px);cursor:pointer}
+    .focus-caption{display:none;position:fixed;z-index:1001;left:50%;top:calc(env(safe-area-inset-top) + 16px);transform:translateX(-50%);padding:6px 12px;border-radius:999px;background:rgba(0,0,0,.42);color:rgba(255,255,255,.82);font-size:11px;font-weight:800;letter-spacing:.05em;pointer-events:none;backdrop-filter:blur(8px)}
 
     @media(max-width:760px){
       .page{padding:8px}.labbar{padding:8px}.strategy-scene{border-radius:12px}
@@ -61,21 +67,35 @@
     }
 
     @media(orientation:landscape) and (max-height:700px){
-      body{overflow:hidden}
-      .page{max-width:none;width:100%;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
-      .labbar{position:fixed;z-index:90;top:6px;right:8px;left:auto;width:auto;margin:0;padding:0;border:0;background:transparent;backdrop-filter:none}
-      .labbar>div:first-child,.labsub,.pill,.orientation-note,input[type=file]{display:none}
-      .filebox{width:auto;display:block}
-      .orientation-btn{padding:5px 9px;font-size:10px;background:rgba(7,17,30,.76)}
-      .strategy-scene{flex:none;margin:0 auto;border-radius:8px}
-      .actor{width:29%;max-height:64%}
-      .speech-image{width:80%;bottom:-31%}
-      .strategy-scene[data-speaker="riku"] .dialog-text{left:24%;right:13%;bottom:5.8%;font-size:clamp(9px,1.2vw,15px);line-height:1.18}
-      .strategy-scene[data-speaker="mina"] .dialog-text{left:13%;right:24%;bottom:5.8%;font-size:clamp(9px,1.2vw,15px);line-height:1.18}
-      .controls{flex:none;height:38px;margin:4px auto 0;gap:6px}
-      .controls button{padding:4px 10px;font-size:11px;border-radius:9px}
-      .status,details.debug{display:none}
+      body:not(.focus-mode){overflow:hidden}
+      body:not(.focus-mode) .page{max-width:none;width:100%;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+      body:not(.focus-mode) .labbar{position:fixed;z-index:90;top:6px;right:8px;left:auto;width:auto;margin:0;padding:0;border:0;background:transparent;backdrop-filter:none}
+      body:not(.focus-mode) .labbar>div:first-child,body:not(.focus-mode) .labsub,body:not(.focus-mode) .pill,body:not(.focus-mode) .orientation-note,body:not(.focus-mode) input[type=file]{display:none}
+      body:not(.focus-mode) .filebox{width:auto;display:flex;gap:5px}
+      body:not(.focus-mode) .orientation-btn,body:not(.focus-mode) .focus-btn{padding:5px 9px;font-size:10px;background:rgba(7,17,30,.76)}
+      body:not(.focus-mode) .strategy-scene{flex:none;margin:0 auto;border-radius:8px}
+      body:not(.focus-mode) .actor{width:29%;max-height:64%}
+      body:not(.focus-mode) .speech-image{width:80%;bottom:-31%}
+      body:not(.focus-mode) .strategy-scene[data-speaker="riku"] .dialog-text{left:24%;right:13%;bottom:5.8%;font-size:clamp(9px,1.2vw,15px);line-height:1.18}
+      body:not(.focus-mode) .strategy-scene[data-speaker="mina"] .dialog-text{left:13%;right:24%;bottom:5.8%;font-size:clamp(9px,1.2vw,15px);line-height:1.18}
+      body:not(.focus-mode) .controls{flex:none;height:38px;margin:4px auto 0;gap:6px}
+      body:not(.focus-mode) .controls button{padding:4px 10px;font-size:11px;border-radius:9px}
+      body:not(.focus-mode) .status,body:not(.focus-mode) details.debug{display:none}
     }
+
+    body.focus-mode{overflow:hidden;background:#000;overscroll-behavior:none;touch-action:manipulation}
+    body.focus-mode .page{position:fixed;z-index:1000;inset:0;width:100%;max-width:none;height:100%;margin:0;padding:0;background:#000;display:flex;align-items:center;justify-content:center}
+    body.focus-mode .labbar,body.focus-mode .status,body.focus-mode details.debug{display:none!important}
+    body.focus-mode .strategy-scene{flex:none;margin:0;border:0;border-radius:0;box-shadow:none}
+    body.focus-mode .controls{position:fixed;z-index:1002;right:calc(env(safe-area-inset-right) + 16px);bottom:calc(env(safe-area-inset-bottom) + 14px);width:auto!important;height:auto;margin:0;display:flex;gap:8px}
+    body.focus-mode .controls #nextBtn{flex:none;min-width:116px;padding:10px 18px;border-radius:999px;background:rgba(235,245,255,.90);color:#102033;box-shadow:0 10px 34px rgba(0,0,0,.45);backdrop-filter:blur(10px)}
+    body.focus-mode .controls #restartBtn{display:none}
+    body.focus-mode .focus-exit,body.focus-mode .focus-caption{display:block}
+    body.focus-mode .actor{width:29%;max-height:64%}
+    body.focus-mode .speech-image{width:80%;bottom:-31%}
+    body.focus-mode .strategy-scene[data-speaker="riku"] .dialog-text{left:24%;right:13%;bottom:5.8%;font-size:clamp(10px,1.25vw,18px);line-height:1.2}
+    body.focus-mode .strategy-scene[data-speaker="mina"] .dialog-text{left:13%;right:24%;bottom:5.8%;font-size:clamp(10px,1.25vw,18px);line-height:1.2}
+    body.focus-mode .strategy-scene[data-speaker="system"] .dialog-text{bottom:3%;font-size:clamp(10px,1.2vw,17px)}
   </style>
 </head>
 <body>
@@ -85,8 +105,9 @@
       <div class="filebox">
         <input id="kmzFile" type="file">
         <button id="orientationBtn" class="orientation-btn" type="button">↻ 横画面に切替・固定</button>
+        <button id="focusBtn" class="focus-btn" type="button" disabled>🎬 集中モード</button>
         <span class="pill">全体図: キャンプサイトPOI</span>
-        <div id="orientationNote" class="orientation-note">横画面での閲覧を推奨。ボタンは対応環境では横向き固定を試み、固定できない場合は回転案内を表示します。</div>
+        <div id="orientationNote" class="orientation-note">KMZ読込後は「集中モード」で作戦会議だけに集中できます。</div>
       </div>
     </header>
 
@@ -104,6 +125,9 @@
     <div id="status" class="status">KMZまたはKMLを選択してください。</div>
     <details class="debug"><summary>解析情報を見る</summary><div id="facts" class="facts"></div></details>
   </main>
+
+  <button id="focusExitBtn" class="focus-exit" type="button" aria-label="集中モードを終了">×</button>
+  <div class="focus-caption">Campsite Strategy Council</div>
   <div id="rotateHint" class="rotate-hint">📱 端末を横向きにしてください。横向きになると作戦会議画面を広く表示します。</div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -137,8 +161,16 @@
       const speaker=document.getElementById('speaker');
       const status=document.getElementById('status');
       const orientationBtn=document.getElementById('orientationBtn');
+      const focusBtn=document.getElementById('focusBtn');
+      const focusExitBtn=document.getElementById('focusExitBtn');
       const rotateHint=document.getElementById('rotateHint');
       if(!scene||!speaker)return;
+
+      const isLandscape=()=>matchMedia('(orientation: landscape)').matches;
+      const visualSize=()=>({
+        width:Math.max(320,Math.floor(window.visualViewport?.width||window.innerWidth)),
+        height:Math.max(220,Math.floor(window.visualViewport?.height||window.innerHeight))
+      });
 
       const syncSpeaker=()=>{
         const value=(speaker.textContent||'SYSTEM').trim().toLowerCase();
@@ -151,7 +183,9 @@
       if(status){
         new MutationObserver(()=>{
           const text=status.textContent||'';
-          if(text.includes('読み込みました')||text.includes('失敗')){
+          const loaded=text.includes('読み込みました');
+          if(focusBtn)focusBtn.disabled=!loaded;
+          if(loaded||text.includes('失敗')){
             window.setTimeout(()=>{
               scene.classList.remove('signal-cut');
               fitViewport();
@@ -162,7 +196,6 @@
       }
 
       let locked=false;
-      const isLandscape=()=>matchMedia('(orientation: landscape)').matches;
       const showRotateHint=()=>{
         rotateHint?.classList.add('show');
         window.setTimeout(()=>rotateHint?.classList.remove('show'),3600);
@@ -176,6 +209,23 @@
 
       const fitViewport=()=>{
         updateOrientationButton();
+        const focus=document.body.classList.contains('focus-mode');
+        const {width:vw,height:vh}=visualSize();
+
+        if(focus){
+          const maxW=vw;
+          const maxH=vh;
+          const width=Math.floor(Math.min(maxW,maxH*1.5));
+          const height=Math.floor(width/1.5);
+          scene.style.width=`${width}px`;
+          scene.style.height=`${height}px`;
+          scene.style.aspectRatio='auto';
+          if(controls)controls.style.width='auto';
+          if(page)page.style.height=`${vh}px`;
+          window.setTimeout(()=>window.dispatchEvent(new Event('resize')),80);
+          return;
+        }
+
         if(!isLandscape()){
           scene.style.width='';scene.style.height='';scene.style.aspectRatio='';
           if(controls)controls.style.width='';
@@ -183,9 +233,7 @@
           window.setTimeout(()=>window.dispatchEvent(new Event('resize')),80);
           return;
         }
-        const vv=window.visualViewport;
-        const vw=Math.max(320,Math.floor(vv?.width||window.innerWidth));
-        const vh=Math.max(220,Math.floor(vv?.height||window.innerHeight));
+
         const reserve=44;
         const maxW=Math.max(280,vw-8);
         const maxH=Math.max(180,vh-reserve);
@@ -199,25 +247,57 @@
         window.setTimeout(()=>window.dispatchEvent(new Event('resize')),80);
       };
 
-      orientationBtn?.addEventListener('click',async()=>{
-        if(locked){
-          try{screen.orientation?.unlock?.()}catch(e){}
-          try{if(document.fullscreenElement)await document.exitFullscreen?.()}catch(e){}
-          locked=false;fitViewport();return;
-        }
+      const requestLandscape=async()=>{
         let didLock=false;
-        try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen()}catch(e){}
         try{if(screen.orientation?.lock){await screen.orientation.lock('landscape');didLock=true}}catch(e){}
         locked=didLock;
         if(!didLock&&!isLandscape())showRotateHint();
+        return didLock;
+      };
+
+      orientationBtn?.addEventListener('click',async()=>{
+        if(locked){
+          try{screen.orientation?.unlock?.()}catch(e){}
+          locked=false;fitViewport();return;
+        }
+        await requestLandscape();
         window.setTimeout(fitViewport,180);
       });
 
+      const enterFocus=async()=>{
+        document.body.classList.add('focus-mode');
+        try{
+          if(!document.fullscreenElement&&document.documentElement.requestFullscreen){
+            await document.documentElement.requestFullscreen({navigationUI:'hide'});
+          }
+        }catch(e){}
+        await requestLandscape();
+        window.setTimeout(fitViewport,180);
+      };
+
+      const exitFocus=async()=>{
+        document.body.classList.remove('focus-mode');
+        try{screen.orientation?.unlock?.()}catch(e){}
+        locked=false;
+        try{if(document.fullscreenElement)await document.exitFullscreen?.()}catch(e){}
+        window.setTimeout(fitViewport,160);
+      };
+
+      focusBtn?.addEventListener('click',enterFocus);
+      focusExitBtn?.addEventListener('click',exitFocus);
+      document.addEventListener('fullscreenchange',()=>{
+        if(!document.fullscreenElement&&document.body.classList.contains('focus-mode')){
+          document.body.classList.remove('focus-mode');
+          window.setTimeout(fitViewport,120);
+        }
+      });
+
+      const refresh=()=>window.setTimeout(fitViewport,80);
       window.addEventListener('orientationchange',()=>window.setTimeout(fitViewport,220));
-      window.addEventListener('resize',()=>window.setTimeout(fitViewport,60),{passive:true});
-      window.visualViewport?.addEventListener('resize',()=>window.setTimeout(fitViewport,60),{passive:true});
-      window.visualViewport?.addEventListener('scroll',()=>window.setTimeout(fitViewport,60),{passive:true});
-      matchMedia('(orientation: landscape)').addEventListener?.('change',()=>window.setTimeout(fitViewport,120));
+      window.addEventListener('resize',refresh,{passive:true});
+      window.visualViewport?.addEventListener('resize',refresh,{passive:true});
+      window.visualViewport?.addEventListener('scroll',refresh,{passive:true});
+      matchMedia('(orientation: landscape)').addEventListener?.('change',refresh);
       fitViewport();
     })();
   </script>
