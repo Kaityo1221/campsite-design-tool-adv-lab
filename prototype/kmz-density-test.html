@@ -34,16 +34,16 @@
     .actor.active{opacity:1;filter:brightness(1.04) saturate(1.05);transform:translateY(0) scale(1.015)}
     .signal-cut .actor{opacity:.12;filter:brightness(.25) saturate(.4)}
 
-    .speech-image{position:absolute;z-index:14;left:0;bottom:-26%;width:100%;height:auto;transform:none;transform-origin:center bottom;opacity:0;pointer-events:none;user-select:none;transition:opacity .16s ease;mix-blend-mode:screen}
-    .strategy-scene[data-speaker="riku"] .speech-riku-layout{opacity:1}
-    .strategy-scene[data-speaker="mina"] .speech-mina-layout{opacity:1}
+    .speech-image{position:absolute;z-index:14;left:0;bottom:-26%;width:100%;height:auto;transform:none;transform-origin:center bottom;opacity:0;pointer-events:none;user-select:none;transition:opacity .16s ease}
+    .strategy-scene[data-speaker="riku"] .speech-riku-layout,
+    .strategy-scene[data-speaker="mina"] .speech-riku-layout{opacity:1}
     .signal-cut .speech-image{opacity:0!important}
 
     .dialog-layer{position:absolute;inset:0;z-index:16;pointer-events:none}
     .speaker{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
     .dialog-text{position:absolute;top:auto;bottom:6.4%;white-space:pre-wrap;font-weight:800;line-height:1.15;letter-spacing:.01em;text-shadow:none;max-height:3.45em;overflow:hidden}
     .strategy-scene[data-speaker="riku"] .dialog-text{left:11%;right:55%;color:#12253d;font-size:clamp(10px,1.05vw,17px);text-align:left}
-    .strategy-scene[data-speaker="mina"] .dialog-text{left:11%;right:55%;color:#3d1830;font-size:clamp(10px,1.05vw,17px);text-align:right}
+    .strategy-scene[data-speaker="mina"] .dialog-text{left:55%;right:11%;color:#3d1830;font-size:clamp(10px,1.05vw,17px);text-align:right}
     .strategy-scene[data-speaker="system"] .dialog-text{left:15%;right:15%;bottom:3.2%;max-height:none;overflow:visible;padding:9px 14px;color:#f8fafc;font-size:clamp(10px,1.1vw,17px);text-align:center;background:linear-gradient(180deg,rgba(4,12,22,.82),rgba(4,12,22,.94));border:1px solid rgba(125,211,252,.48);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.34),inset 0 0 20px rgba(56,189,248,.05);text-shadow:0 1px 2px rgba(0,0,0,.55)}
     .signal-cut .dialog-layer{opacity:0}
 
@@ -61,7 +61,7 @@
       .speech-image{width:100%;bottom:-26%}
       .dialog-text{bottom:6.3%;line-height:1.15}
       .strategy-scene[data-speaker="riku"] .dialog-text{left:11%;right:55%;font-size:clamp(8px,1.85vw,11px)}
-      .strategy-scene[data-speaker="mina"] .dialog-text{left:11%;right:55%;font-size:clamp(8px,1.85vw,11px)}
+      .strategy-scene[data-speaker="mina"] .dialog-text{left:55%;right:11%;font-size:clamp(8px,1.85vw,11px)}
       .strategy-scene[data-speaker="system"] .dialog-text{left:13%;right:13%;bottom:2.8%;font-size:clamp(8px,1.9vw,11px);padding:6px 8px}
       .facts{grid-template-columns:1fr 1fr}
     }
@@ -78,7 +78,7 @@
       body:not(.focus-mode) .speech-image{width:100%;bottom:-26%}
       body:not(.focus-mode) .dialog-text{bottom:6.3%;line-height:1.14}
       body:not(.focus-mode) .strategy-scene[data-speaker="riku"] .dialog-text{left:11%;right:55%;font-size:clamp(9px,1.2vw,15px)}
-      body:not(.focus-mode) .strategy-scene[data-speaker="mina"] .dialog-text{left:11%;right:55%;font-size:clamp(9px,1.2vw,15px)}
+      body:not(.focus-mode) .strategy-scene[data-speaker="mina"] .dialog-text{left:55%;right:11%;font-size:clamp(9px,1.2vw,15px)}
       body:not(.focus-mode) .controls{flex:none;height:38px;margin:4px auto 0;gap:6px}
       body:not(.focus-mode) .controls button{padding:4px 10px;font-size:11px;border-radius:9px}
       body:not(.focus-mode) .status,body:not(.focus-mode) details.debug{display:none}
@@ -97,7 +97,7 @@
     body.focus-mode .speech-image{width:100%;bottom:-26%}
     body.focus-mode .dialog-text{bottom:6.3%;line-height:1.14}
     body.focus-mode .strategy-scene[data-speaker="riku"] .dialog-text{left:11%;right:55%;font-size:clamp(10px,1.25vw,18px)}
-    body.focus-mode .strategy-scene[data-speaker="mina"] .dialog-text{left:11%;right:55%;font-size:clamp(10px,1.25vw,18px)}
+    body.focus-mode .strategy-scene[data-speaker="mina"] .dialog-text{left:55%;right:11%;font-size:clamp(10px,1.25vw,18px)}
     body.focus-mode .strategy-scene[data-speaker="system"] .dialog-text{bottom:3%;font-size:clamp(10px,1.2vw,17px)}
   </style>
 </head>
@@ -119,7 +119,6 @@
       <img id="actorRiku" class="actor actor-riku" src="./assets/characters/riku_normal.png" alt="リク">
       <img id="actorMina" class="actor actor-mina" src="./assets/characters/mina_normal.png" alt="ミナ">
       <img class="speech-image speech-riku-layout" src="./assets/speech/dialog_riku_left.png" alt="">
-      <img class="speech-image speech-mina-layout" src="./assets/speech/dialog_mina_left.png" alt="">
       <div class="dialog-layer" id="dialogLayer"><div id="speaker" class="speaker">SYSTEM</div><div id="dialogText" class="dialog-text">KMZまたはKMLを選択すると、作戦会議を開始します。</div></div>
       <div class="loading-mark">ANALYZING MAP...</div>
     </section>
