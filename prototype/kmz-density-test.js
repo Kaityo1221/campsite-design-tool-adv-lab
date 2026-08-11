@@ -26,7 +26,8 @@
     next: document.getElementById('nextBtn'),
     restart: document.getElementById('restartBtn'),
     riku: document.getElementById('actorRiku'),
-    mina: document.getElementById('actorMina')
+    mina: document.getElementById('actorMina'),
+    scene: document.getElementById('strategyScene')
   };
 
   const controls = el.next?.parentElement;
@@ -38,13 +39,92 @@
   controls?.insertBefore(backBtn, el.next);
   el.next.textContent = '次へ ▶';
 
+  const desktopNav = document.createElement('div');
+  desktopNav.className = 'desktop-hover-nav';
+  const desktopBackBtn = document.createElement('button');
+  desktopBackBtn.type = 'button';
+  desktopBackBtn.className = 'desktop-nav-btn desktop-nav-back';
+  desktopBackBtn.setAttribute('aria-label', '前の会話へ戻る');
+  desktopBackBtn.textContent = '‹';
+  desktopBackBtn.disabled = true;
+  const desktopNextBtn = document.createElement('button');
+  desktopNextBtn.type = 'button';
+  desktopNextBtn.className = 'desktop-nav-btn desktop-nav-next';
+  desktopNextBtn.setAttribute('aria-label', '次の会話へ進む');
+  desktopNextBtn.textContent = '›';
+  desktopNextBtn.disabled = true;
+  desktopNav.append(desktopBackBtn, desktopNextBtn);
+  el.scene?.appendChild(desktopNav);
+
   const style = document.createElement('style');
   style.textContent = `
     .strategy-scene[data-speaker="mina"] .dialog-text{
+      left:55%!important;
+      right:13%!important;
       text-align:left!important;
       margin-left:auto;
     }
+
     .controls #backBtn{background:#17263a;color:#dbeafe;border:1px solid rgba(148,163,184,.25)}
+
+    .desktop-hover-nav{display:none}
+
+    @media (hover:hover) and (pointer:fine) and (min-width:761px){
+      body:not(.focus-mode) .controls #backBtn,
+      body:not(.focus-mode) .controls #nextBtn{display:none}
+
+      body:not(.focus-mode) .desktop-hover-nav{
+        display:block;
+        position:absolute;
+        inset:0;
+        z-index:26;
+        pointer-events:none;
+        opacity:0;
+        transition:opacity .18s ease;
+      }
+
+      body:not(.focus-mode) .strategy-scene:hover .desktop-hover-nav,
+      body:not(.focus-mode) .desktop-hover-nav:focus-within{
+        opacity:1;
+      }
+
+      body:not(.focus-mode) .desktop-nav-btn{
+        position:absolute;
+        top:58%;
+        transform:translateY(-50%);
+        width:52px;
+        height:82px;
+        border-radius:18px;
+        border:1px solid rgba(255,255,255,.28);
+        background:rgba(4,12,22,.58);
+        color:#fff;
+        font-size:48px;
+        font-weight:300;
+        line-height:1;
+        cursor:pointer;
+        pointer-events:auto;
+        backdrop-filter:blur(12px);
+        box-shadow:0 10px 28px rgba(0,0,0,.32);
+        transition:background .16s ease,transform .16s ease,opacity .16s ease;
+      }
+
+      body:not(.focus-mode) .desktop-nav-btn:hover{
+        background:rgba(13,34,56,.88);
+        transform:translateY(-50%) scale(1.04);
+      }
+
+      body:not(.focus-mode) .desktop-nav-btn:disabled{
+        opacity:.18;
+        cursor:default;
+        transform:translateY(-50%);
+      }
+
+      body:not(.focus-mode) .desktop-nav-back{left:18px}
+      body:not(.focus-mode) .desktop-nav-next{right:18px}
+    }
+
+    body.focus-mode .desktop-hover-nav{display:none!important}
+
     body.focus-mode .controls{
       left:50%!important;
       right:auto!important;
@@ -487,6 +567,15 @@
     el.mina.classList.toggle('active', speaker === 'mina');
   }
 
+  function syncNavButtons(index) {
+    const atStart = index <= 0;
+    const atEnd = index >= sequence.length - 1;
+    backBtn.disabled = atStart;
+    el.next.disabled = atEnd;
+    desktopBackBtn.disabled = atStart;
+    desktopNextBtn.disabled = atEnd;
+  }
+
   function renderStep(index) {
     const step = sequence[index];
     if (!step) return;
@@ -498,15 +587,16 @@
     if (step.focus === 'warning') focusWarning(analysis?.distanceWarnings?.active?.[0]);
     if (step.focus === 'context') focusContext(analysis?.contextHotspot);
 
-    backBtn.disabled = index <= 0;
-    el.next.disabled = index >= sequence.length - 1;
+    syncNavButtons(index);
     el.restart.disabled = sequence.length === 0;
   }
 
   async function handleFile(file) {
     setStatus('KMZを解析しています…');
     backBtn.disabled = true;
+    desktopBackBtn.disabled = true;
     el.next.disabled = true;
+    desktopNextBtn.disabled = true;
     el.restart.disabled = true;
     el.dialog.textContent = '地図を読み込んでいます。';
     setActiveActor('system');
@@ -551,16 +641,23 @@
       el.dialog.textContent = '別のKMZ / KMLで試してください。';
       setActiveActor('system');
       backBtn.disabled = true;
+      desktopBackBtn.disabled = true;
+      desktopNextBtn.disabled = true;
     }
   });
 
-  backBtn.addEventListener('click', () => {
+  const goBack = () => {
     if (stepIndex > 0) renderStep(stepIndex - 1);
-  });
+  };
 
-  el.next.addEventListener('click', () => {
+  const goNext = () => {
     if (stepIndex < sequence.length - 1) renderStep(stepIndex + 1);
-  });
+  };
+
+  backBtn.addEventListener('click', goBack);
+  desktopBackBtn.addEventListener('click', goBack);
+  el.next.addEventListener('click', goNext);
+  desktopNextBtn.addEventListener('click', goNext);
 
   el.restart.addEventListener('click', () => {
     if (!sequence.length) return;
