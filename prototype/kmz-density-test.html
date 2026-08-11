@@ -12,313 +12,63 @@
       background:#07111c;
     }
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      min-height:100vh;
-      background:radial-gradient(circle at top,#18314d 0,#08111f 48%,#04070d 100%);
-    }
+    body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#18314d 0,#08111f 48%,#04070d 100%)}
     button,input{font:inherit}
     .page{max-width:1220px;margin:0 auto;padding:16px}
-    .labbar{
-      display:flex;
-      gap:12px;
-      align-items:center;
-      justify-content:space-between;
-      flex-wrap:wrap;
-      margin-bottom:12px;
-      padding:10px 12px;
-      border:1px solid rgba(148,163,184,.24);
-      border-radius:14px;
-      background:rgba(7,17,30,.88);
-      backdrop-filter:blur(12px);
-    }
-    .labtitle{font-weight:900;letter-spacing:.03em}
-    .labsub{font-size:12px;color:#9fb0c4;margin-top:3px}
-    .filebox{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    input[type=file]{max-width:290px;color:#dbeafe}
-    .pill{padding:5px 9px;border-radius:999px;background:#10243b;color:#b8cae0;font-size:11px;border:1px solid rgba(125,211,252,.18)}
-
-    .strategy-scene{
-      position:relative;
-      width:100%;
-      aspect-ratio:3/2;
-      overflow:hidden;
-      border-radius:18px;
-      border:1px solid rgba(251,191,36,.28);
-      background-image:url('./assets/backgrounds/strategy_room_idle.png');
-      background-size:cover;
-      background-position:center;
-      box-shadow:0 22px 70px rgba(0,0,0,.45);
-      isolation:isolate;
-    }
-    .strategy-scene.signal-cut{
-      background-image:url('./assets/backgrounds/strategy_room_signal_cut.png');
-    }
-    .strategy-scene::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      z-index:30;
-      pointer-events:none;
-      box-shadow:inset 0 0 90px rgba(0,0,0,.2);
-    }
-
-    #map{
-      position:absolute;
-      z-index:2;
-      left:29.3%;
-      top:15.8%;
-      width:40.3%;
-      height:37.2%;
-      border-radius:2px;
-      background:#101820;
-      overflow:hidden;
-      box-shadow:inset 0 0 0 2px rgba(0,0,0,.55);
-      transition:opacity .25s ease,filter .25s ease;
-    }
-    .signal-cut #map{opacity:0;filter:blur(2px)}
-    #map .leaflet-control-attribution{font-size:7px;background:rgba(255,255,255,.72)}
-    #map .leaflet-control-zoom{transform:scale(.78);transform-origin:top left}
-
-    .actor{
-      position:absolute;
-      z-index:7;
-      bottom:-1.5%;
-      width:31%;
-      max-height:64%;
-      object-fit:contain;
-      object-position:bottom;
-      opacity:.30;
-      filter:brightness(.48) saturate(.72);
-      transform:translateY(1.5%) scale(.96);
-      transition:opacity .22s ease,filter .22s ease,transform .22s ease;
-      pointer-events:none;
-      user-select:none;
-    }
-    .actor-riku{left:-1.7%}
-    .actor-mina{right:-1.7%}
-    .actor.active{
-      opacity:1;
-      filter:brightness(1.04) saturate(1.05);
-      transform:translateY(0) scale(1.015);
-    }
-    .signal-cut .actor{opacity:.12;filter:brightness(.25) saturate(.4)}
-
-    .dialog-layer{
-      position:absolute;
-      inset:0;
-      z-index:12;
-      pointer-events:none;
-      background-repeat:no-repeat;
-      background-position:center;
-      background-size:100% 100%;
-      transition:opacity .18s ease;
-    }
-    .strategy-scene[data-speaker="riku"] .dialog-layer{
-      background-image:url('./assets/speech/speech_riku_left.png');
-    }
-    .strategy-scene[data-speaker="mina"] .dialog-layer{
-      background-image:url('./assets/speech/speech_mina_right.png');
-    }
-    .speaker{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-    .dialog-text{
-      position:absolute;
-      white-space:pre-wrap;
-      font-weight:800;
-      line-height:1.55;
-      letter-spacing:.01em;
-      text-shadow:none;
-    }
-    .strategy-scene[data-speaker="riku"] .dialog-text{
-      left:14.5%;
-      right:9.5%;
-      top:39.5%;
-      color:#12253d;
-      font-size:clamp(13px,1.55vw,24px);
-    }
-    .strategy-scene[data-speaker="mina"] .dialog-text{
-      left:9.5%;
-      right:14.5%;
-      top:37.2%;
-      color:#3d1830;
-      font-size:clamp(13px,1.55vw,24px);
-    }
-    .strategy-scene[data-speaker="system"] .dialog-layer{
-      background-image:none;
-    }
-    .strategy-scene[data-speaker="system"] .dialog-text{
-      left:17%;
-      right:17%;
-      bottom:6.8%;
-      top:auto;
-      padding:12px 18px;
-      color:#f8fafc;
-      font-size:clamp(12px,1.35vw,20px);
-      text-align:center;
-      background:linear-gradient(180deg,rgba(4,12,22,.82),rgba(4,12,22,.94));
-      border:1px solid rgba(125,211,252,.48);
-      border-radius:12px;
-      box-shadow:0 8px 28px rgba(0,0,0,.34),inset 0 0 20px rgba(56,189,248,.05);
-      text-shadow:0 1px 2px rgba(0,0,0,.55);
-    }
-    .signal-cut .dialog-layer{opacity:0}
-
-    .loading-mark{
-      position:absolute;
-      z-index:20;
-      left:50%;
-      top:48%;
-      transform:translate(-50%,-50%);
-      padding:9px 15px;
-      border-radius:999px;
-      color:#f8fafc;
-      font-weight:900;
-      font-size:clamp(10px,1.1vw,15px);
-      letter-spacing:.14em;
-      background:rgba(2,6,12,.78);
-      border:1px solid rgba(255,255,255,.26);
-      opacity:0;
-      transition:opacity .16s ease;
-      pointer-events:none;
-    }
-    .signal-cut .loading-mark{opacity:1}
-
-    .controls{
-      display:flex;
-      gap:8px;
-      margin-top:12px;
-    }
-    .controls button{
-      flex:1;
-      border:0;
-      border-radius:12px;
-      padding:12px 14px;
-      font-weight:900;
-      cursor:pointer;
-      background:linear-gradient(135deg,#dbeafe,#bfdbfe);
-      color:#102033;
-      box-shadow:0 8px 24px rgba(0,0,0,.2);
-    }
-    .controls button:last-child{background:#17263a;color:#dbeafe;border:1px solid rgba(148,163,184,.25)}
-    .controls button:disabled{opacity:.36;cursor:not-allowed;box-shadow:none}
-
-    .status{
-      margin-top:10px;
-      padding:10px 12px;
-      border-radius:12px;
-      color:#cbd5e1;
-      background:rgba(7,17,30,.78);
-      border:1px solid rgba(148,163,184,.18);
-      font-size:12px;
-      line-height:1.65;
-    }
-    .ok{color:#bbf7d0}.warn{color:#fed7aa}
-    details.debug{
-      margin-top:8px;
-      border:1px solid rgba(148,163,184,.18);
-      border-radius:12px;
-      background:rgba(7,17,30,.66);
-      color:#cbd5e1;
-    }
-    details.debug summary{cursor:pointer;padding:10px 12px;font-size:12px;font-weight:800}
-    .facts{padding:0 12px 12px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
-    .fact{font-size:11px;color:#b8c7d8;padding:8px 9px;border-radius:9px;background:#0b1928;border:1px solid #23364a}
-
-    @media(max-width:760px){
-      .page{padding:8px}
-      .labbar{padding:8px}
-      .strategy-scene{border-radius:12px}
-      .actor{width:34%}
-      .strategy-scene[data-speaker="riku"] .dialog-text,
-      .strategy-scene[data-speaker="mina"] .dialog-text{font-size:clamp(10px,2.5vw,15px);line-height:1.35}
-      .strategy-scene[data-speaker="system"] .dialog-text{font-size:clamp(9px,2.2vw,13px);padding:7px 9px}
-      .facts{grid-template-columns:1fr 1fr}
-    }
+    .labbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px;padding:10px 12px;border:1px solid rgba(148,163,184,.24);border-radius:14px;background:rgba(7,17,30,.88);backdrop-filter:blur(12px)}
+    .labtitle{font-weight:900;letter-spacing:.03em}.labsub{font-size:12px;color:#9fb0c4;margin-top:3px}.filebox{display:flex;gap:8px;align-items:center;flex-wrap:wrap}input[type=file]{max-width:290px;color:#dbeafe}.pill{padding:5px 9px;border-radius:999px;background:#10243b;color:#b8cae0;font-size:11px;border:1px solid rgba(125,211,252,.18)}
+    .strategy-scene{position:relative;width:100%;aspect-ratio:3/2;overflow:hidden;border-radius:18px;border:1px solid rgba(251,191,36,.28);background-image:url('./assets/backgrounds/strategy_room_idle.png');background-size:cover;background-position:center;box-shadow:0 22px 70px rgba(0,0,0,.45);isolation:isolate}
+    .strategy-scene.signal-cut{background-image:url('./assets/backgrounds/strategy_room_signal_cut.png')}.strategy-scene::after{content:"";position:absolute;inset:0;z-index:30;pointer-events:none;box-shadow:inset 0 0 90px rgba(0,0,0,.2)}
+    #map{position:absolute;z-index:2;left:29.3%;top:15.8%;width:40.3%;height:37.2%;border-radius:2px;background:#101820;overflow:hidden;box-shadow:inset 0 0 0 2px rgba(0,0,0,.55);transition:opacity .25s ease,filter .25s ease}.signal-cut #map{opacity:0;filter:blur(2px)}#map .leaflet-control-attribution{font-size:7px;background:rgba(255,255,255,.72)}#map .leaflet-control-zoom{transform:scale(.78);transform-origin:top left}
+    .actor{position:absolute;z-index:7;bottom:-1.5%;width:31%;max-height:64%;object-fit:contain;object-position:bottom;opacity:.30;filter:brightness(.48) saturate(.72);transform:translateY(1.5%) scale(.96);transition:opacity .22s ease,filter .22s ease,transform .22s ease;pointer-events:none;user-select:none}.actor-riku{left:-1.7%}.actor-mina{right:-1.7%}.actor.active{opacity:1;filter:brightness(1.04) saturate(1.05);transform:translateY(0) scale(1.015)}.signal-cut .actor{opacity:.12;filter:brightness(.25) saturate(.4)}
+    .dialog-layer{position:absolute;inset:0;z-index:12;pointer-events:none;background-repeat:no-repeat;background-position:center;background-size:100% 100%;transition:opacity .18s ease}.strategy-scene[data-speaker="riku"] .dialog-layer{background-image:url('./assets/speech/speech_riku_left.png')}.strategy-scene[data-speaker="mina"] .dialog-layer{background-image:url('./assets/speech/speech_mina_right.png')}.speaker{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+    .dialog-text{position:absolute;white-space:pre-wrap;font-weight:800;line-height:1.55;letter-spacing:.01em;text-shadow:none}.strategy-scene[data-speaker="riku"] .dialog-text{left:14.5%;right:9.5%;top:39.5%;color:#12253d;font-size:clamp(13px,1.55vw,24px)}.strategy-scene[data-speaker="mina"] .dialog-text{left:9.5%;right:14.5%;top:37.2%;color:#3d1830;font-size:clamp(13px,1.55vw,24px)}.strategy-scene[data-speaker="system"] .dialog-layer{background-image:none}.strategy-scene[data-speaker="system"] .dialog-text{left:17%;right:17%;bottom:6.8%;top:auto;padding:12px 18px;color:#f8fafc;font-size:clamp(12px,1.35vw,20px);text-align:center;background:linear-gradient(180deg,rgba(4,12,22,.82),rgba(4,12,22,.94));border:1px solid rgba(125,211,252,.48);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.34),inset 0 0 20px rgba(56,189,248,.05);text-shadow:0 1px 2px rgba(0,0,0,.55)}.signal-cut .dialog-layer{opacity:0}
+    .loading-mark{position:absolute;z-index:20;left:50%;top:48%;transform:translate(-50%,-50%);padding:9px 15px;border-radius:999px;color:#f8fafc;font-weight:900;font-size:clamp(10px,1.1vw,15px);letter-spacing:.14em;background:rgba(2,6,12,.78);border:1px solid rgba(255,255,255,.26);opacity:0;transition:opacity .16s ease;pointer-events:none}.signal-cut .loading-mark{opacity:1}
+    .controls{display:flex;gap:8px;margin-top:12px}.controls button{flex:1;border:0;border-radius:12px;padding:12px 14px;font-weight:900;cursor:pointer;background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#102033;box-shadow:0 8px 24px rgba(0,0,0,.2)}.controls button:last-child{background:#17263a;color:#dbeafe;border:1px solid rgba(148,163,184,.25)}.controls button:disabled{opacity:.36;cursor:not-allowed;box-shadow:none}
+    .status{margin-top:10px;padding:10px 12px;border-radius:12px;color:#cbd5e1;background:rgba(7,17,30,.78);border:1px solid rgba(148,163,184,.18);font-size:12px;line-height:1.65}.ok{color:#bbf7d0}.warn{color:#fed7aa}details.debug{margin-top:8px;border:1px solid rgba(148,163,184,.18);border-radius:12px;background:rgba(7,17,30,.66);color:#cbd5e1}details.debug summary{cursor:pointer;padding:10px 12px;font-size:12px;font-weight:800}.facts{padding:0 12px 12px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.fact{font-size:11px;color:#b8c7d8;padding:8px 9px;border-radius:9px;background:#0b1928;border:1px solid #23364a}
+    @media(max-width:760px){.page{padding:8px}.labbar{padding:8px}.strategy-scene{border-radius:12px}.actor{width:34%}.strategy-scene[data-speaker="riku"] .dialog-text,.strategy-scene[data-speaker="mina"] .dialog-text{font-size:clamp(10px,2.5vw,15px);line-height:1.35}.strategy-scene[data-speaker="system"] .dialog-text{font-size:clamp(9px,2.2vw,13px);padding:7px 9px}.facts{grid-template-columns:1fr 1fr}}
   </style>
 </head>
 <body>
   <main class="page">
     <header class="labbar">
-      <div>
-        <div class="labtitle">🗺️ ADV Lab / 作戦会議 試作</div>
-        <div class="labsub">KMZを読み込み、中央モニターの地図を見ながらリクとミナが評価する。</div>
-      </div>
+      <div><div class="labtitle">🗺️ ADV Lab / 作戦会議 試作</div><div class="labsub">KMZを読み込み、中央モニターの地図を見ながらリクとミナが評価する。</div></div>
       <div class="filebox">
-        <input id="kmzFile" type="file" accept=".kmz,.kml,application/vnd.google-earth.kmz,application/vnd.google-earth.kml+xml">
+        <input id="kmzFile" type="file">
+        <span class="pill">iPhone対応: 選択後にKMZ/KML判定</span>
         <span class="pill">距離 20 / 30 / 40m</span>
         <span class="pill">周辺参考 100m</span>
       </div>
     </header>
-
     <section id="strategyScene" class="strategy-scene" data-speaker="system" aria-label="Campsite Design Tool 作戦会議画面">
       <div id="map" aria-label="KMZ解析地図"></div>
-
       <img id="actorRiku" class="actor actor-riku" src="./assets/characters/riku_normal.png" alt="リク">
       <img id="actorMina" class="actor actor-mina" src="./assets/characters/mina_normal.png" alt="ミナ">
-
-      <div class="dialog-layer" id="dialogLayer">
-        <div id="speaker" class="speaker">SYSTEM</div>
-        <div id="dialogText" class="dialog-text">KMZまたはKMLを選択すると、作戦会議を開始します。</div>
-      </div>
-
+      <div class="dialog-layer" id="dialogLayer"><div id="speaker" class="speaker">SYSTEM</div><div id="dialogText" class="dialog-text">KMZまたはKMLを選択すると、作戦会議を開始します。</div></div>
       <div class="loading-mark">ANALYZING MAP...</div>
     </section>
-
-    <div class="controls">
-      <button id="nextBtn" disabled>次へ ▶</button>
-      <button id="restartBtn" disabled>作戦会議を最初から</button>
-    </div>
-
+    <div class="controls"><button id="nextBtn" disabled>次へ ▶</button><button id="restartBtn" disabled>作戦会議を最初から</button></div>
     <div id="status" class="status">KMZまたはKMLを選択してください。</div>
-
-    <details class="debug">
-      <summary>解析情報を見る</summary>
-      <div id="facts" class="facts"></div>
-    </details>
+    <details class="debug"><summary>解析情報を見る</summary><div id="facts" class="facts"></div></details>
   </main>
-
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script>
     const originalTileLayer = L.tileLayer.bind(L);
-    L.tileLayer = (url, options) => originalTileLayer(
-      url.replace('{z}/{y}/{x}', '{z}/{x}/{y}'),
-      options
-    );
+    L.tileLayer = (url, options) => originalTileLayer(url.replace('{z}/{y}/{x}', '{z}/{x}/{y}'), options);
   </script>
   <script src="./kmz-density-test.js"></script>
   <script>
     (() => {
-      const scene = document.getElementById('strategyScene');
-      const file = document.getElementById('kmzFile');
-      const speaker = document.getElementById('speaker');
-      const status = document.getElementById('status');
-      if (!scene || !speaker) return;
-
-      const syncSpeaker = () => {
-        const value = (speaker.textContent || 'SYSTEM').trim().toLowerCase();
-        scene.dataset.speaker = value === 'リク' ? 'riku' : value === 'ミナ' ? 'mina' : 'system';
-      };
-
-      new MutationObserver(syncSpeaker).observe(speaker,{childList:true,subtree:true,characterData:true});
-      syncSpeaker();
-
-      file?.addEventListener('change',() => {
-        if (!file.files?.length) return;
-        scene.classList.add('signal-cut');
-      });
-
-      if (status) {
-        new MutationObserver(() => {
-          const text = status.textContent || '';
-          if (text.includes('読み込みました') || text.includes('失敗')) {
-            window.setTimeout(() => {
-              scene.classList.remove('signal-cut');
-              window.setTimeout(() => window.dispatchEvent(new Event('resize')),120);
-            },420);
-          }
-        }).observe(status,{childList:true,subtree:true,characterData:true});
-      }
+      const scene=document.getElementById('strategyScene');
+      const file=document.getElementById('kmzFile');
+      const speaker=document.getElementById('speaker');
+      const status=document.getElementById('status');
+      if(!scene||!speaker)return;
+      const syncSpeaker=()=>{const value=(speaker.textContent||'SYSTEM').trim().toLowerCase();scene.dataset.speaker=value==='リク'?'riku':value==='ミナ'?'mina':'system'};
+      new MutationObserver(syncSpeaker).observe(speaker,{childList:true,subtree:true,characterData:true});syncSpeaker();
+      file?.addEventListener('change',()=>{if(!file.files?.length)return;scene.classList.add('signal-cut')});
+      if(status){new MutationObserver(()=>{const text=status.textContent||'';if(text.includes('読み込みました')||text.includes('失敗')){window.setTimeout(()=>{scene.classList.remove('signal-cut');window.setTimeout(()=>window.dispatchEvent(new Event('resize')),120)},420)}}).observe(status,{childList:true,subtree:true,characterData:true})}
     })();
   </script>
 </body>
