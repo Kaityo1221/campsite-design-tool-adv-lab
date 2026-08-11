@@ -1,12 +1,15 @@
 (() => {
   'use strict';
 
-  const DENSITY_RADIUS_M = 40;
-  const DENSITY_MIN_POI = 6;
+  const DISTANCE_LIMIT_M = 40;
+  const DENSE_LIMIT_M = 20;
+  const STAY_LIMIT_M = 30;
+  const CONTEXT_RADIUS_M = 100;
+  const CONTEXT_MIN_EXISTING = 6;
   const SUPPORT_RADIUS_M = 100;
 
   const map = L.map('map', { zoomControl: true }).setView([35.6812, 139.7671], 13);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{y}/{x}.png'.replace('{y}/{x}', '{y}/{x}'), {
     maxZoom: 20,
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
@@ -27,12 +30,14 @@
   };
 
   let points = [];
-  let density = null;
+  let analysis = null;
   let sequence = [];
   let stepIndex = 0;
 
   const supportRegex = /(トイレ|便所|restroom|toilet|水飲|給水|water fountain|休憩|ベンチ|bench|東屋|あずまや|四阿|売店|カフェ|cafe|案内所|information)/i;
-  const explicitAddedRegex = /(追加|希望|add|proposed|candidate)/i;
+  const addedRegex = /(追加|追加希望|希望|新規|候補|add|addition|proposed|candidate|new|cagym|capokestop|capowerspot)/i;
+  const existingRegex = /(既存|existing|current)/i;
+  const auxiliaryRegex = /(40m|30m|円|buffer|100ft|100feet|100フィート|ダミー)/i;
 
   function setStatus(html) {
     el.status.innerHTML = html;
@@ -101,6 +106,9 @@
       const name = (nameNode?.textContent || `POI ${index + 1}`).trim();
       const folder = nearestFolderName(placemark);
       const sourceText = `${folder} ${name}`;
+      const isAuxiliary = auxiliaryRegex.test(folder);
+      const isAdded = !isAuxiliary && addedRegex.test(folder);
+      const isExisting = !isAuxiliary && existingRegex.test(folder);
 
       result.push({
         id: `p${index + 1}`,
@@ -108,7 +116,9 @@
         lng,
         name,
         folder,
-        isAdded: explicitAddedRegex.test(folder),
+        isAdded,
+        isExisting,
+        isTarget: isAdded || isExisting,
         isSupport: supportRegex.test(sourceText)
       });
     });
@@ -122,7 +132,9 @@
     if (!lower.endsWith('.kmz')) throw new Error('KMZまたはKMLを選択してください。');
 
     const zip = await JSZip.loadAsync(file);
-    const candidates = Object.values(zip.files).filter(entry => !entry.dir && entry.name.toLowerCase().endsWith('.kml'));
+    const candidates = Object.values(zip.files)
+      .filter(entry => !entry.dir && entry.name.toLowerCase().endsWith('.kml'));
+
     if (!candidates.length) throw new Error('KMZ内にKMLが見つかりません。');
 
     candidates.sort((a, b) => {
@@ -130,43 +142,81 @@
       const bdoc = /(^|\/)doc\.kml$/i.test(b.name) ? 0 : 1;
       return adoc - bdoc;
     });
+
     return await candidates[0].async('text');
   }
 
-  function candidatePoints(allPoints) {
-    const explicit = allPoints.filter(p => p.isAdded);
-    return explicit.length >= 2 ? explicit : allPoints;
+  function classifyRisk(distance) {
+    if (distance < DENSE_LIMIT_M) return '密集';
+    if (distance < STAY_LIMIT_M) return '滞留';
+    if (distance < DISTANCE_LIMIT_M) return '軽微';
+    return null;
   }
 
-  function findBestDensity(allPoints) {
-    const candidates = candidatePoints(allPoints);
-    if (!candidates.length) return null;
+  function getTargetPoints(allPoints) {
+    return allPoints.filter(p => p.isTarget);
+  }
+
+  function findDistanceWarnings(allPoints) {
+    const target = getTargetPoints(allPoints);
+    const warnings = [];
+
+    for (let i = 0; i < target.length; i++) {
+      for (let j = i + 1; j < target.length; j++) {
+        const a = target[i];
+        const b = target[j];
+        const distance = distanceMeters(a, b);
+        if (distance >= DISTANCE_LIMIT_M) continue;
+        warnings.push({
+          a,
+          b,
+          distance,
+          type: classifyRisk(distance),
+          referenceOnly: a.isExisting && b.isExisting
+        });
+      }
+    }
+
+    warnings.sort((a, b) => a.distance - b.distance);
+    return {
+      all: warnings,
+      active: warnings.filter(w => !w.referenceOnly),
+      reference: warnings.filter(w => w.referenceOnly)
+    };
+  }
+
+  function findContextHotspot(allPoints) {
+    const added = allPoints.filter(p => p.isAdded);
+    const existing = allPoints.filter(p => p.isExisting);
+    if (!added.length || !existing.length) return null;
 
     let best = null;
-    candidates.forEach(center => {
-      const members = candidates.filter(p => distanceMeters(center, p) <= DENSITY_RADIUS_M);
-      if (!best || members.length > best.members.length) {
-        best = { center, members };
+    added.forEach(center => {
+      const nearbyExisting = existing
+        .map(p => ({ ...p, distance: distanceMeters(center, p) }))
+        .filter(p => p.distance <= CONTEXT_RADIUS_M)
+        .sort((a, b) => a.distance - b.distance);
+
+      if (!best || nearbyExisting.length > best.nearbyExisting.length) {
+        best = { center, nearbyExisting };
       }
     });
 
-    if (!best || best.members.length < DENSITY_MIN_POI) return null;
-
-    const centroid = best.members.reduce((acc, p) => {
-      acc.lat += p.lat;
-      acc.lng += p.lng;
-      return acc;
-    }, { lat: 0, lng: 0 });
-    centroid.lat /= best.members.length;
-    centroid.lng /= best.members.length;
+    if (!best || best.nearbyExisting.length < CONTEXT_MIN_EXISTING) return null;
 
     const support = allPoints
-      .filter(p => p.isSupport)
-      .map(p => ({ ...p, distance: distanceMeters(centroid, p) }))
+      .filter(p => p.isSupport && p.id !== best.center.id)
+      .map(p => ({ ...p, distance: distanceMeters(best.center, p) }))
       .filter(p => p.distance <= SUPPORT_RADIUS_M)
       .sort((a, b) => a.distance - b.distance);
 
-    return { ...best, centroid, support };
+    return { ...best, support };
+  }
+
+  function analyze(allPoints) {
+    const distanceWarnings = findDistanceWarnings(allPoints);
+    const contextHotspot = findContextHotspot(allPoints);
+    return { distanceWarnings, contextHotspot };
   }
 
   function drawAllPoints(allPoints) {
@@ -175,13 +225,13 @@
 
     const bounds = [];
     allPoints.forEach(p => {
-      const color = p.isSupport ? '#22c55e' : (p.isAdded ? '#f59e0b' : '#60a5fa');
+      const color = p.isAdded ? '#f59e0b' : (p.isExisting ? '#60a5fa' : (p.isSupport ? '#22c55e' : '#64748b'));
       const marker = L.circleMarker([p.lat, p.lng], {
-        radius: p.isSupport ? 7 : 6,
+        radius: p.isAdded ? 7 : 5,
         color,
-        weight: 2,
+        weight: p.isAdded ? 3 : 2,
         fillColor: color,
-        fillOpacity: .72
+        fillOpacity: p.isTarget ? .76 : .35
       });
       marker.bindTooltip(`<strong>${escapeHtml(p.name)}</strong>${p.folder ? `<br>${escapeHtml(p.folder)}` : ''}`);
       marker.addTo(poiLayer);
@@ -191,88 +241,195 @@
     if (bounds.length) map.fitBounds(bounds, { padding: [30, 30], maxZoom: 17 });
   }
 
-  function focusDensity(result) {
+  function focusWarning(warning) {
     highlightLayer.clearLayers();
-    if (!result) return;
+    if (!warning) return;
 
-    L.circle([result.centroid.lat, result.centroid.lng], {
-      radius: DENSITY_RADIUS_M,
-      color: '#ef4444',
-      weight: 3,
-      dashArray: '7 6',
-      fillColor: '#f97316',
-      fillOpacity: .16
-    }).addTo(highlightLayer);
-
-    result.members.forEach(p => {
+    [warning.a, warning.b].forEach(p => {
       L.circleMarker([p.lat, p.lng], {
-        radius: 9,
+        radius: 11,
         color: '#ef4444',
-        weight: 3,
+        weight: 4,
         fillColor: '#fb923c',
-        fillOpacity: .9
+        fillOpacity: .92
       }).addTo(highlightLayer);
     });
 
-    result.support.slice(0, 4).forEach(p => {
+    L.polyline([[warning.a.lat, warning.a.lng], [warning.b.lat, warning.b.lng]], {
+      color: '#ef4444',
+      weight: 4,
+      dashArray: '8 6'
+    }).bindTooltip(`${warning.distance.toFixed(1)}m / ${warning.type}`).addTo(highlightLayer);
+
+    map.fitBounds([[warning.a.lat, warning.a.lng], [warning.b.lat, warning.b.lng]], {
+      padding: [90, 90],
+      maxZoom: 19
+    });
+  }
+
+  function focusContext(context) {
+    highlightLayer.clearLayers();
+    if (!context) return;
+
+    L.circle([context.center.lat, context.center.lng], {
+      radius: CONTEXT_RADIUS_M,
+      color: '#f97316',
+      weight: 3,
+      dashArray: '8 6',
+      fillColor: '#fb923c',
+      fillOpacity: .12
+    }).addTo(highlightLayer);
+
+    L.circleMarker([context.center.lat, context.center.lng], {
+      radius: 12,
+      color: '#f59e0b',
+      weight: 4,
+      fillColor: '#fbbf24',
+      fillOpacity: .96
+    }).bindTooltip(`追加POI: ${escapeHtml(context.center.name)}`).addTo(highlightLayer);
+
+    context.nearbyExisting.forEach(p => {
+      L.circleMarker([p.lat, p.lng], {
+        radius: 8,
+        color: '#2563eb',
+        weight: 2,
+        fillColor: '#60a5fa',
+        fillOpacity: .86
+      }).addTo(highlightLayer);
+    });
+
+    context.support.slice(0, 4).forEach(p => {
       L.circleMarker([p.lat, p.lng], {
         radius: 10,
         color: '#16a34a',
         weight: 3,
         fillColor: '#4ade80',
-        fillOpacity: .9
+        fillOpacity: .92
       }).bindTooltip(`支援候補: ${escapeHtml(p.name)} / 約${Math.round(p.distance)}m`).addTo(highlightLayer);
     });
 
-    map.flyTo([result.centroid.lat, result.centroid.lng], 18, { duration: .9 });
+    map.flyTo([context.center.lat, context.center.lng], 17, { duration: .9 });
   }
 
-  function buildSequence(result) {
-    if (!result) {
-      return [
-        { speaker: 'system', text: `半径${DENSITY_RADIUS_M}m以内に${DENSITY_MIN_POI}件以上集まる密集地点は見つかりませんでした。` },
-        { speaker: 'riku', text: '少なくとも、この基準では極端な集中は見えない。次は動線を見たい。' },
-        { speaker: 'mina', text: 'いい感じ！ でも、歩いて楽しいかも見てみたいね！' }
-      ];
+  function buildWarningSequence(warning) {
+    const d = warning.distance;
+    const rounded = d.toFixed(1);
+    let rikuText = '';
+    let minaText = '';
+
+    if (d < DENSE_LIMIT_M) {
+      rikuText = `ここは ${rounded}m。かなり近い。\nまず配置を調整した方がいい。`;
+      minaText = '魅力は残したいけど、ここは少し離した方が良さそうだね。';
+    } else if (d < STAY_LIMIT_M) {
+      rikuText = `ここは ${rounded}m。30mを切っている。\n滞留の影響を強く見たい。`;
+      minaText = 'じゃあ、どっちかを少し動かして使いやすくしよ！';
+    } else {
+      rikuText = `ここは ${rounded}m。40mには届いていない。\nただし、調整候補として扱える距離だ。`;
+      minaText = 'あとちょっとなら、雰囲気を壊さず調整できそう！';
     }
 
+    return [
+      {
+        speaker: 'system',
+        text: `追加POIに関係する距離注意を検出しました。\n${warning.a.name} × ${warning.b.name}：${rounded}m（${warning.type}）`,
+        focus: 'warning'
+      },
+      { speaker: 'riku', text: rikuText },
+      { speaker: 'mina', text: minaText },
+      { speaker: 'system', text: '軍議メモ：距離条件を優先しつつ、場所の魅力を失わない調整案を検討。' }
+    ];
+  }
+
+  function buildContextSequence(context, referenceCount) {
+    const count = context.nearbyExisting.length;
     const base = [
-      { speaker: 'system', text: `密集地点を検出しました。\n半径${DENSITY_RADIUS_M}m以内に ${result.members.length} POI あります。`, focus: true },
-      { speaker: 'riku', text: 'ここに人が集中するな。\n長く留まれば、動線が詰まる可能性がある。' },
-      { speaker: 'mina', text: 'でも、人が集まるってことはさ！\nそれだけ魅力があるってことじゃん！' }
+      {
+        speaker: 'system',
+        text: `追加POIに関係する40m未満の要調整はありません。\nただし、周辺密度が高い候補があります。`,
+        focus: 'context'
+      },
+      {
+        speaker: 'riku',
+        text: `距離条件は守れている。\nただ、この追加地点の100m以内には既存POIが ${count}件ある。人が集まりやすい場所だ。`
+      },
+      {
+        speaker: 'mina',
+        text: 'それって、人気の中心になりそうってことじゃん！\nにぎわいを作れる場所かも！'
+      }
     ];
 
-    if (result.support.length) {
-      const nearest = result.support[0];
+    if (context.support.length) {
+      const nearest = context.support[0];
       base.push(
-        { speaker: 'riku', text: `条件は悪くない。\n約${Math.round(nearest.distance)}m先に「${nearest.name}」がある。立て直せる場所が近い。` },
-        { speaker: 'mina', text: 'おおっ、ここなら休みながら遊べるね！' },
-        { speaker: 'system', text: '軍議メモ：魅力は残しつつ、密集地点だけに滞留が固定されない設計を検討。' }
-      );
-    } else {
-      base.push(
-        { speaker: 'riku', text: '近くに休憩・支援候補も見当たらない。\nこの密集は少し分散させた方がいい。' },
-        { speaker: 'mina', text: '魅力は残したいな。じゃあ、周りに少し広げよっか！' },
-        { speaker: 'system', text: '軍議メモ：密集の魅力を残しながら、周辺への分散を検討。' }
+        {
+          speaker: 'riku',
+          text: `さらに、名称上は約${Math.round(nearest.distance)}m先に「${nearest.name}」を休憩・支援候補として拾える。\n条件は悪くない。`
+        },
+        { speaker: 'mina', text: 'おおっ、ここなら休みながら遊べそうだね！' }
       );
     }
+
+    base.push({
+      speaker: 'system',
+      text: `軍議メモ：距離判定は良好。周辺の既存密度は「設計ミス」ではなく参考情報として扱う。\n既存POI同士の40m未満：${referenceCount}件（参考）`
+    });
+
     return base;
   }
 
+  function buildCleanSequence(referenceCount) {
+    return [
+      {
+        speaker: 'system',
+        text: '追加POIに関係する40m未満の要調整はありません。'
+      },
+      {
+        speaker: 'riku',
+        text: '距離条件はよく整理されている。\nこの段階で無理に触る必要はない。'
+      },
+      {
+        speaker: 'mina',
+        text: 'よしっ！ 次は「歩いて楽しいか」を見てみよう！'
+      },
+      {
+        speaker: 'system',
+        text: `軍議メモ：距離チェックは良好。既存POI同士の40m未満 ${referenceCount}件は参考表示のみ。`
+      }
+    ];
+  }
+
+  function buildSequence(result) {
+    const active = result.distanceWarnings.active;
+    const referenceCount = result.distanceWarnings.reference.length;
+
+    if (active.length) return buildWarningSequence(active[0]);
+    if (result.contextHotspot) return buildContextSequence(result.contextHotspot, referenceCount);
+    return buildCleanSequence(referenceCount);
+  }
+
   function renderFacts() {
-    if (!points.length) {
+    if (!points.length || !analysis) {
       el.facts.innerHTML = '';
       return;
     }
-    const candidates = candidatePoints(points);
-    const explicit = points.filter(p => p.isAdded).length;
-    const supportCount = points.filter(p => p.isSupport).length;
+
+    const target = getTargetPoints(points);
+    const existing = points.filter(p => p.isExisting).length;
+    const added = points.filter(p => p.isAdded).length;
+    const activeWarnings = analysis.distanceWarnings.active.length;
+    const referenceWarnings = analysis.distanceWarnings.reference.length;
+    const context = analysis.contextHotspot;
+
     const rows = [
-      `読み込みPOI：${points.length}件`,
-      explicit ? `追加POI候補：${explicit}件（フォルダ名から判定）` : `追加POIレイヤー判定なし：全POI ${candidates.length}件で仮解析`,
-      `休憩・支援候補：${supportCount}件`,
-      density ? `最大密集：${density.members.length}件 / ${DENSITY_RADIUS_M}m` : `最大密集：基準未満`
+      `読み込みPoint：${points.length}件`,
+      `距離判定対象：${target.length}件（既存 ${existing} / 追加 ${added}）`,
+      `追加POI関連の40m未満：${activeWarnings}件`,
+      `既存POI同士の40m未満：${referenceWarnings}件（参考）`,
+      context
+        ? `最大周辺密度：追加POIの100m以内に既存 ${context.nearbyExisting.length}件`
+        : `最大周辺密度：軍議発火基準（既存${CONTEXT_MIN_EXISTING}件 / 100m）未満`
     ];
+
     el.facts.innerHTML = rows.map(x => `<div class="fact">${escapeHtml(x)}</div>`).join('');
   }
 
@@ -288,7 +445,10 @@
     setActiveActor(step.speaker);
     el.speaker.textContent = step.speaker === 'riku' ? 'リク' : step.speaker === 'mina' ? 'ミナ' : 'SYSTEM';
     el.dialog.textContent = step.text;
-    if (step.focus && density) focusDensity(density);
+
+    if (step.focus === 'warning') focusWarning(analysis?.distanceWarnings?.active?.[0]);
+    if (step.focus === 'context') focusContext(analysis?.contextHotspot);
+
     el.next.disabled = index >= sequence.length - 1;
     el.restart.disabled = sequence.length === 0;
   }
@@ -305,13 +465,20 @@
     if (!points.length) throw new Error('Point形式のPOIを取得できませんでした。');
 
     drawAllPoints(points);
-    density = findBestDensity(points);
-    sequence = buildSequence(density);
+    analysis = analyze(points);
+    sequence = buildSequence(analysis);
     renderFacts();
 
-    const explicit = points.filter(p => p.isAdded).length;
-    const mode = explicit >= 2 ? `追加POIレイヤー ${explicit}件を解析` : '追加POIレイヤーを識別できなかったため全POIで仮解析';
-    setStatus(`<strong class="ok">✓ ${escapeHtml(file.name)} を読み込みました。</strong><br>${escapeHtml(mode)}。ファイルはブラウザ内だけで処理し、外部へ送信しません。`);
+    const added = points.filter(p => p.isAdded).length;
+    const existing = points.filter(p => p.isExisting).length;
+    const activeWarnings = analysis.distanceWarnings.active.length;
+
+    setStatus(
+      `<strong class="ok">✓ ${escapeHtml(file.name)} を読み込みました。</strong><br>` +
+      `既存 ${existing}件 / 追加 ${added}件。追加POI関連の40m未満：${activeWarnings}件。` +
+      ' ファイルはブラウザ内だけで処理し、外部へ送信しません。'
+    );
+
     renderStep(0);
   }
 
@@ -323,7 +490,7 @@
     } catch (error) {
       console.error(error);
       points = [];
-      density = null;
+      analysis = null;
       sequence = [];
       renderFacts();
       poiLayer.clearLayers();
@@ -341,7 +508,7 @@
 
   el.restart.addEventListener('click', () => {
     if (!sequence.length) return;
-    if (density) focusDensity(density);
+    drawAllPoints(points);
     renderStep(0);
   });
 })();
