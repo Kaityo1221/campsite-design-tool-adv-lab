@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Campsite Briefing Prototype</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">CAMPSITE DESIGN TOOL / PRIVATE ADV LAB</p>
+        <h1>Campsite Briefing</h1>
+      </div>
+      <div class="topbar-actions">
+        <span class="status-chip">TEST MODE</span>
+        <select id="eventSelect" aria-label="軍議イベント選択"></select>
+      </div>
+    </header>
+
+    <section class="briefing-stage" aria-label="軍議画面">
+      <div class="map-panel" id="mapPanel">
+        <div class="map-grid"></div>
+        <div class="map-river"></div>
+        <div class="road road-a"></div>
+        <div class="road road-b"></div>
+        <div class="road road-c"></div>
+        <div class="map-label label-north">北エリア</div>
+        <div class="map-label label-center">中央広場</div>
+        <div class="map-label label-south">南エリア</div>
+
+        <div id="poiLayer" class="poi-layer" aria-hidden="true"></div>
+        <div id="focusHalo" class="focus-halo" aria-hidden="true"></div>
+
+        <div class="map-legend">
+          <span><i class="legend-dot existing"></i>既存POI</span>
+          <span><i class="legend-dot added"></i>追加POI</span>
+          <span><i class="legend-dot support"></i>休憩・支援</span>
+        </div>
+      </div>
+
+      <div class="character character-riku is-dim" id="rikuCard">
+        <div class="portrait portrait-riku" aria-hidden="true">R</div>
+        <div class="character-meta">
+          <strong>リク</strong>
+          <span>分析・安全・運用</span>
+        </div>
+      </div>
+
+      <div class="character character-mina is-dim" id="minaCard">
+        <div class="portrait portrait-mina" aria-hidden="true">M</div>
+        <div class="character-meta">
+          <strong>ミナ</strong>
+          <span>魅力・楽しさ・にぎわい</span>
+        </div>
+      </div>
+
+      <div class="dialogue-panel">
+        <div class="speaker-line">
+          <span class="speaker-badge" id="speakerBadge">SYSTEM</span>
+          <span class="cut-counter" id="cutCounter">CUT 1 / 1</span>
+        </div>
+        <p id="dialogueText">軍議を開始します。</p>
+        <div class="dialogue-actions">
+          <button id="restartButton" class="ghost-button" type="button">最初から</button>
+          <button id="nextButton" class="next-button" type="button">次へ</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="debug-panel">
+      <div>
+        <span class="debug-label">EVENT</span>
+        <strong id="eventId">DENSITY_01</strong>
+      </div>
+      <div>
+        <span class="debug-label">TYPE</span>
+        <strong id="eventType">対立型</strong>
+      </div>
+      <div>
+        <span class="debug-label">RESULT</span>
+        <strong id="eventResult">魅力を残しつつ分散を検討</strong>
+      </div>
+    </section>
+  </main>
+
+  <script src="./gungi-events.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
