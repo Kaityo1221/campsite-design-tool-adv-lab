@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Campsite ADV Lab - KMZ Density Council</title>
+  <title>Campsite ADV Lab - KMZ Council</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <style>
     :root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic",sans-serif;color:#e5eef7;background:#08111f}
@@ -37,12 +37,13 @@
   <div class="wrap">
     <div class="head">
       <div>
-        <h1>🗺️ ADV Lab / KMZ 密集軍議プロトタイプ</h1>
-        <div class="sub">実KMZ・KMLを読み込み、追加POIの密集地点を検出してリク＆ミナの軍議を自動発火する。</div>
+        <h1>🗺️ ADV Lab / KMZ 作戦会議プロトタイプ</h1>
+        <div class="sub">実KMZ・KMLを読み込み、まず距離条件を確認し、その後に周辺密度を「参考情報」として軍議する。</div>
       </div>
       <div class="filebox">
         <input id="kmzFile" type="file" accept=".kmz,.kml,application/vnd.google-earth.kmz,application/vnd.google-earth.kml+xml">
-        <span class="pill">密集基準: 40m / 6POI</span>
+        <span class="pill">距離: 20 / 30 / 40m</span>
+        <span class="pill">周辺参考: 100m / 既存6POI</span>
       </div>
     </div>
 
