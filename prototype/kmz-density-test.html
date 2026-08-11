@@ -91,6 +91,7 @@
 
     @media(max-width:760px){
       .page{padding:8px}.labbar{padding:8px}.strategy-scene{border-radius:12px}
+      .orientation-btn{display:none}
       .actor{width:29%;max-height:63%;bottom:-1.5%}
       .strategy-scene[data-speaker="riku"] .dialog-text{font-size:clamp(8px,1.85vw,11px)}
       .strategy-scene[data-speaker="mina"] .dialog-text{font-size:clamp(8px,1.85vw,11px)}
@@ -138,6 +139,145 @@
     body.focus-mode .strategy-scene[data-speaker="riku"] .dialog-text{font-size:clamp(10px,1.25vw,18px)}
     body.focus-mode .strategy-scene[data-speaker="mina"] .dialog-text{font-size:clamp(10px,1.25vw,18px)}
     body.focus-mode .strategy-scene[data-speaker="system"] .dialog-text{bottom:3%;font-size:clamp(10px,1.2vw,17px)}
+
+    /* Smartphone ADV: reporter-style portrait composition using existing assets */
+    body.focus-mode.mobile-portrait-adv .page{
+      align-items:stretch;
+      justify-content:stretch;
+      background:#000;
+    }
+    body.focus-mode.mobile-portrait-adv .strategy-scene{
+      width:100%!important;
+      height:100%!important;
+      aspect-ratio:auto!important;
+      background-size:auto 100%;
+      background-position:center top;
+      background-repeat:no-repeat;
+    }
+    body.focus-mode.mobile-portrait-adv .strategy-scene::before{
+      content:"";
+      position:absolute;
+      z-index:1;
+      left:2.8%;
+      top:14.2%;
+      width:94.4%;
+      height:36.5%;
+      border:clamp(5px,1.5vw,9px) solid rgba(16,18,20,.98);
+      border-radius:clamp(8px,2vw,15px);
+      background:#111820;
+      box-shadow:0 10px 32px rgba(0,0,0,.65),inset 0 0 0 2px rgba(255,255,255,.06);
+      pointer-events:none;
+    }
+    body.focus-mode.mobile-portrait-adv #map{
+      left:4.6%!important;
+      top:15.7%!important;
+      width:90.8%!important;
+      height:33.4%!important;
+      border-radius:3px;
+      box-shadow:none;
+    }
+    body.focus-mode.mobile-portrait-adv #map .leaflet-control-attribution{
+      font-size:8px;
+    }
+    body.focus-mode.mobile-portrait-adv #map .leaflet-control-zoom{
+      transform:scale(.84);
+    }
+    body.focus-mode.mobile-portrait-adv .actor{
+      bottom:22.5%!important;
+      width:45%!important;
+      max-height:36.5%!important;
+      object-position:bottom;
+    }
+    body.focus-mode.mobile-portrait-adv .actor-riku{left:-1.5%!important}
+    body.focus-mode.mobile-portrait-adv .actor-mina{right:-1.5%!important}
+    body.focus-mode.mobile-portrait-adv .speech-image{display:none!important}
+    body.focus-mode.mobile-portrait-adv .dialog-layer{
+      inset:auto 5.2% 7.3% 5.2%;
+      height:19.2%;
+      border:3px solid rgba(115,75,38,.92);
+      border-radius:20px;
+      background:linear-gradient(180deg,rgba(255,249,235,.98),rgba(244,228,197,.98));
+      box-shadow:0 14px 36px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.55);
+      overflow:hidden;
+    }
+    body.focus-mode.mobile-portrait-adv .speaker{
+      position:absolute;
+      left:6.5%;
+      top:8%;
+      width:auto;
+      height:auto;
+      overflow:visible;
+      clip:auto;
+      padding:4px 12px;
+      border-radius:999px;
+      background:rgba(111,72,36,.14);
+      color:#3b281b;
+      font-size:clamp(13px,3.9vw,17px);
+      font-weight:900;
+      letter-spacing:.04em;
+    }
+    body.focus-mode.mobile-portrait-adv .dialog-text,
+    body.focus-mode.mobile-portrait-adv .strategy-scene[data-speaker="riku"] .dialog-text,
+    body.focus-mode.mobile-portrait-adv .strategy-scene[data-speaker="mina"] .dialog-text,
+    body.focus-mode.mobile-portrait-adv .strategy-scene[data-speaker="system"] .dialog-text{
+      top:39%!important;
+      bottom:auto!important;
+      left:7%!important;
+      right:7%!important;
+      transform:none!important;
+      margin:0!important;
+      padding:0!important;
+      max-height:4.3em!important;
+      overflow:hidden!important;
+      background:none!important;
+      border:0!important;
+      border-radius:0!important;
+      box-shadow:none!important;
+      color:#2b2018!important;
+      text-align:left!important;
+      font-size:clamp(14px,4.15vw,18px)!important;
+      font-weight:850;
+      line-height:1.42;
+      text-shadow:none!important;
+    }
+    body.focus-mode.mobile-portrait-adv .strategy-scene[data-speaker="system"] .dialog-layer{
+      background:linear-gradient(180deg,rgba(7,17,30,.96),rgba(4,10,18,.98));
+      border-color:rgba(125,211,252,.5);
+    }
+    body.focus-mode.mobile-portrait-adv .strategy-scene[data-speaker="system"] .speaker{
+      background:rgba(56,189,248,.13);
+      color:#dff5ff;
+    }
+    body.focus-mode.mobile-portrait-adv .strategy-scene[data-speaker="system"] .dialog-text{
+      color:#f8fafc!important;
+    }
+    body.focus-mode.mobile-portrait-adv .loading-mark{
+      top:32%;
+      font-size:12px;
+    }
+    body.focus-mode.mobile-portrait-adv .controls{
+      left:0!important;
+      right:0!important;
+      bottom:calc(env(safe-area-inset-bottom) + 8px)!important;
+      width:100%!important;
+      transform:none!important;
+      justify-content:space-between;
+      padding:0 14px;
+      gap:12px!important;
+    }
+    body.focus-mode.mobile-portrait-adv .controls #backBtn,
+    body.focus-mode.mobile-portrait-adv .controls #nextBtn{
+      min-width:0!important;
+      width:42%!important;
+      padding:10px 14px!important;
+      border-radius:999px!important;
+      font-size:14px!important;
+    }
+    body.focus-mode.mobile-portrait-adv .focus-exit{
+      top:calc(env(safe-area-inset-top) + 8px);
+      right:calc(env(safe-area-inset-right) + 8px);
+      background:rgba(0,0,0,.5);
+    }
   </style>
 </head>
 <body>
@@ -168,7 +308,7 @@
   </main>
 
   <button id="focusExitBtn" class="focus-exit" type="button" aria-label="集中モードを終了">×</button>
-  <div id="rotateHint" class="rotate-hint">📱 端末を横向きにしてください。横向きになると作戦会議画面を広く表示します。</div>
+  <div id="rotateHint" class="rotate-hint">📱 横表示はPC用です。スマホの作戦会議は縦画面で表示します。</div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -204,8 +344,11 @@
       const focusExitBtn=document.getElementById('focusExitBtn');
       const nextBtn=document.getElementById('nextBtn');
       const rotateHint=document.getElementById('rotateHint');
+      const mobileFocusCopy=document.querySelector('.mobile-focus-copy');
+      if(mobileFocusCopy)mobileFocusCopy.innerHTML='スマホでは縦画面の集中モードで表示します。<br>地図・キャラ・会話を1画面にまとめます。';
       if(!scene||!speaker)return;
       const isLandscape=()=>matchMedia('(orientation: landscape)').matches;
+      const isMobileADV=()=>matchMedia('(max-width: 760px), (pointer: coarse)').matches;
       const visualSize=()=>({width:Math.max(320,Math.floor(window.visualViewport?.width||window.innerWidth)),height:Math.max(220,Math.floor(window.visualViewport?.height||window.innerHeight))});
       const syncSpeaker=()=>{const value=(speaker.textContent||'SYSTEM').trim().toLowerCase();scene.dataset.speaker=value==='リク'?'riku':value==='ミナ'?'mina':'system';};
       new MutationObserver(syncSpeaker).observe(speaker,{childList:true,subtree:true,characterData:true});
@@ -217,11 +360,81 @@
       const updateOrientationButton=()=>{if(!orientationBtn)return;if(locked){orientationBtn.textContent='🔓 横固定を解除';orientationBtn.classList.add('active');return;}orientationBtn.textContent=isLandscape()?'✓ 横画面':'↻ 横画面に切替・固定';orientationBtn.classList.toggle('active',isLandscape());};
       const scheduleUiHide=()=>{if(!document.body.classList.contains('focus-mode'))return;window.clearTimeout(uiTimer);document.body.classList.remove('focus-ui-hidden');uiTimer=window.setTimeout(()=>document.body.classList.add('focus-ui-hidden'),2400);};
       const revealFocusUi=()=>{if(!document.body.classList.contains('focus-mode'))return;scheduleUiHide();};
-      const fitViewport=()=>{updateOrientationButton();const focus=document.body.classList.contains('focus-mode');const {width:vw,height:vh}=visualSize();if(focus){let width;if(isLandscape()){width=Math.floor(Math.min(vw*.88,vh*2.05));}else{width=Math.floor(vw*.96);}width=Math.max(280,width);const height=Math.floor(width/1.5);scene.style.width=`${width}px`;scene.style.height=`${height}px`;scene.style.aspectRatio='auto';if(controls)controls.style.width='auto';if(page)page.style.height=`${vh}px`;window.setTimeout(()=>window.dispatchEvent(new Event('resize')),80);return;}if(!isLandscape()){scene.style.width='';scene.style.height='';scene.style.aspectRatio='';if(controls)controls.style.width='';if(page)page.style.height='';window.setTimeout(()=>window.dispatchEvent(new Event('resize')),80);return;}const reserve=44;const maxW=Math.max(280,vw-8);const maxH=Math.max(180,vh-reserve);const width=Math.floor(Math.min(maxW,maxH*1.5));const height=Math.floor(width/1.5);scene.style.width=`${width}px`;scene.style.height=`${height}px`;scene.style.aspectRatio='auto';if(controls)controls.style.width=`${width}px`;if(page)page.style.height=`${vh}px`;window.setTimeout(()=>window.dispatchEvent(new Event('resize')),80);};
+      const fitViewport=()=>{
+        updateOrientationButton();
+        const focus=document.body.classList.contains('focus-mode');
+        const {width:vw,height:vh}=visualSize();
+        if(focus&&isMobileADV()){
+          scene.style.width=`${vw}px`;
+          scene.style.height=`${vh}px`;
+          scene.style.aspectRatio='auto';
+          if(controls)controls.style.width='100%';
+          if(page)page.style.height=`${vh}px`;
+          window.setTimeout(()=>window.dispatchEvent(new Event('resize')),80);
+          return;
+        }
+        if(focus){
+          let width;
+          if(isLandscape()){
+            width=Math.floor(Math.min(vw*.88,vh*2.05));
+          }else{
+            width=Math.floor(vw*.96);
+          }
+          width=Math.max(280,width);
+          const height=Math.floor(width/1.5);
+          scene.style.width=`${width}px`;
+          scene.style.height=`${height}px`;
+          scene.style.aspectRatio='auto';
+          if(controls)controls.style.width='auto';
+          if(page)page.style.height=`${vh}px`;
+          window.setTimeout(()=>window.dispatchEvent(new Event('resize')),80);
+          return;
+        }
+        if(!isLandscape()){
+          scene.style.width='';
+          scene.style.height='';
+          scene.style.aspectRatio='';
+          if(controls)controls.style.width='';
+          if(page)page.style.height='';
+          window.setTimeout(()=>window.dispatchEvent(new Event('resize')),80);
+          return;
+        }
+        const reserve=44;
+        const maxW=Math.max(280,vw-8);
+        const maxH=Math.max(180,vh-reserve);
+        const width=Math.floor(Math.min(maxW,maxH*1.5));
+        const height=Math.floor(width/1.5);
+        scene.style.width=`${width}px`;
+        scene.style.height=`${height}px`;
+        scene.style.aspectRatio='auto';
+        if(controls)controls.style.width=`${width}px`;
+        if(page)page.style.height=`${vh}px`;
+        window.setTimeout(()=>window.dispatchEvent(new Event('resize')),80);
+      };
       const requestLandscape=async()=>{let didLock=false;try{if(screen.orientation?.lock){await screen.orientation.lock('landscape');didLock=true}}catch(e){}locked=didLock;if(!didLock&&!isLandscape())showRotateHint();return didLock;};
       orientationBtn?.addEventListener('click',async()=>{if(locked){try{screen.orientation?.unlock?.()}catch(e){}locked=false;fitViewport();return;}await requestLandscape();window.setTimeout(fitViewport,180);});
-      const enterFocus=async()=>{document.body.classList.add('focus-mode');document.body.classList.remove('focus-ui-hidden');try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen){await document.documentElement.requestFullscreen({navigationUI:'hide'});}}catch(e){}await requestLandscape();window.setTimeout(()=>{fitViewport();scheduleUiHide();},180);};
-      const exitFocus=async()=>{window.clearTimeout(uiTimer);document.body.classList.remove('focus-mode','focus-ui-hidden');try{screen.orientation?.unlock?.()}catch(e){}locked=false;try{if(document.fullscreenElement)await document.exitFullscreen?.()}catch(e){}window.setTimeout(fitViewport,160);};
+      const enterFocus=async()=>{
+        const mobile=isMobileADV();
+        document.body.classList.add('focus-mode');
+        document.body.classList.toggle('mobile-portrait-adv',mobile);
+        document.body.classList.remove('focus-ui-hidden');
+        try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen){await document.documentElement.requestFullscreen({navigationUI:'hide'});}}catch(e){}
+        if(mobile){
+          try{screen.orientation?.unlock?.()}catch(e){}
+          locked=false;
+        }else{
+          await requestLandscape();
+        }
+        window.setTimeout(()=>{fitViewport();scheduleUiHide();},180);
+      };
+      const exitFocus=async()=>{
+        window.clearTimeout(uiTimer);
+        document.body.classList.remove('focus-mode','focus-ui-hidden','mobile-portrait-adv');
+        try{screen.orientation?.unlock?.()}catch(e){}
+        locked=false;
+        try{if(document.fullscreenElement)await document.exitFullscreen?.()}catch(e){}
+        window.setTimeout(fitViewport,160);
+      };
       focusBtn?.addEventListener('click',enterFocus);
       focusExitBtn?.addEventListener('click',event=>{event.stopPropagation();exitFocus()});
       nextBtn?.addEventListener('click',event=>{event.stopPropagation();scheduleUiHide()});
