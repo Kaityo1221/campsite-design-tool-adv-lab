@@ -36,14 +36,14 @@
     .signal-cut .actor{opacity:.12;filter:brightness(.25) saturate(.4)}
 
     .dialog-layer{position:absolute;inset:0;z-index:12;pointer-events:none;background-repeat:no-repeat;transition:opacity .18s ease}
-    .strategy-scene[data-speaker="riku"] .dialog-layer{background-image:url('./assets/speech/speech_riku_left.png');background-size:82% auto;background-position:center 118%}
-    .strategy-scene[data-speaker="mina"] .dialog-layer{background-image:url('./assets/speech/speech_mina_right.png');background-size:82% auto;background-position:center 118%}
+    .strategy-scene[data-speaker="riku"] .dialog-layer{background-image:url('./assets/speech/speech_riku_left.png');background-size:82% auto;background-position:center 205%}
+    .strategy-scene[data-speaker="mina"] .dialog-layer{background-image:url('./assets/speech/speech_mina_right.png');background-size:82% auto;background-position:center 205%}
     .speaker{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-    .dialog-text{position:absolute;z-index:16;white-space:pre-wrap;font-weight:800;line-height:1.34;letter-spacing:.01em;text-shadow:none}
-    .strategy-scene[data-speaker="riku"] .dialog-text{left:19%;right:15%;top:58.5%;color:#12253d;font-size:clamp(10px,1.05vw,17px)}
-    .strategy-scene[data-speaker="mina"] .dialog-text{left:15%;right:19%;top:58.5%;color:#3d1830;font-size:clamp(10px,1.05vw,17px)}
+    .dialog-text{position:absolute;z-index:16;top:auto;white-space:pre-wrap;font-weight:800;line-height:1.32;letter-spacing:.01em;text-shadow:none}
+    .strategy-scene[data-speaker="riku"] .dialog-text{left:25%;right:14%;bottom:8.5%;color:#12253d;font-size:clamp(10px,1.05vw,17px)}
+    .strategy-scene[data-speaker="mina"] .dialog-text{left:14%;right:25%;bottom:8.5%;color:#3d1830;font-size:clamp(10px,1.05vw,17px)}
     .strategy-scene[data-speaker="system"] .dialog-layer{background-image:none}
-    .strategy-scene[data-speaker="system"] .dialog-text{left:15%;right:15%;bottom:3.2%;top:auto;padding:9px 14px;color:#f8fafc;font-size:clamp(10px,1.1vw,17px);text-align:center;background:linear-gradient(180deg,rgba(4,12,22,.82),rgba(4,12,22,.94));border:1px solid rgba(125,211,252,.48);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.34),inset 0 0 20px rgba(56,189,248,.05);text-shadow:0 1px 2px rgba(0,0,0,.55)}
+    .strategy-scene[data-speaker="system"] .dialog-text{left:15%;right:15%;bottom:3.2%;padding:9px 14px;color:#f8fafc;font-size:clamp(10px,1.1vw,17px);text-align:center;background:linear-gradient(180deg,rgba(4,12,22,.82),rgba(4,12,22,.94));border:1px solid rgba(125,211,252,.48);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.34),inset 0 0 20px rgba(56,189,248,.05);text-shadow:0 1px 2px rgba(0,0,0,.55)}
     .signal-cut .dialog-layer{opacity:0}
 
     .loading-mark{position:absolute;z-index:20;left:50%;top:48%;transform:translate(-50%,-50%);padding:9px 15px;border-radius:999px;color:#f8fafc;font-weight:900;font-size:clamp(10px,1.1vw,15px);letter-spacing:.14em;background:rgba(2,6,12,.78);border:1px solid rgba(255,255,255,.26);opacity:0;transition:opacity .16s ease;pointer-events:none}.signal-cut .loading-mark{opacity:1}
@@ -56,25 +56,29 @@
     @media(max-width:760px){
       .page{padding:8px}.labbar{padding:8px}.strategy-scene{border-radius:12px}
       .actor{width:32%;max-height:68%;bottom:-1.5%}
-      .strategy-scene[data-speaker="riku"] .dialog-layer,.strategy-scene[data-speaker="mina"] .dialog-layer{background-size:84% auto;background-position:center 118%}
-      .strategy-scene[data-speaker="riku"] .dialog-text{left:19.5%;right:15.5%;top:59.5%;font-size:clamp(8px,1.85vw,11px);line-height:1.26}
-      .strategy-scene[data-speaker="mina"] .dialog-text{left:15.5%;right:19.5%;top:59.5%;font-size:clamp(8px,1.85vw,11px);line-height:1.26}
+      .strategy-scene[data-speaker="riku"] .dialog-layer,.strategy-scene[data-speaker="mina"] .dialog-layer{background-size:84% auto;background-position:center 205%}
+      .strategy-scene[data-speaker="riku"] .dialog-text{left:24%;right:14%;bottom:8.3%;font-size:clamp(8px,1.85vw,11px);line-height:1.24}
+      .strategy-scene[data-speaker="mina"] .dialog-text{left:14%;right:24%;bottom:8.3%;font-size:clamp(8px,1.85vw,11px);line-height:1.24}
       .strategy-scene[data-speaker="system"] .dialog-text{left:13%;right:13%;bottom:2.8%;font-size:clamp(8px,1.9vw,11px);padding:6px 8px}
       .facts{grid-template-columns:1fr 1fr}
     }
 
-    /* Landscape: prioritize width. Do not shrink the scene from viewport height. */
+    /* Landscape: fit the entire 3:2 scene inside the live Safari viewport. */
     @media(orientation:landscape) and (max-height:620px){
-      .page{max-width:none;width:100%;padding:4px 6px}
-      .labbar{margin-bottom:4px;padding:4px 6px;gap:4px}
-      .labbar>div:first-child{display:none}
-      .labsub,.pill,.orientation-note{display:none}
-      .filebox{width:100%;justify-content:center;gap:5px}
-      input[type=file]{max-width:220px;font-size:11px}
-      .orientation-btn{padding:5px 9px;font-size:11px}
-      .strategy-scene{width:100%;max-width:none;margin:0;border-radius:8px}
-      .controls{width:100%;margin:4px 0 0}
-      .controls button{padding:7px 10px;font-size:12px}
+      body{overflow:hidden}
+      .page{position:relative;max-width:none;width:100%;height:100dvh;padding:4px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+      .labbar{position:absolute;z-index:80;top:4px;left:50%;transform:translateX(-50%);width:auto;max-width:70vw;margin:0;padding:3px 5px;border-radius:999px;background:rgba(7,17,30,.70);border-color:rgba(148,163,184,.20)}
+      .labbar>div:first-child,.labsub,.pill,.orientation-note{display:none}
+      .filebox{width:auto;justify-content:center;gap:5px;flex-wrap:nowrap}
+      input[type=file]{max-width:190px;font-size:10px}
+      .orientation-btn{padding:4px 8px;font-size:10px}
+      .strategy-scene{flex:none;width:min(calc(100vw - 8px),calc((100dvh - 48px) * 1.5));max-width:none;margin:0 auto;border-radius:8px}
+      .actor{width:29%;max-height:64%}
+      .strategy-scene[data-speaker="riku"] .dialog-layer,.strategy-scene[data-speaker="mina"] .dialog-layer{background-size:80% auto;background-position:center 212%}
+      .strategy-scene[data-speaker="riku"] .dialog-text{left:25%;right:14%;bottom:8%;font-size:clamp(9px,1.25vw,16px);line-height:1.22}
+      .strategy-scene[data-speaker="mina"] .dialog-text{left:14%;right:25%;bottom:8%;font-size:clamp(9px,1.25vw,16px);line-height:1.22}
+      .controls{flex:none;width:min(calc(100vw - 8px),calc((100dvh - 48px) * 1.5));height:40px;margin:4px auto 0;gap:6px}
+      .controls button{padding:5px 10px;font-size:11px;border-radius:9px}
       .status,details.debug{display:none}
     }
   </style>
@@ -201,14 +205,13 @@
         window.setTimeout(()=>window.dispatchEvent(new Event('resize')),180);
       });
 
-      window.addEventListener('orientationchange',()=>window.setTimeout(()=>{
+      const refreshLayout=()=>{
         updateOrientationButton();
-        window.dispatchEvent(new Event('resize'));
-      },180));
-      matchMedia('(orientation: landscape)').addEventListener?.('change',()=>{
-        updateOrientationButton();
-        window.setTimeout(()=>window.dispatchEvent(new Event('resize')),120);
-      });
+        window.setTimeout(()=>window.dispatchEvent(new Event('resize')),140);
+      };
+      window.addEventListener('orientationchange',()=>window.setTimeout(refreshLayout,180));
+      window.visualViewport?.addEventListener('resize',refreshLayout);
+      matchMedia('(orientation: landscape)').addEventListener?.('change',refreshLayout);
       updateOrientationButton();
     })();
   </script>
