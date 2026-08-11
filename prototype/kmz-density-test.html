@@ -114,6 +114,17 @@
       body:not(.focus-mode) .status,body:not(.focus-mode) details.debug{display:none}
     }
 
+    @media (hover:hover) and (pointer:fine) and (min-width:761px){
+      body:not(.focus-mode) .desktop-hover-nav{opacity:.42!important}
+      body:not(.focus-mode) .strategy-scene:hover .desktop-hover-nav,
+      body:not(.focus-mode) .desktop-hover-nav:focus-within{opacity:1!important}
+      body:not(.focus-mode) .desktop-nav-btn{
+        background:rgba(4,12,22,.72)!important;
+        border-color:rgba(255,255,255,.44)!important;
+      }
+      body:not(.focus-mode) .desktop-nav-btn:disabled{opacity:.30!important}
+    }
+
     body.focus-mode{overflow:hidden;background:#000;overscroll-behavior:none;touch-action:manipulation}
     body.focus-mode .page{position:fixed;z-index:1000;inset:0;width:100%;max-width:none;height:100%;margin:0;padding:0;background:#000;display:flex;align-items:center;justify-content:flex-end}
     body.focus-mode .labbar,body.focus-mode .status,body.focus-mode details.debug{display:none!important}
