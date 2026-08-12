@@ -9,10 +9,77 @@
   const SUPPORT_RADIUS_M = 100;
 
   const map = L.map('map', { zoomControl: true }).setView([35.6812, 139.7671], 13);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{y}/{x}.png'.replace('{y}/{x}', '{y}/{x}'), {
+
+  const OSM_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+  const tileOptions = {
     maxZoom: 20,
     attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(map);
+  };
+
+  const isIOSWebKit = /iP(?:ad|hone|od)/.test(navigator.userAgent);
+  let baseMapLayer;
+
+  if (isIOSWebKit) {
+    const CanvasTileLayer = L.TileLayer.extend({
+      createTile(coords, done) {
+        const overlap = 2;
+        const tileSize = this.getTileSize();
+        const canvas = document.createElement('canvas');
+        const width = tileSize.x + overlap * 2;
+        const height = tileSize.y + overlap * 2;
+
+        canvas.width = width;
+        canvas.height = height;
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        canvas.style.marginLeft = `-${overlap}px`;
+        canvas.style.marginTop = `-${overlap}px`;
+        canvas.style.border = '0';
+        canvas.style.outline = '0';
+
+        const ctx = canvas.getContext('2d', { alpha: false });
+        ctx.fillStyle = '#e8eef2';
+        ctx.fillRect(0, 0, width, height);
+
+        const img = new Image();
+        img.onload = () => {
+          ctx.imageSmoothingEnabled = true;
+          ctx.drawImage(img, overlap, overlap, tileSize.x, tileSize.y);
+
+          ctx.drawImage(img, 0, 0, 1, tileSize.y, 0, overlap, overlap, tileSize.y);
+          ctx.drawImage(img, tileSize.x - 1, 0, 1, tileSize.y, overlap + tileSize.x, overlap, overlap, tileSize.y);
+          ctx.drawImage(img, 0, 0, tileSize.x, 1, overlap, 0, tileSize.x, overlap);
+          ctx.drawImage(img, 0, tileSize.y - 1, tileSize.x, 1, overlap, overlap + tileSize.y, tileSize.x, overlap);
+
+          ctx.drawImage(img, 0, 0, 1, 1, 0, 0, overlap, overlap);
+          ctx.drawImage(img, tileSize.x - 1, 0, 1, 1, overlap + tileSize.x, 0, overlap, overlap);
+          ctx.drawImage(img, 0, tileSize.y - 1, 1, 1, 0, overlap + tileSize.y, overlap, overlap);
+          ctx.drawImage(img, tileSize.x - 1, tileSize.y - 1, 1, 1, overlap + tileSize.x, overlap + tileSize.y, overlap, overlap);
+
+          done(null, canvas);
+        };
+        img.onerror = error => done(error, canvas);
+        img.src = this.getTileUrl(coords);
+        return canvas;
+      },
+
+      _initTile(tile) {
+        L.GridLayer.prototype._initTile.call(this, tile);
+        const overlap = 2;
+        const tileSize = this.getTileSize();
+        tile.style.width = `${tileSize.x + overlap * 2}px`;
+        tile.style.height = `${tileSize.y + overlap * 2}px`;
+        tile.style.marginLeft = `-${overlap}px`;
+        tile.style.marginTop = `-${overlap}px`;
+      }
+    });
+
+    baseMapLayer = new CanvasTileLayer(OSM_URL, tileOptions);
+  } else {
+    baseMapLayer = L.tileLayer(OSM_URL, tileOptions);
+  }
+
+  baseMapLayer.addTo(map);
 
   const poiLayer = L.layerGroup().addTo(map);
   const highlightLayer = L.layerGroup().addTo(map);
