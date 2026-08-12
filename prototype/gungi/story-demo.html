@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>ADV Lab - 軍議ストーリーデモ</title>
+  <style>
+    :root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic",sans-serif;color:#eef4fb;background:#050b14}
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:#050b14}
+    body{min-height:100vh;background:radial-gradient(circle at top,#1d3554 0,#081321 48%,#04070c 100%)}
+    button,a{font:inherit}
+    .shell{width:min(1180px,100%);margin:0 auto;padding:14px}
+    .topbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px;padding:12px 14px;border:1px solid rgba(148,163,184,.25);border-radius:16px;background:rgba(5,14,25,.86);backdrop-filter:blur(12px)}
+    .eyebrow{margin:0 0 3px;color:#7dd3fc;font-size:11px;font-weight:900;letter-spacing:.12em}
+    h1{margin:0;font-size:clamp(20px,4vw,30px)}
+    .top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .chip{padding:6px 10px;border-radius:999px;background:rgba(56,189,248,.12);border:1px solid rgba(125,211,252,.3);color:#bae6fd;font-size:11px;font-weight:900}
+    .linkbtn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 12px;border-radius:999px;text-decoration:none;color:#e0f2fe;background:rgba(30,64,175,.24);border:1px solid rgba(147,197,253,.34);font-weight:900;font-size:12px}
+    .stage{position:relative;min-height:min(720px,calc(100vh - 115px));overflow:hidden;border:1px solid rgba(251,191,36,.26);border-radius:22px;background-image:linear-gradient(180deg,rgba(2,8,18,.08),rgba(2,8,18,.52)),url('../assets/backgrounds/strategy_room_idle.png');background-size:cover;background-position:center;box-shadow:0 28px 80px rgba(0,0,0,.48)}
+    .newsbar{position:absolute;z-index:18;left:0;right:0;top:0;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;background:linear-gradient(90deg,rgba(127,29,29,.9),rgba(69,10,10,.72));border-bottom:1px solid rgba(254,202,202,.25)}
+    .newsbar strong{font-size:12px;letter-spacing:.16em;color:#fee2e2}.newsbar span{font-size:10px;color:#fecaca;font-weight:900}
+    .monitor{position:absolute;z-index:2;left:29.3%;top:15.8%;width:40.3%;height:37.2%;overflow:hidden;background:linear-gradient(145deg,#0b1d2e,#132f47);border:2px solid rgba(2,6,12,.95);box-shadow:inset 0 0 45px rgba(0,0,0,.5)}
+    .monitor::before{content:"GUNGI STORY / QUESTION FLOW";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;text-align:center;color:#7dd3fc;font-size:clamp(10px,1.35vw,16px);font-weight:900;letter-spacing:.12em;background:radial-gradient(circle at 50% 35%,rgba(56,189,248,.16),transparent 42%),repeating-linear-gradient(0deg,rgba(125,211,252,.035) 0 1px,transparent 1px 9px)}
+    .actor{position:absolute;z-index:8;bottom:21%;width:29%;max-height:57%;object-fit:contain;object-position:bottom;opacity:.25;filter:brightness(.45) saturate(.72);transform:scale(.96);transition:.2s ease;pointer-events:none;user-select:none}
+    .actor-riku{left:-5%}.actor-mina{right:-4%}
+    .stage[data-speaker="riku"] .actor-riku,.stage[data-speaker="mina"] .actor-mina{opacity:1;filter:brightness(1.04) saturate(1.05);transform:scale(1.01)}
+    .stage[data-speaker="ren"] .actor,.stage[data-speaker="system"] .actor{opacity:.14}
+    .panel{position:absolute;z-index:20;left:7%;right:7%;bottom:4%;min-height:205px;padding:16px 17px 15px;border:3px solid rgba(124,85,45,.92);border-radius:20px;background:linear-gradient(180deg,rgba(255,250,238,.98),rgba(244,229,199,.98));box-shadow:0 18px 46px rgba(0,0,0,.52),inset 0 0 0 1px rgba(255,255,255,.62);color:#2a2018}
+    .panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+    .speaker{display:inline-flex;align-items:center;min-height:29px;padding:4px 11px;border-radius:999px;background:rgba(111,72,36,.12);font-size:13px;font-weight:900;letter-spacing:.04em}
+    .progress{color:#7c604a;font-size:11px;font-weight:900}
+    .copy{margin:0;min-height:44px;font-size:clamp(15px,2.2vw,21px);line-height:1.45;font-weight:850;white-space:pre-wrap}
+    .choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:13px}
+    .choice{border:1px solid rgba(111,72,36,.25);border-radius:12px;padding:10px 11px;background:rgba(255,255,255,.58);color:#2d2118;font-weight:850;cursor:pointer;text-align:left;transition:.16s ease}
+    .choice:hover,.choice:focus-visible{transform:translateY(-1px);background:#fff;outline:none;border-color:rgba(59,130,246,.45)}
+    .nav{display:flex;gap:8px;margin-top:12px;justify-content:flex-end}
+    .nav button{min-height:38px;border-radius:999px;padding:8px 14px;font-weight:900;cursor:pointer}
+    .ghost{border:1px solid rgba(111,72,36,.25);background:rgba(255,255,255,.42);color:#4a3627}
+    .primary{border:0;background:#19314a;color:#f8fafc}
+    .nav button:disabled{opacity:.35;cursor:default}
+    .summary{display:grid;gap:7px;margin-top:12px;max-height:100px;overflow:auto;padding-right:4px}
+    .summary-row{padding:7px 9px;border-radius:10px;background:rgba(88,60,36,.08);font-size:12px;line-height:1.4}
+    .reaction{margin-top:9px;padding:9px 11px;border-left:4px solid #38bdf8;border-radius:8px;background:rgba(56,189,248,.08);font-size:13px;font-weight:800;color:#183047}
+    .final-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .final-actions a,.final-actions button{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:9px 13px;border-radius:999px;font-weight:900;text-decoration:none}
+    .map-link{background:#0f766e;color:#ecfeff}.restart{border:1px solid rgba(111,72,36,.3);background:rgba(255,255,255,.5);color:#3c2b20}
+    @media(max-width:760px){
+      .shell{padding:0}.topbar{margin:0;border-radius:0;border-left:0;border-right:0;padding:9px 10px}.eyebrow{display:none}.top-actions .chip{display:none}.stage{min-height:calc(100dvh - 64px);border-radius:0;border-left:0;border-right:0;background-size:auto 100%;background-position:center top}.newsbar{top:0}.monitor{left:5%;top:12%;width:90%;height:31%}.actor{bottom:29%;width:45%;max-height:34%}.actor-riku{left:-1%}.actor-mina{right:-1%}.panel{left:4%;right:4%;bottom:2.5%;min-height:235px;max-height:41%;overflow:auto;padding:13px}.copy{font-size:15px;min-height:40px}.choices{grid-template-columns:1fr;gap:6px}.choice{padding:9px 10px;font-size:13px}.summary{max-height:82px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div><p class="eyebrow">CAMPSITE DESIGN TOOL / PRIVATE ADV LAB</p><h1>軍議ストーリー・質問デモ</h1></div>
+      <div class="top-actions"><span class="chip">GUNGI MASTER v2</span><a class="linkbtn" href="../kmz-density-test.html">地図軍議へ</a></div>
+    </header>
+
+    <section id="stage" class="stage" data-speaker="ren" aria-label="軍議ストーリーデモ">
+      <div class="newsbar"><strong>CAMP SITE NEWS</strong><span>軍議システム / STORY TEST</span></div>
+      <div class="monitor" aria-hidden="true"></div>
+      <img class="actor actor-riku" src="../assets/characters/riku_normal.png" alt="リク">
+      <img class="actor actor-mina" src="../assets/characters/mina_normal.png" alt="ミナ">
+
+      <section class="panel" aria-live="polite">
+        <div class="panel-head"><span id="speaker" class="speaker">レン</span><span id="progress" class="progress"></span></div>
+        <p id="copy" class="copy"></p>
+        <div id="reaction" class="reaction" hidden></div>
+        <div id="choices" class="choices"></div>
+        <div id="summary" class="summary" hidden></div>
+        <div id="finalActions" class="final-actions" hidden>
+          <a class="map-link" href="../kmz-density-test.html">🗺️ 地図軍議を試す</a>
+          <button id="restartFinal" class="restart" type="button">最初から</button>
+        </div>
+        <div id="nav" class="nav"><button id="back" class="ghost" type="button">← 戻る</button><button id="next" class="primary" type="button">次へ →</button></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="./gungi-character-roles.js"></script>
+  <script>
+    (() => {
+      'use strict';
+      const master = window.GUNGI_CHARACTER_ROLES;
+      const stage = document.getElementById('stage');
+      const speakerEl = document.getElementById('speaker');
+      const copyEl = document.getElementById('copy');
+      const choicesEl = document.getElementById('choices');
+      const reactionEl = document.getElementById('reaction');
+      const progressEl = document.getElementById('progress');
+      const summaryEl = document.getElementById('summary');
+      const navEl = document.getElementById('nav');
+      const backBtn = document.getElementById('back');
+      const nextBtn = document.getElementById('next');
+      const finalActions = document.getElementById('finalActions');
+      const restartFinal = document.getElementById('restartFinal');
+
+      if (!master) {
+        copyEl.textContent = '軍議MASTERを読み込めませんでした。';
+        navEl.hidden = true;
+        return;
+      }
+
+      const answers = new Map();
+      const flow = [];
+      const pushLine = (speaker, text, expression = 'normal') => flow.push({ kind:'line', speaker, text, expression });
+      const pushScene = sceneId => {
+        const scene = master.dialogueScenes?.[sceneId];
+        (scene?.lines || []).forEach(line => pushLine(line.speaker, line.text, line.expression));
+      };
+
+      pushLine('ren', '臨時ニュースです。新たなキャンプサイト計画を確認します。');
+      pushLine('ren', 'まずは設計者が、どんなキャンプサイトを作りたいのか聞いていきます。');
+
+      master.questions.forEach(question => {
+        flow.push({ kind:'question', ...question });
+        if (question.after) pushScene(question.after);
+      });
+
+      pushLine('ren', '以上で質問は終了です。回答を整理します。');
+      flow.push({ kind:'summary', speaker:'ren', text:'今回の回答はこちらです。' });
+      flow.push({ kind:'final', speaker:'ren', text:'次は地図を見ながら、実際の配置を軍議してみましょう。' });
+
+      let index = 0;
+      let reactionVisible = false;
+
+      const speakerName = id => ({mina:'ミナ',riku:'リク',haru:'ハル',ren:'レン',system:'SYSTEM'})[id] || id;
+      const defaultReaction = id => master.characters?.[id]?.defaultReaction?.text || master.interactionPolicy?.reactionFallbackBySpeaker?.[id] || '了解。';
+      const setSpeaker = id => {
+        stage.dataset.speaker = id || 'system';
+        speakerEl.textContent = speakerName(id || 'system');
+      };
+
+      function renderSummary() {
+        summaryEl.innerHTML = '';
+        master.questions.forEach(q => {
+          const answerId = answers.get(q.id);
+          const choice = q.choices.find(c => c.id === answerId);
+          const row = document.createElement('div');
+          row.className = 'summary-row';
+          row.textContent = `${q.id.toUpperCase()}：${choice?.label || '未回答'}`;
+          summaryEl.appendChild(row);
+        });
+      }
+
+      function choose(question, choice) {
+        answers.set(question.id, choice.id);
+        choicesEl.querySelectorAll('button').forEach(btn => btn.disabled = true);
+        const reactionSceneId = choice.reactionScene;
+        if (reactionSceneId && master.dialogueScenes?.[reactionSceneId]) {
+          const lines = master.dialogueScenes[reactionSceneId].lines || [];
+          reactionEl.textContent = lines.map(line => `${speakerName(line.speaker)}「${line.text}」`).join('  ');
+        } else {
+          reactionEl.textContent = `${speakerName(question.speaker)}「${defaultReaction(question.speaker)}」`;
+        }
+        reactionEl.hidden = false;
+        reactionVisible = true;
+        nextBtn.disabled = false;
+      }
+
+      function render() {
+        const step = flow[index];
+        reactionVisible = false;
+        reactionEl.hidden = true;
+        reactionEl.textContent = '';
+        choicesEl.innerHTML = '';
+        summaryEl.hidden = true;
+        finalActions.hidden = true;
+        navEl.hidden = false;
+        backBtn.disabled = index === 0;
+        nextBtn.disabled = false;
+        progressEl.textContent = `${index + 1} / ${flow.length}`;
+
+        if (!step) return;
+        setSpeaker(step.speaker || 'system');
+        copyEl.textContent = step.text || '';
+
+        if (step.kind === 'question') {
+          const saved = answers.get(step.id);
+          step.choices.forEach(choice => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'choice';
+            btn.textContent = choice.label;
+            btn.dataset.choiceId = choice.id;
+            btn.addEventListener('click', () => choose(step, choice));
+            choicesEl.appendChild(btn);
+          });
+          nextBtn.disabled = !saved;
+          if (saved) {
+            const choice = step.choices.find(c => c.id === saved);
+            if (choice) choose(step, choice);
+          }
+        }
+
+        if (step.kind === 'summary') {
+          renderSummary();
+          summaryEl.hidden = false;
+        }
+
+        if (step.kind === 'final') {
+          navEl.hidden = true;
+          finalActions.hidden = false;
+        }
+      }
+
+      backBtn.addEventListener('click', () => {
+        if (index > 0) index -= 1;
+        render();
+      });
+      nextBtn.addEventListener('click', () => {
+        const step = flow[index];
+        if (step?.kind === 'question' && !answers.has(step.id)) return;
+        if (index < flow.length - 1) index += 1;
+        render();
+      });
+      restartFinal.addEventListener('click', () => {
+        answers.clear();
+        index = 0;
+        render();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>
