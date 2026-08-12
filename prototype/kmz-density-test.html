@@ -204,10 +204,20 @@
     body.focus-mode.mobile-portrait-adv #map .leaflet-control-zoom{
       transform:scale(.84);
     }
+    body.focus-mode.mobile-portrait-adv #map .leaflet-tile-container{
+      -webkit-backface-visibility:hidden;
+      backface-visibility:hidden;
+    }
     body.focus-mode.mobile-portrait-adv #map .leaflet-tile{
-      width:257px!important;
-      height:257px!important;
-      outline:1px solid transparent;
+      width:260px!important;
+      height:260px!important;
+      margin-left:-2px!important;
+      margin-top:-2px!important;
+      outline:none!important;
+      border:0!important;
+      box-shadow:none!important;
+      -webkit-backface-visibility:hidden;
+      backface-visibility:hidden;
     }
     body.focus-mode.mobile-portrait-adv .actor{
       bottom:22.5%!important;
