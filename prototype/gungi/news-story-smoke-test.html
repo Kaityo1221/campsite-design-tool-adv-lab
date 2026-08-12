@@ -18,167 +18,166 @@
     .stage{position:relative;min-height:min(760px,calc(100vh - 110px));overflow:hidden;border:1px solid rgba(251,191,36,.28);border-radius:22px;background-image:linear-gradient(180deg,rgba(2,8,18,.08),rgba(2,8,18,.62)),url('../assets/backgrounds/strategy_room_idle.png');background-size:cover;background-position:center;box-shadow:0 28px 90px rgba(0,0,0,.55)}
     .newsbar{position:absolute;z-index:40;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 14px;background:linear-gradient(90deg,rgba(153,27,27,.92),rgba(69,10,10,.78));border-bottom:1px solid rgba(254,202,202,.25)}
     .newsbar strong{font-size:12px;letter-spacing:.16em;color:#fee2e2}.newsbar span{font-size:10px;color:#fecaca;font-weight:900}
-
     .monitor{position:absolute;z-index:3;left:25%;top:11.7%;width:50%;height:43%;overflow:hidden;border:2px solid rgba(2,6,12,.95);background:#0a1826;box-shadow:inset 0 0 48px rgba(0,0,0,.58)}
-    .map{position:absolute;inset:0;overflow:hidden;background:linear-gradient(145deg,#18354a,#0e2538);transition:.5s ease}
+    .map{position:absolute;inset:0;overflow:hidden;background:linear-gradient(145deg,#18354a,#0e2538)}
     .grid{position:absolute;inset:-10%;opacity:.18;background-image:linear-gradient(rgba(125,211,252,.28) 1px,transparent 1px),linear-gradient(90deg,rgba(125,211,252,.28) 1px,transparent 1px);background-size:36px 36px;transform:rotate(-4deg)}
     .park{position:absolute;left:8%;top:10%;width:84%;height:80%;border-radius:42% 48% 38% 52%;background:rgba(74,222,128,.12);border:2px solid rgba(134,239,172,.22)}
-    .path{position:absolute;height:10px;border-radius:999px;background:rgba(226,232,240,.12);transform-origin:left center}
-    .path.a{left:15%;top:43%;width:66%;transform:rotate(-7deg)}
-    .path.b{left:34%;top:15%;width:48%;transform:rotate(66deg)}
+    .path{position:absolute;height:10px;border-radius:999px;background:rgba(226,232,240,.12);transform-origin:left center}.path.a{left:15%;top:43%;width:66%;transform:rotate(-7deg)}.path.b{left:34%;top:15%;width:48%;transform:rotate(66deg)}
     .area{position:absolute;left:24%;top:21%;width:48%;height:52%;border:3px solid rgba(192,132,252,.9);background:rgba(192,132,252,.13);clip-path:polygon(10% 20%,70% 4%,96% 48%,70% 92%,18% 84%,0 48%);opacity:0;transition:.35s ease}
-    .poi{position:absolute;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 3px rgba(255,255,255,.06);transition:.35s ease}
-    .poi.existing{background:#38bdf8}.poi.added{background:#22c55e}
-    .poi.focus{transform:scale(1.45);box-shadow:0 0 0 7px rgba(250,204,21,.24),0 0 22px rgba(250,204,21,.9);border-color:#fef08a}
+    .poi{position:absolute;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 3px rgba(255,255,255,.06);transition:.35s ease}.poi.existing{background:#38bdf8}.poi.added{background:#22c55e}.poi.focus{transform:scale(1.45);box-shadow:0 0 0 7px rgba(250,204,21,.24),0 0 22px rgba(250,204,21,.9);border-color:#fef08a}
     .p1{left:27%;top:31%}.p2{left:35%;top:35%}.p3{left:46%;top:46%}.p4{left:51%;top:49%}.p5{left:68%;top:31%}.p6{left:73%;top:64%}.p7{left:29%;top:68%}
-    .distance-line{position:absolute;height:3px;background:#facc15;box-shadow:0 0 9px rgba(250,204,21,.75);transform-origin:left center;opacity:0;transition:.25s ease}
-    .line1{left:27%;top:31%;width:9.2%;transform:rotate(25deg)}
-    .line2{left:46%;top:46%;width:7%;transform:rotate(20deg)}
+    .distance-line{position:absolute;height:3px;background:#facc15;box-shadow:0 0 9px rgba(250,204,21,.75);transform-origin:left center;opacity:0;transition:.25s ease}.line1{left:27%;top:31%;width:9.2%;transform:rotate(25deg)}.line2{left:46%;top:46%;width:7%;transform:rotate(20deg)}
+    .distance-badge{position:absolute;z-index:8;padding:3px 7px;border-radius:999px;background:rgba(2,6,23,.88);border:1px solid rgba(250,204,21,.55);color:#fef08a;font-size:10px;font-weight:950;opacity:0;transition:.2s ease;white-space:nowrap}.badge1{left:29%;top:24%}.badge2{left:47%;top:38%}
     .monitor-label{position:absolute;z-index:9;left:8px;top:8px;padding:5px 8px;border-radius:999px;background:rgba(2,6,23,.74);border:1px solid rgba(125,211,252,.3);color:#bae6fd;font-size:10px;font-weight:900}
-    .monitor-card{position:absolute;z-index:10;left:8%;right:8%;bottom:8%;padding:10px 12px;border:1px solid rgba(255,255,255,.18);border-radius:12px;background:rgba(2,6,23,.78);color:#e2e8f0;font-size:12px;line-height:1.6;opacity:0;transform:translateY(6px);transition:.25s ease}
-    .monitor-card strong{display:block;color:#fff;margin-bottom:4px;font-size:13px}
-    .monitor-card.show{opacity:1;transform:none}
-    .big{font-size:21px;font-weight:950;color:#fff}
-
-    .actors{position:absolute;z-index:12;left:0;right:0;bottom:24%;height:30%;pointer-events:none}
-    .actor{position:absolute;bottom:0;width:22%;max-height:100%;object-fit:contain;object-position:bottom;opacity:.18;filter:brightness(.45) saturate(.7);transform:scale(.96);transition:.25s ease}
-    .riku{left:-2%}.mina{right:-2%}
-    .stage[data-speaker="riku"] .riku,.stage[data-speaker="mina"] .mina{opacity:1;filter:brightness(1.05) saturate(1.06);transform:scale(1.02)}
-    .placeholder{position:absolute;bottom:5%;width:13%;min-width:96px;aspect-ratio:3/4;border-radius:20px;border:1px dashed rgba(255,255,255,.32);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:rgba(2,6,23,.38);color:#94a3b8;opacity:.25;transition:.25s ease;text-align:center;padding:8px}
-    .placeholder b{font-size:30px;color:#cbd5e1}.placeholder small{font-size:10px}.ren{left:17%}.haru{right:17%}
-    .stage[data-speaker="ren"] .ren,.stage[data-speaker="haru"] .haru{opacity:1;border-style:solid;border-color:rgba(125,211,252,.55);background:rgba(14,116,144,.24);color:#e0f2fe;transform:translateY(-4px)}
-
-    .panel{position:absolute;z-index:30;left:6%;right:6%;bottom:3%;min-height:190px;padding:15px 16px 14px;border:3px solid rgba(124,85,45,.92);border-radius:20px;background:linear-gradient(180deg,rgba(255,250,238,.98),rgba(244,229,199,.98));box-shadow:0 18px 46px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.65);color:#2a2018}
-    .panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
-    .speaker{display:inline-flex;align-items:center;min-height:29px;padding:4px 11px;border-radius:999px;background:rgba(111,72,36,.12);font-size:13px;font-weight:950}
-    .progress{color:#7c604a;font-size:11px;font-weight:900}
-    .copy{margin:0;min-height:54px;font-size:clamp(16px,2.2vw,22px);line-height:1.52;font-weight:850;white-space:pre-wrap}
-    .role-note{margin-top:7px;color:#7c604a;font-size:11px;font-weight:800}
-    .nav{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-top:12px}
-    .nav button{min-height:40px;border-radius:999px;padding:8px 14px;font-weight:900;cursor:pointer}
-    .ghost{border:1px solid rgba(111,72,36,.28);background:rgba(255,255,255,.45);color:#4a3627}.primary{border:0;background:#19314a;color:#f8fafc}
-    .counter{font-size:11px;color:#7c604a;font-weight:950;text-align:center;white-space:nowrap}
-    .nav button:disabled{opacity:.3;cursor:default}
-    .restart{display:none;margin-top:9px;border:1px solid rgba(111,72,36,.28);background:#fff;color:#3c2b20;min-height:38px;padding:7px 13px;border-radius:999px;font-weight:900;cursor:pointer}
-
-    @media(max-width:760px){
-      .shell{padding:0}.topbar{margin:0;border-radius:0;border-left:0;border-right:0;padding:8px 10px}.eyebrow{display:none}
-      .stage{min-height:calc(100dvh - 61px);border-radius:0;border-left:0;border-right:0;background-size:auto 100%;background-position:center top}
-      .monitor{left:4%;top:10%;width:92%;height:36%}.actors{bottom:30%;height:25%}.actor{width:34%}.riku{left:-4%}.mina{right:-4%}.placeholder{width:18%;min-width:70px;bottom:4%}.ren{left:25%}.haru{right:25%}.placeholder b{font-size:22px}
-      .panel{left:3%;right:3%;bottom:1.5%;min-height:232px;max-height:40%;overflow:auto;padding:12px}.copy{font-size:15px;min-height:48px}.role-note{font-size:10px}.nav{position:sticky;bottom:0;padding-top:7px;background:linear-gradient(180deg,transparent,#f4e5c7 24%)}
-    }
+    .monitor-card{position:absolute;z-index:10;left:8%;right:8%;bottom:8%;padding:10px 12px;border:1px solid rgba(255,255,255,.18);border-radius:12px;background:rgba(2,6,23,.8);color:#e2e8f0;font-size:12px;line-height:1.6;opacity:0;transform:translateY(6px);transition:.25s ease}.monitor-card strong{display:block;color:#fff;margin-bottom:4px;font-size:13px}.monitor-card.show{opacity:1;transform:none}.big{font-size:21px;font-weight:950;color:#fff}
+    .audit-card{position:absolute;z-index:11;inset:14% 9%;display:none;align-content:center;gap:8px;padding:16px;border-radius:18px;background:rgba(2,6,23,.9);border:1px solid rgba(125,211,252,.28);box-shadow:0 18px 50px rgba(0,0,0,.45)}.audit-card.show{display:grid}.audit-title{font-size:12px;letter-spacing:.14em;font-weight:950;color:#bae6fd}.audit-row{opacity:0;transform:translateX(-10px);padding:7px 9px;border-radius:10px;background:rgba(255,255,255,.06);font-size:12px;font-weight:850;transition:.2s ease}.audit-row.show{opacity:1;transform:none}.audit-verdict{opacity:0;transform:scale(.8);margin-top:6px;padding:14px;border-radius:14px;background:rgba(34,197,94,.14);border:2px solid rgba(74,222,128,.5);text-align:center;font-size:clamp(20px,3vw,30px);font-weight:1000;color:#dcfce7;transition:.26s cubic-bezier(.2,1.3,.4,1)}.audit-verdict.show{opacity:1;transform:scale(1)}.audit-verdict.retry{background:rgba(239,68,68,.14);border-color:rgba(248,113,113,.55);color:#fee2e2}
+    .actors{position:absolute;z-index:12;left:0;right:0;bottom:24%;height:30%;pointer-events:none}.actor{position:absolute;bottom:0;width:22%;max-height:100%;object-fit:contain;object-position:bottom;opacity:.18;filter:brightness(.45) saturate(.7);transform:scale(.96);transition:.25s ease}.riku{left:-2%}.mina{right:-2%}.stage[data-speaker="riku"] .riku,.stage[data-speaker="mina"] .mina{opacity:1;filter:brightness(1.05) saturate(1.06);transform:scale(1.02)}
+    .placeholder{position:absolute;bottom:5%;width:13%;min-width:96px;aspect-ratio:3/4;border-radius:20px;border:1px dashed rgba(255,255,255,.32);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:rgba(2,6,23,.38);color:#94a3b8;opacity:.25;transition:.25s ease;text-align:center;padding:8px}.placeholder b{font-size:30px;color:#cbd5e1}.placeholder small{font-size:10px}.ren{left:17%}.haru{right:17%}.stage[data-speaker="ren"] .ren,.stage[data-speaker="haru"] .haru{opacity:1;border-style:solid;border-color:rgba(125,211,252,.55);background:rgba(14,116,144,.24);color:#e0f2fe;transform:translateY(-4px)}
+    .panel{position:absolute;z-index:30;left:6%;right:6%;bottom:3%;min-height:190px;padding:15px 16px 14px;border:3px solid rgba(124,85,45,.92);border-radius:20px;background:linear-gradient(180deg,rgba(255,250,238,.98),rgba(244,229,199,.98));box-shadow:0 18px 46px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.65);color:#2a2018}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.speaker{display:inline-flex;align-items:center;min-height:29px;padding:4px 11px;border-radius:999px;background:rgba(111,72,36,.12);font-size:13px;font-weight:950}.progress{color:#7c604a;font-size:11px;font-weight:900}.copy{margin:0;min-height:54px;font-size:clamp(16px,2.2vw,22px);line-height:1.52;font-weight:850;white-space:pre-wrap}.detail{min-height:20px;margin-top:7px;color:#6f513c;font-size:12px;font-weight:900;white-space:pre-wrap}.nav{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-top:12px}.nav button{min-height:40px;border-radius:999px;padding:8px 14px;font-weight:900;cursor:pointer}.ghost{border:1px solid rgba(111,72,36,.28);background:rgba(255,255,255,.45);color:#4a3627}.primary{border:0;background:#19314a;color:#f8fafc}.counter{font-size:11px;color:#7c604a;font-weight:950;text-align:center;white-space:nowrap}.nav button:disabled{opacity:.3;cursor:default}.restart{display:none;margin-top:9px;border:1px solid rgba(111,72,36,.28);background:#fff;color:#3c2b20;min-height:38px;padding:7px 13px;border-radius:999px;font-weight:900;cursor:pointer}
+    @media(max-width:760px){.shell{padding:0}.topbar{margin:0;border-radius:0;border-left:0;border-right:0;padding:8px 10px}.eyebrow{display:none}.stage{min-height:calc(100dvh - 61px);border-radius:0;border-left:0;border-right:0;background-size:auto 100%;background-position:center top}.monitor{left:4%;top:10%;width:92%;height:36%}.actors{bottom:30%;height:25%}.actor{width:34%}.riku{left:-4%}.mina{right:-4%}.placeholder{width:18%;min-width:70px;bottom:4%}.ren{left:25%}.haru{right:25%}.placeholder b{font-size:22px}.panel{left:3%;right:3%;bottom:1.5%;min-height:232px;max-height:40%;overflow:auto;padding:12px}.copy{font-size:15px;min-height:48px}.detail{font-size:11px}.nav{position:sticky;bottom:0;padding-top:7px;background:linear-gradient(180deg,transparent,#f4e5c7 24%)}.audit-card{inset:12% 5%}.distance-badge{font-size:9px}}
   </style>
 </head>
 <body>
   <main class="shell">
-    <header class="topbar">
-      <div><p class="eyebrow">CAMPSITE DESIGN TOOL / ADV LAB</p><h1>新・軍議ストーリー 通しテスト</h1></div>
-      <span class="chip">NEWS STORY / SMOKE TEST</span>
-    </header>
-
+    <header class="topbar"><div><p class="eyebrow">CAMPSITE DESIGN TOOL / ADV LAB</p><h1>新・軍議ストーリー 通しテスト</h1></div><span class="chip">NEWS STORY / SMOKE TEST</span></header>
     <section id="stage" class="stage" data-speaker="ren">
       <div class="newsbar"><strong>CAMP SITE NEWS</strong><span>臨時ニュース / 軍議システム</span></div>
-
       <div class="monitor">
         <div class="monitor-label">LIVE MAP / TEST</div>
-        <div id="map" class="map">
+        <div class="map">
           <div class="grid"></div><div class="park"></div><div class="path a"></div><div class="path b"></div>
           <div id="area" class="area"></div>
           <i class="poi existing p1"></i><i class="poi existing p2"></i><i class="poi added p3"></i><i class="poi added p4"></i><i class="poi existing p5"></i><i class="poi added p6"></i><i class="poi existing p7"></i>
           <div class="distance-line line1"></div><div class="distance-line line2"></div>
+          <div class="distance-badge badge1">18.6m</div><div class="distance-badge badge2">34.2m</div>
           <div id="monitorCard" class="monitor-card"></div>
+          <div id="auditCard" class="audit-card">
+            <div class="audit-title">CAMP SITE CHECK</div>
+            <div class="audit-row">POI数　✓</div>
+            <div class="audit-row">活動範囲　✓</div>
+            <div class="audit-row">レイヤー構成　✓</div>
+            <div class="audit-row">距離条件　✓</div>
+            <div class="audit-row">近接ポイント　確認済み</div>
+            <div id="auditVerdict" class="audit-verdict">提出条件：提出OK！</div>
+          </div>
         </div>
       </div>
-
       <div class="actors">
         <img class="actor riku" src="../assets/characters/riku_normal.png" alt="リク">
         <div class="placeholder ren"><b>レン</b><small>画像未作成<br>進行担当</small></div>
         <div class="placeholder haru"><b>ハル</b><small>画像未作成<br>参加者目線</small></div>
         <img class="actor mina" src="../assets/characters/mina_normal.png" alt="ミナ">
       </div>
-
       <section class="panel" aria-live="polite">
         <div class="panel-head"><span id="speaker" class="speaker">レン</span><span id="progress" class="progress"></span></div>
         <p id="copy" class="copy"></p>
-        <div id="roleNote" class="role-note"></div>
-        <div class="nav">
-          <button id="back" class="ghost" type="button">← 戻る</button>
-          <span id="counter" class="counter"></span>
-          <button id="next" class="primary" type="button">次へ →</button>
-        </div>
+        <div id="detail" class="detail"></div>
+        <div class="nav"><button id="back" class="ghost" type="button">← 戻る</button><span id="counter" class="counter"></span><button id="next" class="primary" type="button">次へ →</button></div>
         <button id="restart" class="restart" type="button">最初から見る</button>
       </section>
     </section>
   </main>
+<script>
+(() => {
+  'use strict';
+  const steps = [
+    {speaker:'ren',state:'news',text:'臨時ニュースです。東京都江戸川区に、新たなキャンプサイトが発生しました。',card:'<strong>BREAKING NEWS</strong>新規キャンプサイト発生'},
+    {speaker:'ren',state:'overview',text:'現地の状況を確認します。'},
+    {speaker:'mina',state:'overviewPositive',text:'POIに恵まれた、いい土地だね。'},
+    {speaker:'mina',state:'layers',text:'レイヤー名はこれになってる？',card:'<strong>推奨レイヤー名</strong>既存のポケストップ / ジム / パワースポット<br>追加希望ポケストップ / ジム / パワースポット<br><small>※使っている種類だけでOK</small>'},
+    {speaker:'mina',state:'area',text:'活動範囲はこのくらい。',card:'<strong>活動範囲</strong><span class="big">32,000㎡</span><br>🏟️ 東京ドーム 約0.7個分<br><small>推奨レイヤー名：活動範囲</small>'},
+    {speaker:'haru',state:'area',text:'この中をみんなで歩くんだね。'},
+    {speaker:'ren',state:'count',text:'確認事項は2件です。',card:'<strong>確認事項 2件</strong>追加POIに関係する近接地点を順番に確認します。'},
+    {speaker:'riku',state:'issue1',issue:'確認 1 / 2',text:'この2地点の距離は18.6m。かなり近い位置にあるな。',detail:'既存POI A × 追加希望POI A'},
+    {speaker:'mina',state:'issue1',issue:'確認 1 / 2',text:'人が集まりやすそう！\n現地では少し意識しておこうね！'},
+    {speaker:'riku',state:'issue2',issue:'確認 2 / 2',text:'ここも確認しておくか。この2地点は34.2mだ。近い位置にあるな。',detail:'追加希望POI B × 追加希望POI C'},
+    {speaker:'mina',state:'issue2',issue:'確認 2 / 2',text:'ここは人の流れも見ておこう！\n現地では動線も意識しておこうね！'},
+    {speaker:'ren',state:'audit',text:'最終確認に入ります。'},
+    {speaker:'ren',state:'finale',text:'以上で確認は終了です。今お伝えした点を意識しながら、ミートアップを楽しんできてください。'}
+  ];
 
-  <script>
-    (() => {
-      'use strict';
-      const steps = [
-        {speaker:'ren', role:'ニュース・進行', state:'news', text:'臨時ニュースです。東京都江戸川区に、新たなキャンプサイトが発生しました。', card:'<strong>BREAKING NEWS</strong>新規キャンプサイト発生'},
-        {speaker:'ren', role:'ニュース・進行', state:'overview', text:'現地の状況を確認します。', card:'<strong>キャンプサイト全景</strong>既存POI・追加希望POI・活動範囲を確認'},
-        {speaker:'mina', role:'ポジティブ変換', state:'overviewPositive', text:'POIに恵まれた、いい土地だね。', card:'<strong>既存POI</strong>近接する既存POIがあります。軍議では問題件数に含めません。'},
-        {speaker:'mina', role:'やさしい確認', state:'layers', text:'レイヤー名はこれになってる？', card:'<strong>推奨レイヤー名</strong>既存のポケストップ / ジム / パワースポット<br>追加希望ポケストップ / ジム / パワースポット<br><small>※使っている種類だけでOK</small>'},
-        {speaker:'mina', role:'ポジティブ変換', state:'area', text:'活動範囲はこのくらい。', card:'<strong>活動範囲</strong><span class="big">32,000㎡</span><br>🏟️ 東京ドーム 約0.7個分<br><small>推奨レイヤー名：活動範囲</small>'},
-        {speaker:'ren', role:'ニュース・進行', state:'count', text:'確認事項は2件です。', card:'<strong>確認事項 2件</strong>追加POIに関係する近接地点を順番に確認します。'},
-        {speaker:'riku', role:'距離・配置・事実確認', state:'issue1a', issue:'確認 1 / 2', text:'この2地点の距離は18.6m。かなり近い位置にあるね。', card:'<strong>確認ポイント 1</strong>既存POI A × 追加希望POI A<br><span class="big">18.6m</span>'},
-        {speaker:'haru', role:'参加者目線', state:'issue1a', issue:'確認 1 / 2', text:'実際に人が集まったら、ここはちょっと混みそうだね。', card:'<strong>参加者目線</strong>人が集まった時の動き方をイメージ'},
-        {speaker:'mina', role:'ポジティブ変換', state:'issue1a', issue:'確認 1 / 2', text:'人が集まりやすい場所なんだね。現地では少し意識しておこう。', card:'<strong>軍議メモ</strong>修正を命令せず、現地で意識するポイントとして共有'},
-        {speaker:'riku', role:'距離・配置・事実確認', state:'issue2', issue:'確認 2 / 2', text:'続いて、この2地点は34.2m。近い位置にあるね。', card:'<strong>確認ポイント 2</strong>追加希望POI B × 追加希望POI C<br><span class="big">34.2m</span>'},
-        {speaker:'haru', role:'参加者目線', state:'issue2', issue:'確認 2 / 2', text:'ここは歩きながら遊ぶ人も通りそうだね。', card:'<strong>参加者目線</strong>立ち止まる人と歩く人の流れを想像'},
-        {speaker:'mina', role:'ポジティブ変換', state:'issue2', issue:'確認 2 / 2', text:'近い場所にまとまってるね。現地では人の流れを少し意識しておこう。', card:'<strong>軍議メモ</strong>設計思想は尊重し、採点ではなく確認として扱う'},
-        {speaker:'ren', role:'総括', state:'finale', text:'以上の確認結果、このキャンプサイトは提出条件を満たしています。', card:'<strong>CAMP SITE CHECK</strong><span class="big">提出条件：適合</span><br>追加POI 7件 / 活動範囲 確認済み'},
-        {speaker:'ren', role:'送り出し', state:'finale', text:'以上で確認は終了です。今お伝えした点を少し意識しながら、ミートアップを楽しんできてください。', card:'<strong>軍議終了</strong>いってらっしゃい！'}
-      ];
+  const stage=document.getElementById('stage');
+  const speaker=document.getElementById('speaker');
+  const copy=document.getElementById('copy');
+  const detail=document.getElementById('detail');
+  const progress=document.getElementById('progress');
+  const counter=document.getElementById('counter');
+  const monitorCard=document.getElementById('monitorCard');
+  const auditCard=document.getElementById('auditCard');
+  const auditVerdict=document.getElementById('auditVerdict');
+  const auditRows=[...auditCard.querySelectorAll('.audit-row')];
+  const area=document.getElementById('area');
+  const back=document.getElementById('back');
+  const next=document.getElementById('next');
+  const restart=document.getElementById('restart');
+  const poi=[...document.querySelectorAll('.poi')];
+  const lines=[...document.querySelectorAll('.distance-line')];
+  const badges=[...document.querySelectorAll('.distance-badge')];
+  let index=0;
+  let auditTimers=[];
+  const names={ren:'レン',mina:'ミナ',riku:'リク',haru:'ハル'};
 
-      const stage=document.getElementById('stage');
-      const speaker=document.getElementById('speaker');
-      const copy=document.getElementById('copy');
-      const roleNote=document.getElementById('roleNote');
-      const progress=document.getElementById('progress');
-      const counter=document.getElementById('counter');
-      const monitorCard=document.getElementById('monitorCard');
-      const area=document.getElementById('area');
-      const back=document.getElementById('back');
-      const next=document.getElementById('next');
-      const restart=document.getElementById('restart');
-      const poi=[...document.querySelectorAll('.poi')];
-      const lines=[...document.querySelectorAll('.distance-line')];
-      let index=0;
-      const names={ren:'レン',mina:'ミナ',riku:'リク',haru:'ハル'};
+  function clearAuditTimers(){auditTimers.forEach(clearTimeout);auditTimers=[];}
+  function resetVisuals(){
+    clearAuditTimers();
+    poi.forEach(p=>p.classList.remove('focus'));
+    lines.forEach(l=>l.style.opacity='0');
+    badges.forEach(b=>b.style.opacity='0');
+    area.style.opacity='0';
+    monitorCard.classList.remove('show');
+    monitorCard.innerHTML='';
+    auditCard.classList.remove('show');
+    auditRows.forEach(r=>r.classList.remove('show'));
+    auditVerdict.classList.remove('show','retry');
+    auditVerdict.textContent='提出条件：提出OK！';
+  }
 
-      function mapState(state){
-        poi.forEach(p=>p.classList.remove('focus'));
-        lines.forEach(l=>l.style.opacity='0');
-        area.style.opacity='0';
-        if(state==='overviewPositive'){document.querySelector('.p1').classList.add('focus');document.querySelector('.p2').classList.add('focus');}
-        if(state==='area') area.style.opacity='1';
-        if(state==='issue1a'){document.querySelector('.p1').classList.add('focus');document.querySelector('.p2').classList.add('focus');lines[0].style.opacity='1';}
-        if(state==='issue2'){document.querySelector('.p3').classList.add('focus');document.querySelector('.p4').classList.add('focus');lines[1].style.opacity='1';}
-      }
+  function setMapState(s){
+    resetVisuals();
+    if(s.card){monitorCard.innerHTML=s.card;monitorCard.classList.add('show');}
+    if(s.state==='overviewPositive'){document.querySelector('.p1').classList.add('focus');document.querySelector('.p2').classList.add('focus');}
+    if(s.state==='area'){area.style.opacity='1';}
+    if(s.state==='issue1'){
+      document.querySelector('.p1').classList.add('focus');document.querySelector('.p2').classList.add('focus');
+      lines[0].style.opacity='1';badges[0].style.opacity='1';
+    }
+    if(s.state==='issue2'){
+      document.querySelector('.p3').classList.add('focus');document.querySelector('.p4').classList.add('focus');
+      lines[1].style.opacity='1';badges[1].style.opacity='1';
+    }
+    if(s.state==='audit'){
+      auditCard.classList.add('show');
+      next.disabled=true;
+      auditRows.forEach((row,i)=>auditTimers.push(setTimeout(()=>row.classList.add('show'),240+i*330)));
+      auditTimers.push(setTimeout(()=>auditVerdict.classList.add('show'),240+auditRows.length*330+260));
+      auditTimers.push(setTimeout(()=>{next.disabled=false;},240+auditRows.length*330+700));
+    }
+    if(s.state==='finale'){
+      auditCard.classList.add('show');auditRows.forEach(r=>r.classList.add('show'));auditVerdict.classList.add('show');
+    }
+  }
 
-      function render(){
-        const s=steps[index];
-        stage.dataset.speaker=s.speaker;
-        speaker.textContent=names[s.speaker];
-        copy.textContent=s.text;
-        roleNote.textContent=`役割：${s.role}`;
-        progress.textContent=`${index+1} / ${steps.length}`;
-        counter.textContent=s.issue||'';
-        monitorCard.innerHTML=s.card||'';
-        monitorCard.classList.add('show');
-        mapState(s.state);
-        back.disabled=index===0;
-        next.textContent=index===steps.length-1?'軍議を終了':'次へ →';
-        restart.style.display=index===steps.length-1?'inline-block':'none';
-        copy.animate([{opacity:.2,transform:'translateY(4px)'},{opacity:1,transform:'translateY(0)'}],{duration:180,easing:'ease-out'});
-      }
+  function render(){
+    const s=steps[index];
+    stage.dataset.speaker=s.speaker;
+    speaker.textContent=names[s.speaker];
+    copy.textContent=s.text;
+    detail.textContent=s.detail||'';
+    progress.textContent=`${index+1} / ${steps.length}`;
+    counter.textContent=s.issue||'';
+    back.disabled=index===0;
+    next.disabled=false;
+    next.textContent=index===steps.length-1?'軍議を終了':'次へ →';
+    restart.style.display=index===steps.length-1?'inline-block':'none';
+    setMapState(s);
+    copy.animate([{opacity:.2,transform:'translateY(4px)'},{opacity:1,transform:'translateY(0)'}],{duration:180,easing:'ease-out'});
+  }
 
-      back.addEventListener('click',()=>{index=Math.max(0,index-1);render();});
-      next.addEventListener('click',()=>{if(index<steps.length-1){index++;render();}else{index=0;render();}});
-      restart.addEventListener('click',()=>{index=0;render();});
-      render();
-    })();
-  </script>
+  back.addEventListener('click',()=>{index=Math.max(0,index-1);render();});
+  next.addEventListener('click',()=>{if(index<steps.length-1){index++;render();}else{index=0;render();}});
+  restart.addEventListener('click',()=>{index=0;render();});
+  render();
+})();
+</script>
 </body>
 </html>
