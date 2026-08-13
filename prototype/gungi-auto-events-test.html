@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>ADV 自動軍議イベント判定テスト</title>
+  <style>
+    :root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic",sans-serif;color:#e8eef7;background:#07111c}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#17324d 0,#08111f 46%,#04070d 100%)}
+    main{max-width:980px;margin:0 auto;padding:18px}.card{margin-bottom:14px;padding:16px;border:1px solid rgba(148,163,184,.22);border-radius:16px;background:rgba(7,17,30,.86);box-shadow:0 18px 52px rgba(0,0,0,.28)}
+    h1,h2,p{margin-top:0}.sub{color:#a9b9cb;line-height:1.65}.file{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.file input{max-width:100%}
+    .status{margin-top:10px;padding:10px 12px;border-radius:10px;background:#0c1c2d;color:#cbd5e1;line-height:1.6}.ok{color:#bbf7d0}.warn{color:#fed7aa}
+    .primary{padding:16px;border-radius:14px;background:linear-gradient(135deg,rgba(30,64,175,.22),rgba(14,116,144,.18));border:1px solid rgba(125,211,252,.3)}
+    .id{font-size:12px;letter-spacing:.12em;color:#93c5fd;font-weight:900}.title{font-size:24px;font-weight:950;margin:4px 0 8px}.reason{color:#d5e4f3;line-height:1.6}.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.chip{padding:5px 8px;border-radius:999px;background:#10243a;color:#cfe2f5;font-size:11px;border:1px solid rgba(125,211,252,.18)}
+    .events{display:grid;gap:8px}.event-row{padding:11px 12px;border-radius:11px;background:#0b1928;border:1px solid #24394d}.event-row strong{display:block;margin-bottom:4px}.small{font-size:12px;color:#aebed0;line-height:1.55}
+    .cuts{display:grid;gap:8px}.cut{padding:11px 12px;border-radius:11px;background:#f7edd8;color:#2d2118}.speaker{font-size:11px;font-weight:950;color:#76593f;margin-bottom:4px}.copy{font-weight:800;line-height:1.55}
+    details{margin-top:12px}.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:8px}.fact{padding:8px;border-radius:9px;background:#0b1928;color:#b7c8da;font-size:11px;border:1px solid #22384c}
+    @media(max-width:640px){main{padding:10px}.facts{grid-template-columns:1fr}.title{font-size:20px}}
+  </style>
+</head>
+<body>
+<main>
+  <section class="card">
+    <div class="id">CAMPSITE DESIGN TOOL / ADV LAB</div>
+    <h1>自動軍議イベント判定 v0.1</h1>
+    <p class="sub">実KMZ / KMLから、MASTERで定義した6イベントの発火候補を抽出する独立テストです。現行の軍議ページは変更しません。</p>
+    <div class="file"><input id="file" type="file" accept=".kmz,.kml"><span>KMZ / KML</span></div>
+    <div id="status" class="status">ファイルを選択してください。</div>
+  </section>
+
+  <section class="card">
+    <h2>最優先イベント</h2>
+    <div id="primary" class="primary">まだ判定していません。</div>
+  </section>
+
+  <section class="card">
+    <h2>検出イベント一覧</h2>
+    <div id="events" class="events"><div class="small">まだ判定していません。</div></div>
+  </section>
+
+  <section class="card">
+    <h2>軍議プレビュー</h2>
+    <div id="cuts" class="cuts"><div class="small">イベントを検出するとセリフが表示されます。</div></div>
+    <details>
+      <summary>解析Facts</summary>
+      <div id="facts" class="facts"></div>
+    </details>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="./gungi-auto-engine.js"></script>
+<script>
+(() => {
+  'use strict';
+
+  const fileEl = document.getElementById('file');
+  const statusEl = document.getElementById('status');
+  const primaryEl = document.getElementById('primary');
+  const eventsEl = document.getElementById('events');
+  const cutsEl = document.getElementById('cuts');
+  const factsEl = document.getElementById('facts');
+
+  const RX = {
+    added: /(追加|追加希望|希望|新規|候補|add|addition|proposed|candidate|new|cagym|capokestop|capowerspot)/i,
+    existing: /(既存|existing|current)/i,
+    support: /(トイレ|便所|restroom|toilet|水飲|給水|water fountain|休憩|ベンチ|bench|東屋|あずまや|四阿|売店|カフェ|cafe|案内所|information)/i,
+    auxiliary: /(40m|30m|円|buffer|100ft|100feet|100フィート|ダミー)/i
+  };
+
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+
+  function directChildText(node, tagName) {
+    const target = Array.from(node.children || []).find(child => child.localName === tagName || child.tagName === tagName);
+    return target ? (target.textContent || '').trim() : '';
+  }
+
+  function nearestFolderName(placemark) {
+    let node = placemark.parentElement;
+    const names = [];
+    while (node) {
+      if (node.localName === 'Folder' || node.tagName === 'Folder') {
+        const name = directChildText(node, 'name');
+        if (name) names.unshift(name);
+      }
+      node = node.parentElement;
+    }
+    return names.join(' / ');
+  }
+
+  function parseKml(text) {
+    const xml = new DOMParser().parseFromString(text, 'application/xml');
+    if (xml.querySelector('parsererror')) throw new Error('KMLを解析できませんでした。');
+    const result = [];
+    const placemarks = Array.from(xml.getElementsByTagNameNS('*', 'Placemark'));
+
+    placemarks.forEach((placemark, index) => {
+      const pointNode = placemark.getElementsByTagNameNS('*', 'Point')[0];
+      const coordsNode = pointNode?.getElementsByTagNameNS('*', 'coordinates')[0];
+      if (!coordsNode) return;
+      const first = (coordsNode.textContent || '').trim().split(/\s+/)[0];
+      const [lngRaw, latRaw] = first.split(',');
+      const lat = Number(latRaw); const lng = Number(lngRaw);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+      const name = (placemark.getElementsByTagNameNS('*', 'name')[0]?.textContent || `POI ${index + 1}`).trim();
+      const folder = nearestFolderName(placemark);
+      const source = `${folder} ${name}`;
+      const auxiliary = RX.auxiliary.test(folder);
+      result.push({
+        id: `p${index + 1}`, lat, lng, name, folder,
+        isAdded: !auxiliary && RX.added.test(folder),
+        isExisting: !auxiliary && RX.existing.test(folder),
+        isSupport: RX.support.test(source)
+      });
+    });
+    return result;
+  }
+
+  async function readKml(file) {
+    const lower = file.name.toLowerCase();
+    if (lower.endsWith('.kml')) return await file.text();
+    if (!lower.endsWith('.kmz')) throw new Error('KMZまたはKMLを選択してください。');
+    const zip = await JSZip.loadAsync(file);
+    const candidates = Object.values(zip.files).filter(entry => !entry.dir && entry.name.toLowerCase().endsWith('.kml'));
+    if (!candidates.length) throw new Error('KMZ内にKMLが見つかりません。');
+    const preferred = candidates.find(entry => /(^|\/)doc\.kml$/i.test(entry.name)) || candidates[0];
+    return await preferred.async('string');
+  }
+
+  function render(points, events) {
+    const primary = events[0] || null;
+    if (!primary) {
+      primaryEl.innerHTML = '<div class="title">発火なし</div><div class="reason">6イベントの条件に一致する候補は見つかりませんでした。</div>';
+      eventsEl.innerHTML = '<div class="small">検出イベントなし。</div>';
+      cutsEl.innerHTML = '<div class="small">軍議プレビューなし。</div>';
+    } else {
+      primaryEl.innerHTML = `
+        <div class="id">${esc(primary.id)}</div>
+        <div class="title">${esc(primary.title)}</div>
+        <div class="reason">${esc(primary.reason)}</div>
+        <div class="meta"><span class="chip">${esc(primary.type)}</span><span class="chip">confidence: ${esc(primary.confidence)}</span><span class="chip">priority: ${primary.priority}</span></div>`;
+
+      eventsEl.innerHTML = events.map((event, index) => `
+        <div class="event-row"><strong>${index + 1}. ${esc(event.id)} / ${esc(event.title)}</strong><div class="small">${esc(event.reason)} / priority ${event.priority}</div></div>`).join('');
+
+      cutsEl.innerHTML = primary.cuts.map(cut => `
+        <div class="cut"><div class="speaker">${cut.speaker === 'riku' ? 'リク' : cut.speaker === 'mina' ? 'ミナ' : 'SYSTEM'}</div><div class="copy">${esc(cut.text)}</div></div>`).join('');
+    }
+
+    const added = points.filter(p => p.isAdded).length;
+    const existing = points.filter(p => p.isExisting).length;
+    const support = points.filter(p => p.isSupport).length;
+    factsEl.innerHTML = [
+      `Point POI: ${points.length}件`,
+      `追加POI候補: ${added}件`,
+      `既存POI: ${existing}件`,
+      `休憩・支援候補: ${support}件`,
+      `検出イベント: ${events.length}件`,
+      `エンジン: ${window.GungiAutoEvents?.version || 'unknown'}`
+    ].map(text => `<div class="fact">${esc(text)}</div>`).join('');
+  }
+
+  fileEl.addEventListener('change', async () => {
+    const file = fileEl.files?.[0];
+    if (!file) return;
+    statusEl.textContent = '解析中…';
+    try {
+      const kml = await readKml(file);
+      const points = parseKml(kml);
+      if (!points.length) throw new Error('Point形式のPOIを取得できませんでした。');
+      const events = window.GungiAutoEvents.detectAll({ points });
+      render(points, events);
+      statusEl.innerHTML = `<strong class="ok">✓ 解析完了</strong> ${esc(file.name)} / ${points.length} POI / ${events.length} events`;
+    } catch (error) {
+      console.error(error);
+      statusEl.innerHTML = `<strong class="warn">⚠ ${esc(error.message || '解析に失敗しました。')}</strong>`;
+      primaryEl.textContent = '判定できませんでした。';
+      eventsEl.innerHTML = '';
+      cutsEl.innerHTML = '';
+      factsEl.innerHTML = '';
+    }
+  });
+})();
+</script>
+</body>
+</html>
