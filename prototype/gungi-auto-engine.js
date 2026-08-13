@@ -75,12 +75,12 @@
     PARKING_01: {
       id: 'PARKING_01',
       title: '駐車場・車両動線',
-      type: '全会一致型',
-      priority: 100,
+      type: '確認型',
+      priority: 70,
       cuts: [
-        { speaker: 'system', text: '駐車場・ロータリー・車両動線に関係する候補があります。' },
-        { speaker: 'riku', text: '車両動線だ。ここは候補から外そう。' },
-        { speaker: 'mina', text: 'うん。ここで集まるのは危ないね。' }
+        { speaker: 'system', text: '駐車場・ロータリー・車両動線に近い可能性がある候補があります。' },
+        { speaker: 'riku', text: '地図上では車両動線に近いな。実際の歩行ルートや滞留位置を確認したい。' },
+        { speaker: 'mina', text: '近いだけなら通らないこともあるよね。現地を見て決めよう！' }
       ]
     }
   };
@@ -193,8 +193,8 @@
 
     const parking = keywordEvent(points, 'PARKING_01', RX.parking, {
       targetOnly: true,
-      confidence: 'high',
-      reason: '候補POIの名称またはフォルダ名に駐車場・ロータリー・車両動線を示す語を検出'
+      confidence: 'medium',
+      reason: '名称またはフォルダ名から駐車場・ロータリー・車両動線への近接可能性を検出。地図上の近さだけでは除外せず、実際の歩行・滞留との重なりを現地確認する'
     });
     if (parking) found.push(parking);
 
@@ -230,7 +230,7 @@
   }
 
   window.GungiAutoEvents = {
-    version: '0.1.0',
+    version: '0.1.1',
     constants: {
       densityRadiusM: DENSITY_RADIUS_M,
       densityMinExisting: DENSITY_MIN_EXISTING,
