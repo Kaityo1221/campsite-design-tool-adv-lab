@@ -17,7 +17,7 @@
 - `SPORT`: 運動系
 
 ## 現在利用できる主な現地ルール
-- `vehicle_parking_rotary_caution`: 駐車場・車両動線・ロータリーは注意または除外
+- `vehicle_parking_rotary_caution`: 駐車場・車両動線・ロータリーは注意。Waymapや地図上の近接だけでは除外せず、実際の歩行・滞留との重なりを現地確認して判断する
 - `narrow_path_bridge_cycle_road_caution`: 狭い道・橋・サイクリングロード上は注意
 - `restricted_or_inaccessible_exclude`: 立入禁止・通常アクセスできない場所は除外
 - `other_user_purpose_caution`: 他利用者の目的を妨げる場所は注意
@@ -30,6 +30,9 @@
 ### 1. Fact Layer
 距離、位置、カテゴリ、現地ルールなどの客観データ。
 
+地図・名称・フォルダ名などから得た情報は、現地状況が確定していない場合は「推定Fact」として扱う。
+推定Factだけを根拠に自動除外しない。
+
 ### 2. Event Layer
 Fact Layerを組み合わせて軍議イベントを発火する。
 
@@ -39,7 +42,7 @@ Fact Layerを組み合わせて軍議イベントを発火する。
 - TRANSIT付近に追加POI集中 → `ENTRANCE_01`
 - LOOP要素が連続 → `LOOP_01`
 - `narrow_path_bridge_cycle_road_caution` 一致 → `NARROW_PATH_01`
-- `vehicle_parking_rotary_caution` 一致 → `PARKING_01`
+- `vehicle_parking_rotary_caution` 一致、または車両動線への近接可能性を検出 → `PARKING_01`。近接推定だけなら確認型として扱う
 
 ### 3. Dialogue Layer
 イベントIDからリク／ミナのセリフを選ぶ。
@@ -49,13 +52,14 @@ Fact Layerを組み合わせて軍議イベントを発火する。
 
 ## 優先順位
 安全側ルールを魅力評価より優先する。
+ただし、地図上の近接や名称判定などの推定情報は、現地確認済みの安全Factと同じ強さでは扱わない。
 
 暫定優先順位:
-1. 立入禁止・アクセス不可
-2. 車両動線
-3. 狭路・橋・サイクリングロード
-4. 強い滞留リスク
-5. 動線干渉
+1. 立入禁止・アクセス不可など現地で確定した強い安全条件
+2. 現地で確認された車両動線・狭路・橋・サイクリングロード
+3. 強い滞留リスク
+4. 動線干渉
+5. Waymap・名称・フォルダ名から推定された車両動線などの確認事項
 6. 回遊・休憩・景観などのプラス評価
 
 ## 本体接続時の方針
