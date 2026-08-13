@@ -67,8 +67,8 @@ window.GUNGI_EVENTS = [
     mapPreset: "parking",
     cuts: [
       { speaker: "system", text: "駐車場・ロータリー・車両動線に近い可能性がある候補があります。", highlight: "risk" },
-      { speaker: "riku", text: "地図上では車両動線に近いな。実際の歩行ルートや滞留位置を確認したい。", highlight: "risk" },
-      { speaker: "mina", text: "近いだけなら通らないこともあるよね。現地を見て決めよう！", highlight: "neutral" }
+      { speaker: "riku", text: "地図上では車両動線に近いな。実際の歩行ルートや滞留位置を確認しておこうか。", highlight: "risk" },
+      { speaker: "mina", text: "気をつけて歩いてね⭐︎右見て左", highlight: "neutral" }
     ]
   }
 ];
@@ -81,7 +81,7 @@ window.GUNGI_MAP_PRESETS = {
   ],
   densityRest: [
     [32, 30, "existing"], [39, 34, "added"], [45, 38, "added"], [50, 43, "added"],
-    [53, 48, "added"], [46, 51, "added"], [39, 47, "added"], [34, 41, "existing"],
+    [53, 48, "added"], [46, 51, "added"], [39, 47, "existing"], [34, 41, "existing"],
     [58, 54, "support"], [61, 58, "support"], [72, 30, "existing"]
   ],
   entrance: [
