@@ -64,12 +64,12 @@
     NARROW_PATH_01: {
       id: 'NARROW_PATH_01',
       title: '狭路・橋・木道',
-      type: '全会一致型',
-      priority: 90,
+      type: '確認型',
+      priority: 70,
       cuts: [
-        { speaker: 'system', text: '狭い通路・橋・木道などに関係する候補があります。' },
-        { speaker: 'riku', text: 'ここで人を止めるべきじゃない。通行を妨げる。' },
-        { speaker: 'mina', text: 'じゃあ、ここは通るだけにしよ！' }
+        { speaker: 'system', text: '狭い通路・橋・木道などに関係する可能性がある候補があります。' },
+        { speaker: 'riku', text: '地図上では狭い通路に関係しそうだ。実際にここを通るのか、立ち止まるのか確認したい。' },
+        { speaker: 'mina', text: '近くにあるだけかもしれないしね。現地の動き方を見て決めよう！' }
       ]
     },
     PARKING_01: {
@@ -200,8 +200,8 @@
 
     const narrow = keywordEvent(points, 'NARROW_PATH_01', RX.narrow, {
       targetOnly: true,
-      confidence: 'high',
-      reason: '候補POIの名称またはフォルダ名に狭路・橋・木道・自転車道を示す語を検出'
+      confidence: 'medium',
+      reason: '名称またはフォルダ名から狭路・橋・木道・自転車道に関係する可能性を検出。Waymapや地図上の情報だけでは通過扱いにせず、実際に通行・滞留するかを現地確認する'
     });
     if (narrow) found.push(narrow);
 
@@ -230,7 +230,7 @@
   }
 
   window.GungiAutoEvents = {
-    version: '0.1.1',
+    version: '0.1.2',
     constants: {
       densityRadiusM: DENSITY_RADIUS_M,
       densityMinExisting: DENSITY_MIN_EXISTING,
