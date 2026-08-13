@@ -79,8 +79,8 @@
       priority: 70,
       cuts: [
         { speaker: 'system', text: '駐車場・ロータリー・車両動線に近い可能性がある候補があります。' },
-        { speaker: 'riku', text: '地図上では車両動線に近いな。実際の歩行ルートや滞留位置を確認したい。' },
-        { speaker: 'mina', text: '近いだけなら通らないこともあるよね。現地を見て決めよう！' }
+        { speaker: 'riku', text: '地図上では車両動線に近いな。実際の歩行ルートや滞留位置を確認しておこうか。' },
+        { speaker: 'mina', text: '気をつけて歩いてね⭐︎右見て左' }
       ]
     }
   };
@@ -230,7 +230,7 @@
   }
 
   window.GungiAutoEvents = {
-    version: '0.1.2',
+    version: '0.1.3',
     constants: {
       densityRadiusM: DENSITY_RADIUS_M,
       densityMinExisting: DENSITY_MIN_EXISTING,
