@@ -62,13 +62,13 @@ window.GUNGI_EVENTS = [
   {
     id: "PARKING_01",
     title: "駐車場・車両動線",
-    type: "全会一致型",
-    result: "集合・滞留候補から除外推奨",
+    type: "確認型",
+    result: "実際の歩行・滞留と車両動線の重なりを現地確認して判断",
     mapPreset: "parking",
     cuts: [
-      { speaker: "system", text: "車両動線に近い候補があります。", highlight: "risk" },
-      { speaker: "riku", text: "車両動線だ。ここは候補から外そう。", highlight: "risk" },
-      { speaker: "mina", text: "うん。ここで集まるのは危ないね。", highlight: "risk" }
+      { speaker: "system", text: "駐車場・ロータリー・車両動線に近い可能性がある候補があります。", highlight: "risk" },
+      { speaker: "riku", text: "地図上では車両動線に近いな。実際の歩行ルートや滞留位置を確認したい。", highlight: "risk" },
+      { speaker: "mina", text: "近いだけなら通らないこともあるよね。現地を見て決めよう！", highlight: "neutral" }
     ]
   }
 ];
