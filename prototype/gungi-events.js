@@ -50,13 +50,13 @@ window.GUNGI_EVENTS = [
   {
     id: "NARROW_PATH_01",
     title: "狭路・橋・木道",
-    type: "全会一致型",
-    result: "滞留地点から外して通過導線へ",
+    type: "確認型",
+    result: "実際の通行・滞留と通路条件を現地確認して判断",
     mapPreset: "narrow",
     cuts: [
-      { speaker: "system", text: "狭い通路上にPOIがあります。", highlight: "risk" },
-      { speaker: "riku", text: "ここで人を止めるべきじゃない。通行を妨げる。", highlight: "risk" },
-      { speaker: "mina", text: "じゃあ、ここは通るだけにしよ！", highlight: "risk" }
+      { speaker: "system", text: "狭い通路・橋・木道などに関係する可能性がある候補があります。", highlight: "risk" },
+      { speaker: "riku", text: "地図上では狭い通路に関係しそうだ。実際にここを通るのか、立ち止まるのか確認したい。", highlight: "risk" },
+      { speaker: "mina", text: "近くにあるだけかもしれないしね。現地の動き方を見て決めよう！", highlight: "neutral" }
     ]
   },
   {
