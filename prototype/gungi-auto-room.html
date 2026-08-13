@@ -21,13 +21,27 @@
     .strategy-scene[data-speaker="riku"] .dialog-text{left:18%;right:55%;color:#12253d;font-size:clamp(10px,1.05vw,17px);text-align:left}.strategy-scene[data-speaker="mina"] .dialog-text{left:55%;right:13%;color:#3d1830;font-size:clamp(10px,1.05vw,17px);text-align:left}.strategy-scene[data-speaker="system"] .dialog-text{top:auto;transform:none;left:15%;right:15%;bottom:3.2%;max-height:none;overflow:visible;padding:9px 14px;color:#f8fafc;font-size:clamp(10px,1.1vw,17px);text-align:center;background:linear-gradient(180deg,rgba(4,12,22,.82),rgba(4,12,22,.94));border:1px solid rgba(125,211,252,.48);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.34)}
     .controls{display:flex;gap:8px;margin-top:10px}.controls button{flex:1;border:0;border-radius:12px;padding:12px 14px;font-weight:900;cursor:pointer;background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#102033;box-shadow:0 8px 24px rgba(0,0,0,.2)}.controls button.secondary{background:#17263a;color:#dbeafe;border:1px solid rgba(148,163,184,.25)}.controls button:disabled{opacity:.36;cursor:not-allowed;box-shadow:none}
     .status{margin-top:10px;padding:10px 12px;border-radius:12px;color:#cbd5e1;background:rgba(7,17,30,.78);border:1px solid rgba(148,163,184,.18);font-size:12px;line-height:1.65}.ok{color:#bbf7d0}.warn{color:#fed7aa}.facts{margin-top:8px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.fact{font-size:11px;color:#b8c7d8;padding:8px 9px;border-radius:9px;background:#0b1928;border:1px solid #23364a}
-    @media(max-width:760px){.page{padding:0}.labbar{margin:0;border-radius:0;padding:8px}.labtitle{font-size:13px}.labsub,.pill{display:none}.filebox{width:100%}input[type=file]{max-width:100%;width:100%;font-size:12px}.strategy-scene{border-radius:0;border-left:0;border-right:0;min-height:66vh;aspect-ratio:auto;background-size:auto 100%;background-repeat:no-repeat}.actor{width:34%;max-height:58%}.actor-riku{left:-8%}.actor-mina{right:-7%}#map{left:27%;top:15%;width:46%;height:34%}.strategy-scene[data-speaker="riku"] .dialog-text{left:15%;right:53%;font-size:clamp(9px,2.55vw,13px)}.strategy-scene[data-speaker="mina"] .dialog-text{left:53%;right:11%;font-size:clamp(9px,2.55vw,13px)}.strategy-scene[data-speaker="system"] .dialog-text{left:8%;right:8%;bottom:2%;font-size:clamp(9px,2.6vw,13px)}.controls{padding:0 8px}.controls button{padding:11px 8px;font-size:13px}.status{margin:8px;border-radius:10px}.facts{grid-template-columns:1fr 1fr;margin:8px}}
+    @media(max-width:760px){
+      .page{padding:0}.labbar{margin:0;border-radius:0;padding:8px}.labtitle{font-size:13px}.labsub,.pill{display:none}.filebox{width:100%}input[type=file]{max-width:100%;width:100%;font-size:12px}
+      .strategy-scene{border-radius:0;border-left:0;border-right:0;min-height:66vh;aspect-ratio:auto;background-size:auto 100%;background-repeat:no-repeat}
+      .actor{width:34%;max-height:58%}.actor-riku{left:-8%}.actor-mina{right:-7%}#map{left:27%;top:15%;width:46%;height:34%}
+      .speech-image{display:none!important}
+      .strategy-scene[data-speaker="riku"] .dialog-text,.strategy-scene[data-speaker="mina"] .dialog-text{
+        top:auto;bottom:8.5%;transform:none;max-height:none;overflow:visible;padding:12px 13px;border-radius:18px;background:rgba(255,248,234,.97);border:2px solid rgba(118,82,47,.28);box-shadow:0 10px 28px rgba(0,0,0,.25);line-height:1.35;font-size:clamp(12px,3.15vw,16px);text-align:left
+      }
+      .strategy-scene[data-speaker="riku"] .dialog-text{left:13%;right:47%;color:#12253d}
+      .strategy-scene[data-speaker="mina"] .dialog-text{left:47%;right:10%;color:#3d1830}
+      .strategy-scene[data-speaker="riku"] .dialog-text::after,.strategy-scene[data-speaker="mina"] .dialog-text::after{content:"";position:absolute;bottom:-14px;width:0;height:0;border-top:16px solid rgba(255,248,234,.97);border-left:10px solid transparent;border-right:10px solid transparent;filter:drop-shadow(0 3px 2px rgba(0,0,0,.12))}
+      .strategy-scene[data-speaker="riku"] .dialog-text::after{left:20px}.strategy-scene[data-speaker="mina"] .dialog-text::after{right:20px}
+      .strategy-scene[data-speaker="system"] .dialog-text{left:8%;right:8%;bottom:2%;font-size:clamp(9px,2.6vw,13px)}
+      .controls{padding:0 8px}.controls button{padding:11px 8px;font-size:13px}.status{margin:8px;border-radius:10px}.facts{grid-template-columns:1fr 1fr;margin:8px}
+    }
   </style>
 </head>
 <body>
 <main class="page">
   <header class="labbar">
-    <div><div class="labtitle">⚔️ 自動軍議室 v0.2</div><div class="labsub">KMZ → 距離Fact → 自動イベント → リク＆ミナ軍議</div></div>
+    <div><div class="labtitle">⚔️ 自動軍議室 v0.2.1</div><div class="labsub">KMZ → 距離Fact → 自動イベント → リク＆ミナ軍議</div></div>
     <div class="filebox"><input id="kmzFile" type="file" accept=".kmz,.kml"><span class="pill">ブラウザ内解析</span></div>
   </header>
 
@@ -61,7 +75,7 @@
   const el={file:document.getElementById('kmzFile'),status:document.getElementById('status'),facts:document.getElementById('facts'),speaker:document.getElementById('speaker'),dialog:document.getElementById('dialogText'),back:document.getElementById('backBtn'),next:document.getElementById('nextBtn'),restart:document.getElementById('restartBtn'),riku:document.getElementById('actorRiku'),mina:document.getElementById('actorMina'),scene:document.getElementById('strategyScene')};
   const RX={added:/(追加|追加希望|希望|新規|候補|add|addition|proposed|candidate|new|cagym|capokestop|capowerspot)/i,existing:/(既存|existing|current)/i,support:/(トイレ|便所|restroom|toilet|水飲|給水|water fountain|休憩|ベンチ|bench|東屋|あずまや|四阿|売店|カフェ|cafe|案内所|information)/i,aux:/(40m|30m|円|buffer|100ft|100feet|100フィート|ダミー)/i};
   let points=[],analysis=null,sequence=[],stepIndex=0;
-  const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[ch]));
   const distanceMeters=(a,b)=>{const R=6371000,r=d=>d*Math.PI/180,dLat=r(b.lat-a.lat),dLng=r(b.lng-a.lng),lat1=r(a.lat),lat2=r(b.lat),q=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;return 2*R*Math.atan2(Math.sqrt(q),Math.sqrt(1-q));};
   function directChildText(node,tag){const t=Array.from(node.children||[]).find(c=>c.localName===tag||c.tagName===tag);return t?(t.textContent||'').trim():'';}
   function folderName(pm){let n=pm.parentElement,names=[];while(n){if(n.localName==='Folder'||n.tagName==='Folder'){const x=directChildText(n,'name');if(x)names.unshift(x);}n=n.parentElement;}return names.join(' / ');}
