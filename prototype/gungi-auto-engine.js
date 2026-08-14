@@ -25,7 +25,7 @@
       cuts: [
         { speaker: 'system', text: 'POIが集中している地点があります。' },
         { speaker: 'riku', text: 'ここに人が集中するな。滞留が生まれるかもしれない。' },
-        { speaker: 'mina', text: 'でも、人が集まるってことはさ！それだけ魅力があるってことじゃん！' }
+        { speaker: 'mina', text: 'でも、人が集まるってことはさ！\nそれだけ魅力があるってことじゃん！' }
       ]
     },
     DENSITY_REST_01: {
@@ -47,7 +47,7 @@
       cuts: [
         { speaker: 'system', text: '入口付近に追加POIまたは集合候補があります。' },
         { speaker: 'riku', text: 'アクセスはいい。だが、入口の人流とぶつかる可能性がある。' },
-        { speaker: 'mina', text: '初めて来る人にはめっちゃ分かりやすいよ！' }
+        { speaker: 'mina', text: '初めて来る人にはめっちゃ分かりやすいよね！' }
       ]
     },
     LOOP_01: {
@@ -80,7 +80,7 @@
       cuts: [
         { speaker: 'system', text: '駐車場・ロータリー・車両動線に近い可能性がある候補があります。' },
         { speaker: 'riku', text: '地図上では車両動線に近いな。実際の歩行ルートや滞留位置を確認しておこうか。' },
-        { speaker: 'mina', text: '気をつけて歩いてね⭐︎右見て左' }
+        { speaker: 'mina', text: '気をつけて歩いてね⭐︎\n右見て左！' }
       ]
     }
   };
@@ -264,21 +264,21 @@
     const parking = keywordEvent(points, 'PARKING_01', RX.parking, {
       targetOnly: true,
       confidence: 'medium',
-      reason: '名称またはフォルダ名から駐車場・ロータリー・車両動線への近接可能性を検出。地図上の近さだけでは除外せず、実際の歩行・滞留との重なりを現地確認する'
+      reason: '名称またはフォルダ名から駐車場・ロータリー・車両に関係するPOIを検出しました。'
     });
     if (parking) found.push(parking);
 
     const narrow = keywordEvent(points, 'NARROW_PATH_01', RX.narrow, {
       targetOnly: true,
       confidence: 'medium',
-      reason: '名称またはフォルダ名から狭路・橋・木道・自転車道に関係する可能性を検出。Waymapや地図上の情報だけでは通過扱いにせず、実際に通行・滞留するかを現地確認する'
+      reason: '名称またはフォルダ名から狭路・橋・木道・自転車道に関係するPOIを検出しました。'
     });
     if (narrow) found.push(narrow);
 
     const entrance = keywordEvent(points, 'ENTRANCE_01', RX.entrance, {
       addedOnly: true,
       confidence: 'medium',
-      reason: '追加POIの名称またはフォルダ名に入口・ゲート・改札を示す語を検出'
+      reason: '追加POIの名称またはフォルダ名から入口・ゲート・改札に関係するPOIを検出しました'
     });
     if (entrance) found.push(entrance);
 
