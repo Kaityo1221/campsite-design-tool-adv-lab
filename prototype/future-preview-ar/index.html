@@ -19,14 +19,14 @@
     <main class="hud" id="hud">
       <section class="panel setup-panel">
         <div class="panel-title">第一段階</div>
-        <p class="lead">完成KMZ / KMLの活動範囲を読み込み、現地カメラ上へ仮想人物を表示します。</p>
+        <p class="lead">完成KMZ / KMLの活動範囲を読み込み、現在地から50m以内を現地カメラ上で未来化します。</p>
 
         <label class="file-picker">
           <span>1. KMZ / KMLを選ぶ</span>
           <input id="kmzFile" type="file" />
         </label>
 
-        <button id="startArBtn" class="primary" type="button" disabled>2. カメラ・位置情報を開始</button>
+        <button id="startArBtn" class="primary" type="button" disabled>2. AR権限・カメラを開始</button>
 
         <fieldset id="peopleFieldset" disabled>
           <legend>3. 人数</legend>
@@ -41,6 +41,8 @@
 
         <div class="status-grid" aria-live="polite">
           <div class="status-row"><span>KMZ</span><strong id="kmzStatus">未読込</strong></div>
+          <div class="status-row"><span>モーション・方向</span><strong id="motionStatus">未確認</strong></div>
+          <div class="status-row"><span>カメラ</span><strong id="cameraStatus">未開始</strong></div>
           <div class="status-row"><span>AR</span><strong id="arStatus">未開始</strong></div>
           <div class="status-row"><span>GPS</span><strong id="gpsStatus">未取得</strong></div>
         </div>
