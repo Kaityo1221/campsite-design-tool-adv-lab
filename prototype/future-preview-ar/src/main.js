@@ -14,7 +14,8 @@ const state = {
   crowd: [],
   lastPosition: null,
   sourceName: '',
-  previewMode: false
+  previewMode: false,
+  headingDeg: null
 };
 
 const el = {
@@ -70,6 +71,24 @@ function formatAccuracy(position) {
   return `±${Math.round(accuracy)}m`;
 }
 
+function normalizeDegrees(value) {
+  return ((value % 360) + 360) % 360;
+}
+
+function onDeviceOrientation(event) {
+  let heading = null;
+
+  // iOS Safari。webkitCompassHeading は真北基準の0〜360°。
+  if (Number.isFinite(event.webkitCompassHeading)) {
+    heading = event.webkitCompassHeading;
+  } else if (Number.isFinite(event.alpha)) {
+    // 標準DeviceOrientationはalphaが時計回りとは逆なので反転する。
+    heading = 360 - event.alpha;
+  }
+
+  if (Number.isFinite(heading)) state.headingDeg = normalizeDegrees(heading);
+}
+
 async function requestOrientationPermissionFromGesture() {
   el.motionStatus.textContent = '確認中';
 
@@ -86,10 +105,11 @@ async function requestOrientationPermissionFromGesture() {
       throw new Error('モーションと方向へのアクセスが許可されませんでした。Safariの設定を確認してください。');
     }
     el.motionStatus.textContent = '許可済み';
-    return;
+  } else {
+    el.motionStatus.textContent = '利用可能';
   }
 
-  el.motionStatus.textContent = '利用可能';
+  window.addEventListener('deviceorientation', onDeviceOrientation, true);
 }
 
 function onGpsUpdate(event) {
@@ -221,7 +241,8 @@ function showFuture() {
       polygons: state.activityAreas,
       count: state.selectedCount,
       crowd: state.crowd,
-      origin: { lat: coords.latitude, lng: coords.longitude }
+      origin: { lat: coords.latitude, lng: coords.longitude },
+      headingDeg: state.headingDeg
     });
 
     if (result.placed === 0) {
@@ -235,8 +256,10 @@ function showFuture() {
 
     if (result.placed < result.requested) {
       setMessage(`現在地から50m以内かつ活動範囲内に${result.placed}人を仮想配置しました。範囲境界付近のため人数を一部絞っています。`, 'warn');
+    } else if (result.headingUsed) {
+      setMessage(`${result.placed}人を正面・左・右・周囲へ分散配置しました。端末を左右へゆっくり振って確認してください。`, 'ok');
     } else {
-      setMessage(`${result.placed}人を現在地から50m以内の活動範囲へ仮想配置しました。端末をゆっくり動かして周囲を見てください。`, 'ok');
+      setMessage(`${result.placed}人を周囲へ仮想配置しました。方角が取得できなかったため全周分散で表示しています。`, 'warn');
     }
 
     enterPreviewMode();
@@ -252,6 +275,7 @@ function cleanup() {
   if (state.locar) clearCrowd(state.locar, state.crowd);
   state.app?.webcam?.dispose?.();
   state.app?.deviceOrientationControls?.dispose?.();
+  window.removeEventListener('deviceorientation', onDeviceOrientation, true);
 }
 
 el.file.addEventListener('change', event => {
