@@ -175,7 +175,7 @@
     if(event.center&&Number.isFinite(event.center.lat))map.flyTo([event.center.lat,event.center.lng],16,{duration:.8});
     else if(pts.length)map.fitBounds(pts.map(p=>[p.lat,p.lng]),{padding:[80,80],maxZoom:18});
   }
-  function warningSequence(w){const d=w.distance,rounded=d.toFixed(1),pairType=`${pointRoles(w.a)[0]} × ${pointRoles(w.b)[0]}`;let riku='',mina='';if(d<DENSE_LIMIT_M){riku=`ここは ${rounded}m。かなり近い。\nまず配置を調整した方がいい。`;mina='魅力は残したいけど、ここは少し離した方が良さそうだね。';}else if(d<STAY_LIMIT_M){riku=`ここは ${rounded}m。30mを切っている。\n滞留の影響を強く見たい。`;mina='じゃあ、どっちかを少し動かして使いやすくしよ！';}else{riku=`ここは ${rounded}m。40mには届いていない。\n調整候補として確認しておこう。`;mina='あとちょっとなら、雰囲気を壊さず調整できそう！';}return[{speaker:'system',text:`距離注意を検出しました。\n${pairType}\n${w.a.name} × ${w.b.name}：${rounded}m（${w.type}）`,warning:w},{speaker:'riku',text:riku},{speaker:'mina',text:mina}];}
+  function warningSequence(w){const d=w.distance,rounded=d.toFixed(1),pairType=`${pointRoles(w.a)[0]} × ${pointRoles(w.b)[0]}`;let riku='',mina='';if(d<DENSE_LIMIT_M){riku=`ここは ${rounded}m。かなり近い。\n配置を調整した方がいい。`;mina='魅力的だけど、ここは少し離した方が良さそうだね。';}else if(d<STAY_LIMIT_M){riku=`ここは ${rounded}m。30mを切っている。\n除外対象だ。`;mina='すぐに動かさなきゃ！';}else{riku=`ここは ${rounded}m。移動か除外かはリョータしだいだ。\n調整対象としてみておこう。`;mina='お願いリョータ！';}return[{speaker:'system',text:`距離注意を検出しました。\n${pairType}\n${w.a.name} × ${w.b.name}：${rounded}m（${w.type}）`,warning:w},{speaker:'riku',text:riku},{speaker:'mina',text:mina}];}
   function normalizeEvents(events){
   return [...events];
 }
