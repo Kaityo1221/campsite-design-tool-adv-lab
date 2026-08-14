@@ -580,13 +580,13 @@
 
     if (d < DENSE_LIMIT_M) {
       rikuText = `ここは ${rounded}m。かなり近い。\nまず配置を調整した方がいい。`;
-      minaText = '魅力は残したいけど、ここは少し離した方が良さそうだね。';
+      minaText = '残してあげたいけど、ここは少し離した方が良さそうだね。';
     } else if (d < STAY_LIMIT_M) {
       rikuText = `ここは ${rounded}m。30mを切っている。\n滞留の影響を強く見たい。`;
-      minaText = 'じゃあ、どっちかを少し動かして使いやすくしよ！';
+      minaText = '少し動かしてみよう！';
     } else {
-      rikuText = `ここは ${rounded}m。40mには届いていない。\nただし、調整候補として扱える距離だ。`;
-      minaText = 'あとちょっとなら、雰囲気を壊さず調整できそう！';
+      rikuText = `間隔は ${rounded}m。40m未満30m以上ある。だいぶ攻めたな。\n移動される可能性がある。`;
+      minaText = '難しいけど、ここはギリギリの距離だね。';
     }
 
     return [
@@ -597,7 +597,7 @@
       },
       { speaker: 'riku', text: rikuText },
       { speaker: 'mina', text: minaText },
-      { speaker: 'system', text: '軍議メモ：距離条件を優先しつつ、場所の魅力を失わない調整案を検討。' }
+      { speaker: 'system', text: '軍議メモ：距離条件を優先しつつ、歩きやすい配置を検討しましょう。' }
     ];
   }
 
@@ -606,7 +606,7 @@
     const base = [
       {
         speaker: 'system',
-        text: `追加POIに関係する40m未満の要調整はありません。\nただし、周辺密度が高い傾向にあります。`,
+        text: `追加POIに関係する40m未満の要調整はありません。\nただし、密度が高い傾向にあります。`,
         focus: 'context'
       },
       {
@@ -615,7 +615,7 @@
       },
       {
         speaker: 'mina',
-        text: 'それって、人気の中心になりそうってことじゃん！\nにぎわいを作れる場所かも！'
+        text: '人気の中心になれそうだね！\n少し他のスペースも空いてないか調べてみて？バランス大事だよ！'
       }
     ];
 
@@ -626,13 +626,13 @@
           speaker: 'riku',
           text: `さらに、約${Math.round(nearest.distance)}m先に「${nearest.name}」。\n休憩・支援候補として拾える。条件は悪くない。`
         },
-        { speaker: 'mina', text: 'おおっ、ここなら休みながら遊べそうだね！' }
+        { speaker: 'mina', text: 'おっ、ここなら休みながら遊べそうだね！' }
       );
     }
 
     base.push({
       speaker: 'system',
-      text: `軍議メモ：距離判定は良好。周辺の既存密度は「設計ミス」ではなく参考情報として扱う。\n既存POI同士の40m未満：${referenceCount}件（参考）`
+      text: `軍議メモ：距離判定は良好。既存同士の密集は警告対象に入りません。参考情報として扱います。\n既存POI同士の40m未満：${referenceCount}件（参考）`
     });
 
     return base;
@@ -650,7 +650,7 @@
       },
       {
         speaker: 'mina',
-        text: 'よしっ！ 次は「歩いて楽しいか」を見てみよう！'
+        text: 'よしっ！ 次は「歩きやすいか」を見てみよう！'
       },
       {
         speaker: 'system',

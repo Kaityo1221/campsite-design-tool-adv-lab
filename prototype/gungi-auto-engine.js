@@ -30,11 +30,11 @@
     },
     DENSITY_REST_01: {
       id: 'DENSITY_REST_01',
-      title: '密集＋休憩支援',
+      title: '密集＋休憩・利便',
       type: '補完型',
       priority: 60,
       cuts: [
-        { speaker: 'system', text: '密集地点の周辺に休憩・支援設備があります。' },
+        { speaker: 'system', text: '密集地点の周辺に休憩・利便施設があります。' },
         { speaker: 'riku', text: '条件は悪くない。近くに休憩できる場所がある。長時間でも立て直せる。' },
         { speaker: 'mina', text: 'おおっ、ここなら休みながら遊べるね！' }
       ]
@@ -137,55 +137,125 @@
     });
   }
 
-  function detectDensity(points) {
-    const added = points.filter(p => p.isAdded);
-    const existing = points.filter(p => p.isExisting);
-    let best = null;
+    function detectDensityFromFacts(facts) {
+  const factData =
+    facts?.facts ||
+    facts ||
+    {};
 
-    for (const center of added) {
-      const nearbyExisting = existing
-        .map(p => ({ point: p, distance: distanceMeters(center, p) }))
-        .filter(x => x.distance <= DENSITY_RADIUS_M)
-        .sort((a, b) => a.distance - b.distance);
-      if (!best || nearbyExisting.length > best.nearbyExisting.length) {
-        best = { center, nearbyExisting };
-      }
-    }
+  const densityFacts =
+    Array.isArray(factData.density)
+      ? factData.density
+          .filter(fact => fact.triggered)
+          .sort(
+            (a, b) =>
+              b.existingCount -
+              a.existingCount
+          )
+      : [];
 
-    if (!best || best.nearbyExisting.length < DENSITY_MIN_EXISTING) return [];
-
-    const support = points
-      .filter(p => p.isSupport && p.id !== best.center.id)
-      .map(p => ({ point: p, distance: distanceMeters(best.center, p) }))
-      .filter(x => x.distance <= SUPPORT_RADIUS_M)
-      .sort((a, b) => a.distance - b.distance);
-
-    const common = {
-      confidence: 'high',
-      center: best.center,
-      matchedPoints: [best.center, ...best.nearbyExisting.map(x => x.point)],
-      supportPoints: support.map(x => x.point),
-      metrics: {
-        radiusM: DENSITY_RADIUS_M,
-        nearbyExistingCount: best.nearbyExisting.length,
-        supportCount: support.length
-      }
-    };
-
-    const results = [eventResult('DENSITY_01', {
-      ...common,
-      reason: `追加POIの100m以内に既存POIが${best.nearbyExisting.length}件`
-    })];
-
-    if (support.length) {
-      results.push(eventResult('DENSITY_REST_01', {
-        ...common,
-        reason: `密集地点の100m以内に休憩・支援候補が${support.length}件`
-      }));
-    }
-
-    return results;
+  if (!densityFacts.length) {
+    return [];
   }
+
+  const supportFacts =
+    Array.isArray(factData.support)
+      ? factData.support
+      : [];
+
+  return densityFacts.map(
+    densityFact => {
+      const supportFact =
+        supportFacts.find(
+          fact =>
+            fact.triggered &&
+            fact.center?.id ===
+              densityFact.center?.id
+        ) || null;
+
+      const nearbyExisting =
+        Array.isArray(
+          densityFact.nearbyExisting
+        )
+          ? densityFact.nearbyExisting
+          : [];
+
+      const nearbySupport =
+        Array.isArray(
+          supportFact?.nearbySupport
+        )
+          ? supportFact.nearbySupport
+          : [];
+
+      const common = {
+        candidateId:
+          `density:${densityFact.center?.id}`,
+
+        confidence:
+          densityFact.confidence ||
+          'confirmed',
+
+        center:
+          densityFact.center,
+
+        matchedPoints: [
+          densityFact.center,
+          ...nearbyExisting.map(
+            item => item.point
+          )
+        ].filter(Boolean),
+
+        supportPoints:
+          nearbySupport
+            .map(item => item.point)
+            .filter(Boolean),
+
+        metrics: {
+          radiusM:
+            densityFact.radiusM,
+
+          nearbyExistingCount:
+            densityFact.existingCount,
+
+          supportCount:
+            supportFact
+              ?.supportCount ||
+            0
+        }
+      };
+
+      /*
+       * 同じ地点について
+       * DENSITY_01 と DENSITY_REST_01 を
+       * 二重発火させない。
+       *
+       * 休憩・利便施設がある場合は
+       * DENSITY_REST_01 を代表イベントにする。
+       */
+      if (supportFact?.triggered) {
+        return eventResult(
+          'DENSITY_REST_01',
+          {
+            ...common,
+
+            reason:
+              `Fact Layer: ${densityFact.center?.name || '追加POI'}の${densityFact.radiusM}m以内に既存POIが${densityFact.existingCount}件。さらに休憩・利便施設が${supportFact.supportCount}件`
+          }
+        );
+      }
+
+      return eventResult(
+        'DENSITY_01',
+        {
+          ...common,
+
+          reason:
+            `Fact Layer: ${densityFact.center?.name || '追加POI'}の${densityFact.radiusM}m以内に既存POIが${densityFact.existingCount}件`
+        }
+      );
+    }
+  );
+}
 
   function detectAll(input = {}) {
     const points = (input.points || []).map(normalizePoint).filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lng));
@@ -220,7 +290,7 @@
     });
     if (loop) found.push(loop);
 
-    found.push(...detectDensity(points));
+    found.push(...detectDensityFromFacts(input.facts));
 
     return found.sort((a, b) => b.priority - a.priority);
   }
@@ -230,7 +300,7 @@
   }
 
   window.GungiAutoEvents = {
-    version: '0.1.3',
+    version: '0.1.5',
     constants: {
       densityRadiusM: DENSITY_RADIUS_M,
       densityMinExisting: DENSITY_MIN_EXISTING,

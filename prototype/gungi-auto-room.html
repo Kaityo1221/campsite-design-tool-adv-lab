@@ -134,7 +134,7 @@
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
 <script src="./gungi-fact-engine.js?v=0.1.0"></script>
-<script src="./gungi-auto-engine.js?v=0.1.3"></script>
+<script src="./gungi-auto-engine.js?v=0.1.5"></script>
 <script>
 (() => {
   'use strict';
@@ -159,7 +159,9 @@
   map.flyTo([event.center.lat,event.center.lng],16,{duration:.8});
   else if(pts.length)map.fitBounds(pts.map(p=>[p.lat,p.lng]),{padding:[80,80],maxZoom:18});}
   function warningSequence(w){const d=w.distance,rounded=d.toFixed(1);let riku='',mina='';if(d<DENSE_LIMIT_M){riku=`ここは ${rounded}m。かなり近い。\nまず配置を調整した方がいい。`;mina='魅力は残したいけど、ここは少し離した方が良さそうだね。';}else if(d<STAY_LIMIT_M){riku=`ここは ${rounded}m。30mを切っている。\n滞留の影響を強く見たい。`;mina='じゃあ、どっちかを少し動かして使いやすくしよ！';}else{riku=`ここは ${rounded}m。40mには届いていない。\n調整候補として確認しておこう。`;mina='あとちょっとなら、雰囲気を壊さず調整できそう！';}return[{speaker:'system',text:`追加POIに関係する距離注意を検出しました。\n${w.a.name} × ${w.b.name}：${rounded}m（${w.type}）`,warning:w},{speaker:'riku',text:riku},{speaker:'mina',text:mina}];}
-  function normalizeEvents(events){const list=[...events];if(list.some(e=>e.id==='DENSITY_REST_01'))return list.filter(e=>e.id!=='DENSITY_01');return list;}
+  function normalizeEvents(events){
+  return [...events];
+}
   function eventSequence(events){const out=[];events.forEach((event,idx)=>{event.cuts.forEach((cut,cutIndex)=>out.push({speaker:cut.speaker,text:cut.text,event:cutIndex===0?event:null,eventId:event.id,eventTitle:event.title,eventNo:idx+1}));});return out;}
   function buildSequence(warnings,events){const out=[];if(warnings.active.length)out.push(...warningSequence(warnings.active[0]));const normalized=normalizeEvents(events);if(normalized.length)out.push(...eventSequence(normalized));if(!out.length)out.push({speaker:'system',text:'大きな距離注意や自動軍議イベントは見つかりませんでした。'},{speaker:'riku',text:'距離条件はよく整理されている。この段階で無理に触る必要はない。'},{speaker:'mina',text:'よしっ！ 次は実際に歩いて楽しいか見てみよう！'});return out;}
   function renderFacts(){if(!analysis){el.facts.innerHTML='';return;}const added=points.filter(p=>p.isAdded).length,existing=points.filter(p=>p.isExisting).length,events=analysis.events||[];const rows=[`Point：${points.length}件（既存 ${existing} / 追加 ${added}）`,`40m未満：${analysis.warnings.active.length}件`,`自動軍議：${events.length}件`,events.length?`最優先：${events[0].id}`:'最優先：なし'];el.facts.innerHTML=rows.map(x=>`<div class="fact">${esc(x)}</div>`).join('');}
