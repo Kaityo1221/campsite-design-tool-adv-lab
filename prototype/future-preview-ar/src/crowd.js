@@ -1,5 +1,9 @@
 import * as THREE from 'three';
 
+const METERS_PER_DEGREE_LAT = 111320;
+const MIN_RADIUS_M = 8;
+const MAX_RADIUS_M = 50;
+
 function hash01(seed) {
   const x = Math.sin(seed * 91.731 + 17.117) * 43758.5453;
   return x - Math.floor(x);
@@ -19,39 +23,30 @@ function pointInPolygon(lat, lng, points) {
   return inside;
 }
 
-function bbox(points) {
-  return points.reduce((box, [lat, lng]) => ({
-    minLat: Math.min(box.minLat, lat),
-    maxLat: Math.max(box.maxLat, lat),
-    minLng: Math.min(box.minLng, lng),
-    maxLng: Math.max(box.maxLng, lng)
-  }), { minLat: Infinity, maxLat: -Infinity, minLng: Infinity, maxLng: -Infinity });
+function insideAnyPolygon(lat, lng, polygons) {
+  return polygons.some(polygon => pointInPolygon(lat, lng, polygon.points));
 }
 
-function choosePolygon(polygons, seed) {
-  const weights = polygons.map(polygon => Math.max(polygon.area, 1e-12));
-  const total = weights.reduce((sum, value) => sum + value, 0);
-  let cursor = hash01(seed) * total;
-  for (let i = 0; i < polygons.length; i += 1) {
-    cursor -= weights[i];
-    if (cursor <= 0) return polygons[i];
-  }
-  return polygons[polygons.length - 1];
-}
-
-function samplePointInPolygon(polygon, seed) {
-  const box = bbox(polygon.points);
-  for (let attempt = 0; attempt < 180; attempt += 1) {
-    const a = hash01(seed + attempt * 2.13);
-    const b = hash01(seed + attempt * 3.79 + 41);
-    const lat = box.minLat + (box.maxLat - box.minLat) * a;
-    const lng = box.minLng + (box.maxLng - box.minLng) * b;
-    if (pointInPolygon(lat, lng, polygon.points)) return { lat, lng };
-  }
-
-  const lat = polygon.points.reduce((sum, point) => sum + point[0], 0) / polygon.points.length;
-  const lng = polygon.points.reduce((sum, point) => sum + point[1], 0) / polygon.points.length;
+function offsetFrom(origin, distanceM, bearingRad) {
+  const latRad = origin.lat * Math.PI / 180;
+  const northM = Math.cos(bearingRad) * distanceM;
+  const eastM = Math.sin(bearingRad) * distanceM;
+  const lat = origin.lat + northM / METERS_PER_DEGREE_LAT;
+  const lngScale = METERS_PER_DEGREE_LAT * Math.max(0.15, Math.cos(latRad));
+  const lng = origin.lng + eastM / lngScale;
   return { lat, lng };
+}
+
+function sampleNearbyPoint(polygons, origin, seed) {
+  for (let attempt = 0; attempt < 260; attempt += 1) {
+    const radius01 = hash01(seed + attempt * 3.17 + 11);
+    const angle01 = hash01(seed + attempt * 5.73 + 29);
+    const radius = MIN_RADIUS_M + Math.sqrt(radius01) * (MAX_RADIUS_M - MIN_RADIUS_M);
+    const bearing = angle01 * Math.PI * 2;
+    const point = offsetFrom(origin, radius, bearing);
+    if (insideAnyPolygon(point.lat, point.lng, polygons)) return point;
+  }
+  return null;
 }
 
 function material(color) {
@@ -106,16 +101,31 @@ export function clearCrowd(locar, crowd) {
   crowd.length = 0;
 }
 
-export function renderCrowd({ locar, polygons, count, crowd }) {
+export function renderCrowd({ locar, polygons, count, crowd, origin }) {
   clearCrowd(locar, crowd);
 
+  if (!origin || !Number.isFinite(origin.lat) || !Number.isFinite(origin.lng)) {
+    throw new Error('現在地を取得できていません。');
+  }
+
+  const originInside = insideAnyPolygon(origin.lat, origin.lng, polygons);
+  let placed = 0;
+
   for (let i = 0; i < count; i += 1) {
-    const polygon = choosePolygon(polygons, i + 1);
-    const position = samplePointInPolygon(polygon, i * 19.17 + count * 0.71);
+    const position = sampleNearbyPoint(polygons, origin, i * 19.17 + count * 0.71);
+    if (!position) continue;
+
     const person = makePerson(i);
     locar.add(person, position.lng, position.lat);
     crowd.push(person);
+    placed += 1;
   }
 
-  return crowd;
+  return {
+    placed,
+    requested: count,
+    radiusMinM: MIN_RADIUS_M,
+    radiusMaxM: MAX_RADIUS_M,
+    originInside
+  };
 }
