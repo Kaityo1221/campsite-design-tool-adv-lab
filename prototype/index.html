@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Campsite Briefing Prototype</title>
   <link rel="stylesheet" href="./styles.css">
+  <style>
+    .poi-review-entry{margin:16px 0 18px;padding:16px 18px;border:1px solid rgba(103,232,249,.45);border-radius:16px;background:linear-gradient(135deg,rgba(8,47,73,.88),rgba(15,23,42,.96));display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.poi-review-entry strong{display:block;font-size:18px}.poi-review-entry span{display:block;margin-top:4px;color:#b8c8df;font-size:13px}.poi-review-entry a{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-weight:800;color:#083344;background:#67e8f9;padding:11px 16px;border-radius:11px;white-space:nowrap}
+  </style>
 </head>
 <body>
   <main class="app-shell">
@@ -18,6 +21,11 @@
         <select id="eventSelect" aria-label="軍議イベント選択"></select>
       </div>
     </header>
+
+    <section class="poi-review-entry" aria-label="未分類POIレビュー入口">
+      <div><strong>未分類POIレビュー PREVIEW</strong><span>第1回〜第6回 / 各20件。回答はDB・辞書・判定結果へ反映されません。</span></div>
+      <a href="./poi-review-preview.html">レビューを試す</a>
+    </section>
 
     <section class="briefing-stage" aria-label="軍議画面">
       <div class="map-panel" id="mapPanel">
