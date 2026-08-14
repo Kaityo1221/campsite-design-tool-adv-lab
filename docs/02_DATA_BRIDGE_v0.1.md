@@ -37,7 +37,7 @@
 Fact Layerを組み合わせて軍議イベントを発火する。
 
 例:
-- 半径40m以内に追加POIが6件以上 → `DENSITY_01`
+- 追加POIを中心に半径100m以内の既存POIが6件以上 → `DENSITY_01`
 - `DENSITY_01` ＋ 100m以内にREST/SAFE → `DENSITY_REST_01`
 - TRANSIT付近に追加POI集中 → `ENTRANCE_01`
 - LOOP要素が連続 → `LOOP_01`
