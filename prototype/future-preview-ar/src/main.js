@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import { App } from 'locar';
 import { loadActivityAreas } from './kmz.js';
 import { clearCrowd, renderCrowd } from './crowd.js';
@@ -7,8 +6,10 @@ import './styles.css';
 const state = {
   activityAreas: [],
   arStarted: false,
+  cameraReady: false,
   gpsReady: false,
   locar: null,
+  app: null,
   selectedCount: 50,
   crowd: [],
   lastPosition: null,
@@ -23,6 +24,8 @@ const el = {
   fieldset: document.getElementById('peopleFieldset'),
   peopleButtons: document.getElementById('peopleButtons'),
   kmzStatus: document.getElementById('kmzStatus'),
+  motionStatus: document.getElementById('motionStatus'),
+  cameraStatus: document.getElementById('cameraStatus'),
   arStatus: document.getElementById('arStatus'),
   gpsStatus: document.getElementById('gpsStatus'),
   message: document.getElementById('message'),
@@ -40,13 +43,35 @@ function setMessage(text, type = '') {
 function updateControls() {
   el.start.disabled = !state.activityAreas.length || state.arStarted;
   el.fieldset.disabled = !state.arStarted;
-  el.show.disabled = !state.activityAreas.length || !state.arStarted || !state.gpsReady;
+  el.show.disabled = !state.activityAreas.length || !state.arStarted || !state.cameraReady || !state.gpsReady;
 }
 
 function formatAccuracy(position) {
   const accuracy = Number(position?.coords?.accuracy);
   if (!Number.isFinite(accuracy)) return '精度不明';
   return `±${Math.round(accuracy)}m`;
+}
+
+async function requestOrientationPermissionFromGesture() {
+  el.motionStatus.textContent = '確認中';
+
+  if (typeof window.DeviceOrientationEvent === 'undefined') {
+    el.motionStatus.textContent = '非対応';
+    throw new Error('この端末ではモーション・方向センサーを利用できません。');
+  }
+
+  const requestPermission = window.DeviceOrientationEvent.requestPermission;
+  if (typeof requestPermission === 'function') {
+    const result = await requestPermission.call(window.DeviceOrientationEvent);
+    if (result !== 'granted') {
+      el.motionStatus.textContent = '拒否';
+      throw new Error('モーションと方向へのアクセスが許可されませんでした。Safariの設定を確認してください。');
+    }
+    el.motionStatus.textContent = '許可済み';
+    return;
+  }
+
+  el.motionStatus.textContent = '利用可能';
 }
 
 function onGpsUpdate(event) {
@@ -58,8 +83,8 @@ function onGpsUpdate(event) {
 
   if (Number.isFinite(accuracy) && accuracy > 80) {
     setMessage('GPS精度が低めです。人物の位置が大きくずれる可能性があります。開けた場所で再取得してください。', 'warn');
-  } else if (!state.crowd.length) {
-    setMessage('準備完了です。人数を選び「未来を見る」を押してください。', 'ok');
+  } else if (!state.crowd.length && state.cameraReady) {
+    setMessage('準備完了です。現在地から50m以内を未来化します。人数を選び「未来を見る」を押してください。', 'ok');
   }
   updateControls();
 }
@@ -74,14 +99,47 @@ function onGpsError(error) {
 
 async function startAr() {
   if (!state.activityAreas.length || state.arStarted) return;
+
   el.start.disabled = true;
-  el.arStatus.textContent = '起動中';
-  setMessage('カメラとセンサーの許可を確認しています。');
+  el.arStatus.textContent = '準備中';
+  el.cameraStatus.textContent = '待機中';
+  setMessage('iPhoneのモーション・方向へのアクセスを確認します。許可画面が出たら「許可」を選んでください。');
 
   try {
+    // iOSでは requestPermission() をユーザーのタップ処理から直接呼ぶ必要がある。
+    await requestOrientationPermissionFromGesture();
+
+    el.cameraStatus.textContent = '起動中';
+    setMessage('モーション・方向：OK。続いてカメラを開始します。');
+
     const app = new App({
-      cameraOptions: { hFov: 80, near: 0.001, far: 1200 }
+      cameraOptions: { hFov: 80, near: 0.001, far: 1200 },
+      deviceOrientationOptions: {
+        enabled: true,
+        enablePermissionDialog: false,
+        smoothingFactor: 0.2
+      },
+      videoConstraints: { video: { facingMode: 'environment' } }
     });
+
+    state.app = app;
+
+    app.webcam.on('webcamstarted', () => {
+      state.cameraReady = true;
+      el.cameraStatus.textContent = '起動済み';
+      if (state.gpsReady && !state.crowd.length) {
+        setMessage('カメラ・モーション・GPSの準備ができました。「未来を見る」を押してください。', 'ok');
+      }
+      updateControls();
+    });
+
+    app.webcam.on('webcamerror', error => {
+      state.cameraReady = false;
+      el.cameraStatus.textContent = '起動失敗';
+      setMessage(`カメラを開始できませんでした。Safariのカメラ許可を確認してください。${error?.code ? ` (${error.code})` : ''}`, 'error');
+      updateControls();
+    });
+
     const locar = await app.start();
     state.locar = locar;
     state.arStarted = true;
@@ -94,12 +152,13 @@ async function startAr() {
     locar.on('gpserror', onGpsError);
     locar.startGps();
 
-    setMessage('GPSを取得しています。端末を立てて周囲へ向けてください。');
+    setMessage('ARは起動しました。カメラとGPSの準備完了を待っています。');
     updateControls();
   } catch (error) {
     console.error(error);
     el.arStatus.textContent = '起動失敗';
-    setMessage('ARを開始できませんでした。カメラ・モーションと方向・位置情報の許可を確認してください。HTTPS上で開く必要があります。', 'error');
+    if (el.cameraStatus.textContent === '起動中') el.cameraStatus.textContent = '未開始';
+    setMessage(error?.message || 'ARを開始できませんでした。モーション・方向、カメラ、位置情報の許可を確認してください。', 'error');
     state.arStarted = false;
     updateControls();
   }
@@ -121,7 +180,7 @@ async function handleFile(file) {
     if (result.selection === 'single-fallback') {
       setMessage('活動範囲という名称は見つかりませんでしたが、Polygonが1件だけだったため試験用に採用しました。', 'warn');
     } else {
-      setMessage(`活動範囲を${result.polygons.length}件読み込みました。次にカメラ・位置情報を開始してください。`, 'ok');
+      setMessage(`活動範囲を${result.polygons.length}件読み込みました。次にAR権限・カメラを開始してください。`, 'ok');
     }
   } catch (error) {
     console.error(error);
@@ -132,18 +191,47 @@ async function handleFile(file) {
 }
 
 function showFuture() {
-  if (!state.locar || !state.activityAreas.length || !state.gpsReady) return;
+  if (!state.locar || !state.activityAreas.length || !state.gpsReady || !state.cameraReady) return;
 
-  renderCrowd({
-    locar: state.locar,
-    polygons: state.activityAreas,
-    count: state.selectedCount,
-    crowd: state.crowd
-  });
+  const coords = state.lastPosition?.coords;
+  if (!coords) {
+    setMessage('現在地がまだ取得できていません。', 'warn');
+    return;
+  }
 
-  el.liveCount.textContent = `${state.selectedCount}人規模`;
-  el.panel.classList.add('compact');
-  setMessage(`${state.selectedCount}人を活動範囲内へ仮想配置しました。端末をゆっくり動かして周囲を見てください。`, 'ok');
+  try {
+    const result = renderCrowd({
+      locar: state.locar,
+      polygons: state.activityAreas,
+      count: state.selectedCount,
+      crowd: state.crowd,
+      origin: { lat: coords.latitude, lng: coords.longitude }
+    });
+
+    if (result.placed === 0) {
+      el.liveCount.textContent = '表示対象なし';
+      setMessage('現在地から50m以内に活動範囲がありません。活動範囲の現地へ移動してから再度「未来を見る」を押してください。', 'warn');
+      return;
+    }
+
+    el.liveCount.textContent = `${result.placed}人表示 / ${state.selectedCount}人設定`;
+    el.panel.classList.add('compact');
+
+    if (result.placed < result.requested) {
+      setMessage(`現在地から50m以内かつ活動範囲内に${result.placed}人を仮想配置しました。範囲境界付近のため人数を一部絞っています。`, 'warn');
+    } else {
+      setMessage(`${result.placed}人を現在地から50m以内の活動範囲へ仮想配置しました。端末をゆっくり動かして周囲を見てください。`, 'ok');
+    }
+  } catch (error) {
+    console.error(error);
+    setMessage(error?.message || '仮想人物の配置に失敗しました。', 'error');
+  }
+}
+
+function cleanup() {
+  if (state.locar) clearCrowd(state.locar, state.crowd);
+  state.app?.webcam?.dispose?.();
+  state.app?.deviceOrientationControls?.dispose?.();
 }
 
 el.file.addEventListener('change', event => {
@@ -167,12 +255,10 @@ el.peopleButtons.addEventListener('click', event => {
 });
 
 el.reset.addEventListener('click', () => {
-  if (state.locar) clearCrowd(state.locar, state.crowd);
+  cleanup();
   location.reload();
 });
 
-window.addEventListener('pagehide', () => {
-  if (state.locar) clearCrowd(state.locar, state.crowd);
-});
+window.addEventListener('pagehide', cleanup);
 
 updateControls();
