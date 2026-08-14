@@ -13,7 +13,8 @@ const state = {
   selectedCount: 50,
   crowd: [],
   lastPosition: null,
-  sourceName: ''
+  sourceName: '',
+  previewMode: false
 };
 
 const el = {
@@ -21,6 +22,8 @@ const el = {
   start: document.getElementById('startArBtn'),
   show: document.getElementById('showFutureBtn'),
   reset: document.getElementById('resetBtn'),
+  settings: document.getElementById('settingsBtn'),
+  previewControls: document.getElementById('previewControls'),
   fieldset: document.getElementById('peopleFieldset'),
   peopleButtons: document.getElementById('peopleButtons'),
   kmzStatus: document.getElementById('kmzStatus'),
@@ -44,6 +47,21 @@ function updateControls() {
   el.start.disabled = !state.activityAreas.length || state.arStarted;
   el.fieldset.disabled = !state.arStarted;
   el.show.disabled = !state.activityAreas.length || !state.arStarted || !state.cameraReady || !state.gpsReady;
+}
+
+function enterPreviewMode() {
+  state.previewMode = true;
+  el.panel.classList.add('hidden');
+  el.liveCard.classList.remove('hidden');
+  el.previewControls.classList.remove('hidden');
+  document.body.classList.add('preview-mode');
+}
+
+function openSettings() {
+  state.previewMode = false;
+  el.panel.classList.remove('hidden');
+  el.previewControls.classList.add('hidden');
+  document.body.classList.remove('preview-mode');
 }
 
 function formatAccuracy(position) {
@@ -83,7 +101,7 @@ function onGpsUpdate(event) {
 
   if (Number.isFinite(accuracy) && accuracy > 80) {
     setMessage('GPS精度が低めです。人物の位置が大きくずれる可能性があります。開けた場所で再取得してください。', 'warn');
-  } else if (!state.crowd.length && state.cameraReady) {
+  } else if (!state.crowd.length && state.cameraReady && !state.previewMode) {
     setMessage('準備完了です。現在地から50m以内を未来化します。人数を選び「未来を見る」を押してください。', 'ok');
   }
   updateControls();
@@ -106,7 +124,6 @@ async function startAr() {
   setMessage('iPhoneのモーション・方向へのアクセスを確認します。許可画面が出たら「許可」を選んでください。');
 
   try {
-    // iOSでは requestPermission() をユーザーのタップ処理から直接呼ぶ必要がある。
     await requestOrientationPermissionFromGesture();
 
     el.cameraStatus.textContent = '起動中';
@@ -127,7 +144,7 @@ async function startAr() {
     app.webcam.on('webcamstarted', () => {
       state.cameraReady = true;
       el.cameraStatus.textContent = '起動済み';
-      if (state.gpsReady && !state.crowd.length) {
+      if (state.gpsReady && !state.crowd.length && !state.previewMode) {
         setMessage('カメラ・モーション・GPSの準備ができました。「未来を見る」を押してください。', 'ok');
       }
       updateControls();
@@ -146,7 +163,6 @@ async function startAr() {
     document.body.classList.add('ar-running');
     el.arStatus.textContent = '起動済み';
     el.liveCard.classList.remove('hidden');
-    el.reset.classList.remove('hidden');
 
     locar.on('gpsupdate', onGpsUpdate);
     locar.on('gpserror', onGpsError);
@@ -211,20 +227,24 @@ function showFuture() {
     if (result.placed === 0) {
       el.liveCount.textContent = '表示対象なし';
       setMessage('現在地から50m以内に活動範囲がありません。活動範囲の現地へ移動してから再度「未来を見る」を押してください。', 'warn');
+      enterPreviewMode();
       return;
     }
 
     el.liveCount.textContent = `${result.placed}人表示 / ${state.selectedCount}人設定`;
-    el.panel.classList.add('compact');
 
     if (result.placed < result.requested) {
       setMessage(`現在地から50m以内かつ活動範囲内に${result.placed}人を仮想配置しました。範囲境界付近のため人数を一部絞っています。`, 'warn');
     } else {
       setMessage(`${result.placed}人を現在地から50m以内の活動範囲へ仮想配置しました。端末をゆっくり動かして周囲を見てください。`, 'ok');
     }
+
+    enterPreviewMode();
   } catch (error) {
     console.error(error);
+    el.liveCount.textContent = '表示エラー';
     setMessage(error?.message || '仮想人物の配置に失敗しました。', 'error');
+    enterPreviewMode();
   }
 }
 
@@ -243,6 +263,7 @@ el.file.addEventListener('change', event => {
 
 el.start.addEventListener('click', startAr);
 el.show.addEventListener('click', showFuture);
+el.settings.addEventListener('click', openSettings);
 
 el.peopleButtons.addEventListener('click', event => {
   const button = event.target.closest('[data-count]');
