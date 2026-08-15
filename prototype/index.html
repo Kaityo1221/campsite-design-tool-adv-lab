@@ -3,89 +3,76 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Campsite Briefing Prototype</title>
-  <link rel="stylesheet" href="./styles.css">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>Campsite ADV Briefing</title>
+  <link rel="stylesheet" href="./styles.css?v=0.4.0">
 </head>
 <body>
   <main class="app-shell">
     <header class="topbar">
       <div>
         <p class="eyebrow">CAMPSITE DESIGN TOOL / PRIVATE ADV LAB</p>
-        <h1>Campsite Briefing</h1>
+        <h1>ADV 軍議</h1>
       </div>
       <div class="topbar-actions">
-        <span class="status-chip">TEST MODE</span>
-        <select id="eventSelect" aria-label="軍議イベント選択"></select>
+        <span class="status-chip">AUTO TEST</span>
+        <select id="eventSelect" aria-label="軍議イベント選択" disabled><option>KMZを読み込んでください</option></select>
       </div>
     </header>
 
+    <section class="load-panel">
+      <div>
+        <strong>キャンプサイトを読み込む</strong>
+        <p>KMZ / KMLを入れると、活動範囲内のPOIからイベントを自動判定して軍議を始めます。</p>
+      </div>
+      <label class="file-button">KMZ / KMLを選択<input id="briefingFile" type="file" accept=".kmz,.kml"></label>
+      <div id="briefingStatus" class="briefing-status">まだファイルを読み込んでいません。</div>
+    </section>
+
     <section class="briefing-stage" aria-label="軍議画面">
-      <div class="map-panel" id="mapPanel">
+      <div class="map-panel" id="mapPanel" data-highlight="neutral">
         <div class="map-grid"></div>
         <div class="map-river"></div>
-        <div class="road road-a"></div>
-        <div class="road road-b"></div>
-        <div class="road road-c"></div>
-        <div class="map-label label-north">北エリア</div>
-        <div class="map-label label-center">中央広場</div>
-        <div class="map-label label-south">南エリア</div>
-
+        <div class="road road-a"></div><div class="road road-b"></div><div class="road road-c"></div>
+        <div class="map-label label-north">ACTIVITY AREA</div>
+        <div class="map-label label-center" id="mapCenterLabel">POI MAP</div>
+        <div class="map-label label-south">ADV LAB</div>
         <div id="poiLayer" class="poi-layer" aria-hidden="true"></div>
         <div id="focusHalo" class="focus-halo" aria-hidden="true"></div>
-
-        <div class="map-legend">
-          <span><i class="legend-dot existing"></i>既存POI</span>
-          <span><i class="legend-dot added"></i>追加POI</span>
-          <span><i class="legend-dot support"></i>休憩・支援</span>
-        </div>
+        <div class="map-legend"><span><i class="legend-dot existing"></i>POI</span><span><i class="legend-dot added"></i>対象</span><span><i class="legend-dot support"></i>休憩・支援</span></div>
       </div>
 
       <div class="character character-riku is-dim" id="rikuCard">
         <div class="portrait portrait-riku" aria-hidden="true">R</div>
-        <div class="character-meta">
-          <strong>リク</strong>
-          <span>分析・安全・運用</span>
-        </div>
+        <div class="character-meta"><strong>リク</strong><span>分析・安全・運用</span></div>
       </div>
-
       <div class="character character-mina is-dim" id="minaCard">
         <div class="portrait portrait-mina" aria-hidden="true">M</div>
-        <div class="character-meta">
-          <strong>ミナ</strong>
-          <span>魅力・楽しさ・にぎわい</span>
-        </div>
+        <div class="character-meta"><strong>ミナ</strong><span>魅力・楽しさ・にぎわい</span></div>
       </div>
+
+      <div class="event-banner" id="eventBanner"><span id="eventBannerNo">READY</span><strong id="eventBannerTitle">KMZを読み込むと軍議が始まります</strong></div>
 
       <div class="dialogue-panel">
-        <div class="speaker-line">
-          <span class="speaker-badge" id="speakerBadge">SYSTEM</span>
-          <span class="cut-counter" id="cutCounter">CUT 1 / 1</span>
-        </div>
-        <p id="dialogueText">軍議を開始します。</p>
-        <div class="dialogue-actions">
-          <button id="restartButton" class="ghost-button" type="button">最初から</button>
-          <button id="nextButton" class="next-button" type="button">次へ</button>
-        </div>
+        <div class="speaker-line"><span class="speaker-badge" id="speakerBadge">SYSTEM</span><span class="cut-counter" id="cutCounter">CUT 0 / 0</span></div>
+        <p id="dialogueText">キャンプサイトのKMZを読み込んでください。検出したイベントをリクとミナが順番に見ていきます。</p>
+        <div class="dialogue-actions"><button id="restartButton" class="ghost-button" type="button" disabled>最初から</button><button id="nextButton" class="next-button" type="button" disabled>次へ</button></div>
       </div>
     </section>
 
-    <section class="debug-panel">
-      <div>
-        <span class="debug-label">EVENT</span>
-        <strong id="eventId">DENSITY_01</strong>
-      </div>
-      <div>
-        <span class="debug-label">TYPE</span>
-        <strong id="eventType">対立型</strong>
-      </div>
-      <div>
-        <span class="debug-label">RESULT</span>
-        <strong id="eventResult">魅力を残しつつ分散を検討</strong>
-      </div>
-    </section>
+    <details class="debug-wrap">
+      <summary>解析情報を見る</summary>
+      <section class="debug-panel">
+        <div><span class="debug-label">EVENT</span><strong id="eventId">-</strong></div>
+        <div><span class="debug-label">TYPE</span><strong id="eventType">-</strong></div>
+        <div><span class="debug-label">RESULT</span><strong id="eventResult">-</strong></div>
+      </section>
+      <div id="detectedList" class="detected-list"></div>
+    </details>
   </main>
 
-  <script src="./gungi-events.js"></script>
-  <script src="./app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="./gungi-auto-engine.js?v=0.3.0"></script>
+  <script src="./app.js?v=0.4.0"></script>
 </body>
 </html>
