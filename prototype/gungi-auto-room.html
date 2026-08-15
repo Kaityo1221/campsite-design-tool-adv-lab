@@ -13,111 +13,33 @@
     *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#050a11}body{min-height:100vh;background:radial-gradient(circle at top,#18314d 0,#08111f 48%,#04070d 100%)}button,input{font:inherit}
     .page{max-width:1220px;margin:0 auto;padding:12px}.labbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px;padding:10px 12px;border:1px solid rgba(148,163,184,.24);border-radius:14px;background:rgba(7,17,30,.9)}
     .labtitle{font-weight:950}.labsub{font-size:11px;color:#9fb0c4;margin-top:3px}.filebox{display:flex;gap:8px;align-items:center;flex-wrap:wrap}input[type=file]{max-width:290px;color:#dbeafe}.pill{padding:5px 9px;border-radius:999px;background:#10243b;color:#b8cae0;font-size:11px;border:1px solid rgba(125,211,252,.18)}
-    .strategy-scene{position:relative;width:100%;aspect-ratio:3/2;overflow:hidden;border-radius:18px;border:1px solid rgba(251,191,36,.28);background-image:url('./assets/backgrounds/strategy_room_idle.png');background-size:cover;background-position:center;box-shadow:0 22px 70px rgba(0,0,0,.45);isolation:isolate}
-    #map{position:absolute;z-index:2;left:29.3%;top:15.8%;width:40.3%;height:37.2%;background:#101820;overflow:hidden;box-shadow:inset 0 0 0 2px rgba(0,0,0,.55)}#map .leaflet-control-attribution{font-size:7px;background:rgba(255,255,255,.72)}#map .leaflet-control-zoom{transform:scale(.72);transform-origin:top left}
-    .actor{position:absolute;z-index:12;
-      bottom:-1.5%;
-      width:28%;
-      max-height:61%;
-      object-fit:contain;
-      object-position:bottom;
-      opacity:.30;
-      filter:brightness(.48) saturate(.72);
-      transform:translateY(1.5%) scale(.96);
-      transition:opacity .22s ease,filter .22s ease,transform .22s ease;pointer-events:none;user-select:none}
-      .actor-riku{left:-6.1%}
-      .actor-mina{right:-5%}
-      .actor.active{opacity:1;filter:brightness(1.04) saturate(1.05);
-        transform:translateY(0) scale(1.015)}
-    .speech-image{position:absolute;
-      z-index:14;
-      left:50%;
-      bottom:-27%;
-      width:82%;
-      height:auto;
-      transform:translateX(-50%);
-      transform-origin:center bottom;
-      opacity:0;pointer-events:none;
-      user-select:none}
-    .strategy-scene[data-speaker="riku"] .speech-image,
-.strategy-scene[data-speaker="mina"] .speech-image{
-  opacity:1;
-}
+    .strategy-scene{position:relative;width:100%;aspect-ratio:3/2;overflow:hidden;border-radius:18px;border:1px solid rgba(251,191,36,.28);background-image:url('./assets/backgrounds/strategy_room_idle.png');background-size:cover;background-position:center;box-shadow:0 22px 70px rgba(0,0,0,.45);isolation:isolate;transition:background-image .18s ease}
+    .strategy-scene.signal-cut{background-image:url('./assets/backgrounds/strategy_room_signal_cut.png')}
+    .strategy-scene.signal-cut #map{opacity:.1;filter:blur(2px)}
+    #map{position:absolute;z-index:2;left:29.3%;top:15.8%;width:40.3%;height:37.2%;background:#101820;overflow:hidden;box-shadow:inset 0 0 0 2px rgba(0,0,0,.55);transition:opacity .2s ease,filter .2s ease}#map .leaflet-control-attribution{font-size:7px;background:rgba(255,255,255,.72)}#map .leaflet-control-zoom{transform:scale(.72);transform-origin:top left}
+    .event-banner{position:absolute;z-index:18;left:50%;top:4%;transform:translateX(-50%);max-width:62%;padding:6px 12px;border:1px solid rgba(147,197,253,.32);border-radius:999px;background:rgba(3,12,22,.72);color:#dbeafe;font-size:clamp(9px,.9vw,12px);font-weight:900;letter-spacing:.05em;text-align:center;backdrop-filter:blur(8px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .actor{position:absolute;z-index:12;bottom:-1.5%;width:28%;max-height:61%;object-fit:contain;object-position:bottom;opacity:.30;filter:brightness(.48) saturate(.72);transform:translateY(1.5%) scale(.96);transition:opacity .22s ease,filter .22s ease,transform .22s ease;pointer-events:none;user-select:none}.actor-riku{left:-6.1%}.actor-mina{right:-5%}.actor.active{opacity:1;filter:brightness(1.04) saturate(1.05);transform:translateY(0) scale(1.015)}
+    .speech-image{position:absolute;z-index:14;left:50%;bottom:-27%;width:82%;height:auto;transform:translateX(-50%);transform-origin:center bottom;opacity:0;pointer-events:none;user-select:none}.strategy-scene[data-speaker="riku"] .speech-image,.strategy-scene[data-speaker="mina"] .speech-image{opacity:1}.signal-cut .speech-image{opacity:0!important}
     .dialog-layer{position:absolute;inset:0;z-index:16;pointer-events:none}.speaker{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.dialog-text{position:absolute;top:84.5%;transform:translateY(-50%);white-space:pre-wrap;font-weight:850;line-height:1.16;letter-spacing:.01em;max-height:3.5em;overflow:hidden}
     .strategy-scene[data-speaker="riku"] .dialog-text{left:18%;right:55%;color:#12253d;font-size:clamp(10px,1.05vw,17px);text-align:left}.strategy-scene[data-speaker="mina"] .dialog-text{left:55%;right:13%;color:#3d1830;font-size:clamp(10px,1.05vw,17px);text-align:left}.strategy-scene[data-speaker="system"] .dialog-text{top:auto;transform:none;left:15%;right:15%;bottom:3.2%;max-height:none;overflow:visible;padding:9px 14px;color:#f8fafc;font-size:clamp(10px,1.1vw,17px);text-align:center;background:linear-gradient(180deg,rgba(4,12,22,.82),rgba(4,12,22,.94));border:1px solid rgba(125,211,252,.48);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.34)}
     .controls{display:flex;gap:8px;margin-top:10px}.controls button{flex:1;border:0;border-radius:12px;padding:12px 14px;font-weight:900;cursor:pointer;background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#102033;box-shadow:0 8px 24px rgba(0,0,0,.2)}.controls button.secondary{background:#17263a;color:#dbeafe;border:1px solid rgba(148,163,184,.25)}.controls button:disabled{opacity:.36;cursor:not-allowed;box-shadow:none}
-    .status{margin-top:10px;padding:10px 12px;border-radius:12px;color:#cbd5e1;background:rgba(7,17,30,.78);border:1px solid rgba(148,163,184,.18);font-size:12px;line-height:1.65}.ok{color:#bbf7d0}.warn{color:#fed7aa}.facts{margin-top:8px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.fact{font-size:11px;color:#b8c7d8;padding:8px 9px;border-radius:9px;background:#0b1928;border:1px solid #23364a}
-    @media(max-width:760px){
-      .page{padding:0}.labbar{margin:0;border-radius:0;padding:8px}.labtitle{font-size:13px}.labsub,.pill{display:none}.filebox{width:100%}input[type=file]{max-width:100%;width:100%;font-size:12px}
-      .strategy-scene{border-radius:0;border-left:0;border-right:0;min-height:66vh;aspect-ratio:auto;background-size:auto 100%;background-repeat:no-repeat}
-      .actor{
-  bottom:-1%;
-}
-
-/* リク */
-.actor-riku{
-  width:52%;
-  max-height:72%;
-  left:-8%;
-   bottom:-2%;
-}
-
-/* ミナ */
-.actor-mina{
-  width:43%;
-  max-height:70%;
-  right:-4%;
-  bottom:1%;
-}
-      #map{left:27%;top:15%;width:46%;height:34%}
-      .strategy-scene[data-speaker="riku"] .dialog-text,
-.strategy-scene[data-speaker="mina"] .dialog-text{
-  top:auto;
-  bottom:23%;
-  transform:none;
-  height:3.75em;
-  display:flex;
-  align-items:center;
-  overflow:visible;
-  line-height:1.25;
-  font-size:clamp(9px,2.5vw,12px);
-  text-align:left;
-}
-      .strategy-scene[data-speaker="riku"] 
-      .dialog-text{left:11%;right:52%;
-        bottom:3%;color:#12253d}
-      .strategy-scene[data-speaker="mina"] 
-      .dialog-text{left:55%;right:9%;
-        bottom:4%;color:#3d1830}
-      .strategy-scene[data-speaker="system"] 
-      .dialog-text{
-  left:8%;
-  right:8%;
-  bottom:2%;
-  font-size:clamp(9px,2.6vw,13px);
-}
-      .controls{padding:0 8px}.controls button{padding:11px 8px;font-size:13px}.status{margin:8px;border-radius:10px}.facts{grid-template-columns:1fr 1fr;margin:8px}
-      .speech-image{
-  display:block;
-  bottom:-15%;
-  width:94%;
-}
-    }
+    .status{margin-top:10px;padding:10px 12px;border-radius:12px;color:#cbd5e1;background:rgba(7,17,30,.78);border:1px solid rgba(148,163,184,.18);font-size:12px;line-height:1.65}.ok{color:#bbf7d0}.warn{color:#fed7aa}.debug{margin-top:8px;border:1px solid rgba(148,163,184,.16);border-radius:12px;background:rgba(7,17,30,.65)}.debug summary{padding:9px 12px;cursor:pointer;color:#9fb0c4;font-size:11px;font-weight:800}.facts{padding:0 10px 10px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.fact{font-size:11px;color:#b8c7d8;padding:8px 9px;border-radius:9px;background:#0b1928;border:1px solid #23364a}
+    @media(max-width:760px){.page{padding:0}.labbar{margin:0;border-radius:0;padding:8px}.labtitle{font-size:13px}.labsub,.pill{display:none}.filebox{width:100%}input[type=file]{max-width:100%;width:100%;font-size:12px}.strategy-scene{border-radius:0;border-left:0;border-right:0;min-height:66vh;aspect-ratio:auto;background-size:auto 100%;background-repeat:no-repeat}.event-banner{top:2%;max-width:80%;font-size:9px}.actor-riku{width:52%;max-height:72%;left:-8%;bottom:-2%}.actor-mina{width:43%;max-height:70%;right:-4%;bottom:1%}#map{left:27%;top:15%;width:46%;height:34%}.strategy-scene[data-speaker="riku"] .dialog-text,.strategy-scene[data-speaker="mina"] .dialog-text{top:auto;transform:none;height:3.75em;display:flex;align-items:center;overflow:visible;line-height:1.25;font-size:clamp(9px,2.5vw,12px);text-align:left}.strategy-scene[data-speaker="riku"] .dialog-text{left:11%;right:52%;bottom:3%;color:#12253d}.strategy-scene[data-speaker="mina"] .dialog-text{left:55%;right:9%;bottom:4%;color:#3d1830}.strategy-scene[data-speaker="system"] .dialog-text{left:8%;right:8%;bottom:2%;font-size:clamp(9px,2.6vw,13px)}.controls{padding:0 8px}.controls button{padding:11px 8px;font-size:13px}.status{margin:8px;border-radius:10px}.debug{margin:8px}.facts{grid-template-columns:1fr 1fr}.speech-image{display:block;bottom:-15%;width:94%}}
   </style>
 </head>
 <body>
 <main class="page">
   <header class="labbar">
-    <div><div class="labtitle">⚔️ 自動軍議室 v0.2.1</div><div class="labsub">KMZ → 距離Fact → 自動イベント → リク＆ミナ軍議</div></div>
-    <div class="filebox"><input id="kmzFile" type="file" accept=".kmz,.kml"><span class="pill">ブラウザ内解析</span></div>
+    <div><div class="labtitle">⚔️ 自動軍議室 v0.3.0</div><div class="labsub">KMZ → 活動範囲 → 24イベント判定 → リク＆ミナ軍議</div></div>
+    <div class="filebox"><input id="kmzFile" type="file" accept=".kmz,.kml"><span class="pill">24 EVENT ENGINE</span></div>
   </header>
 
   <section id="strategyScene" class="strategy-scene" data-speaker="system" aria-label="Campsite Design Tool 自動軍議画面">
     <div id="map" aria-label="KMZ解析地図"></div>
+    <div id="eventBanner" class="event-banner">ADV COUNCIL / READY</div>
     <img id="actorRiku" class="actor actor-riku" src="./assets/characters/riku_normal.png" alt="リク">
     <img id="actorMina" class="actor actor-mina" src="./assets/characters/mina_normal.png" alt="ミナ">
-    <img class="speech-image"
-     src="./assets/speech/dialog_riku_left.png" alt="">
+    <img class="speech-image" src="./assets/speech/dialog_riku_left.png" alt="">
     <div class="dialog-layer"><div id="speaker" class="speaker">SYSTEM</div><div id="dialogText" class="dialog-text">KMZまたはKMLを選択すると、自動軍議を開始します。</div></div>
   </section>
 
@@ -127,45 +49,54 @@
     <button id="restartBtn" class="secondary" type="button" disabled>最初から</button>
   </div>
   <div id="status" class="status">完成KMZ / KMLを選択してください。</div>
-  <div id="facts" class="facts"></div>
+  <details class="debug"><summary>解析情報を見る</summary><div id="facts" class="facts"></div></details>
 </main>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-<script src="./gungi-auto-engine.js?v=0.1.3"></script>
+<script src="./gungi-auto-engine.js?v=0.3.0"></script>
+<script src="./gungi-dialogues-v0.3.js?v=0.3.0"></script>
 <script>
 (() => {
   'use strict';
   const DISTANCE_LIMIT_M=40,DENSE_LIMIT_M=20,STAY_LIMIT_M=30;
+  const RIKU_IMAGES={
+    normal:'./assets/characters/riku_normal.png',
+    curious:'./assets/characters/%20%20%20%20riku_curious.png',
+    surprised:'./assets/characters/%20%20%20%20riku_surprised.png'
+  };
+  const CATEGORY_LABELS={playground:'遊具',openSpace:'公園・広場',rest:'休憩',transit:'交通',landmark:'ランドマーク',art:'アート',history:'歴史・文化',religious:'寺社・宗教',commercial:'商業',food:'飲食・補給',largeCommercial:'大型商業',water:'水辺',tourist:'観光',loop:'回遊',stay:'滞在'};
   const map=L.map('map',{zoomControl:true}).setView([35.6812,139.7671],13);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:20,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
   const poiLayer=L.layerGroup().addTo(map),highlightLayer=L.layerGroup().addTo(map);
-  const el={file:document.getElementById('kmzFile'),status:document.getElementById('status'),facts:document.getElementById('facts'),speaker:document.getElementById('speaker'),dialog:document.getElementById('dialogText'),back:document.getElementById('backBtn'),next:document.getElementById('nextBtn'),restart:document.getElementById('restartBtn'),riku:document.getElementById('actorRiku'),mina:document.getElementById('actorMina'),scene:document.getElementById('strategyScene')};
-  const RX={added:/(追加|追加希望|希望|新規|候補|add|addition|proposed|candidate|new|cagym|capokestop|capowerspot)/i,existing:/(既存|existing|current)/i,support:/(トイレ|便所|restroom|toilet|水飲|給水|water fountain|休憩|ベンチ|bench|東屋|あずまや|四阿|売店|カフェ|cafe|案内所|information)/i,aux:/(40m|30m|円|buffer|100ft|100feet|100フィート|ダミー)/i};
-  let points=[],analysis=null,sequence=[],stepIndex=0;
-  const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[ch]));
-  const distanceMeters=(a,b)=>{const R=6371000,r=d=>d*Math.PI/180,dLat=r(b.lat-a.lat),dLng=r(b.lng-a.lng),lat1=r(a.lat),lat2=r(b.lat),q=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;return 2*R*Math.atan2(Math.sqrt(q),Math.sqrt(1-q));};
+  const el={file:document.getElementById('kmzFile'),status:document.getElementById('status'),facts:document.getElementById('facts'),speaker:document.getElementById('speaker'),dialog:document.getElementById('dialogText'),back:document.getElementById('backBtn'),next:document.getElementById('nextBtn'),restart:document.getElementById('restartBtn'),riku:document.getElementById('actorRiku'),mina:document.getElementById('actorMina'),scene:document.getElementById('strategyScene'),banner:document.getElementById('eventBanner')};
+  const RX={added:/(追加|追加希望|希望|新規|候補|add|addition|proposed|candidate|new|cagym|capokestop|capowerspot)/i,existing:/(既存|existing|current)/i,support:/(トイレ|便所|restroom|toilet|水飲|給水|休憩|ベンチ|bench|東屋|あずまや|四阿|売店|カフェ|cafe|案内所|information)/i,aux:/(50m|40m|30m|円|buffer|100ft|100feet|100フィート|ダミー)/i,activity:/(活動範囲|活動エリア|活動区域|対象範囲|対象エリア|activity\s*(area|range)|event\s*area)/i};
+  let points=[],scopedPoints=[],analysis=null,sequence=[],stepIndex=0;
+  const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  const distanceMeters=(a,b)=>window.GungiAutoEvents?.distanceMeters?.(a,b)??0;
   function directChildText(node,tag){const t=Array.from(node.children||[]).find(c=>c.localName===tag||c.tagName===tag);return t?(t.textContent||'').trim():'';}
   function folderName(pm){let n=pm.parentElement,names=[];while(n){if(n.localName==='Folder'||n.tagName==='Folder'){const x=directChildText(n,'name');if(x)names.unshift(x);}n=n.parentElement;}return names.join(' / ');}
-  function parseKml(text){const xml=new DOMParser().parseFromString(text,'application/xml');if(xml.querySelector('parsererror'))throw new Error('KMLを解析できませんでした。');const out=[];Array.from(xml.getElementsByTagNameNS('*','Placemark')).forEach((pm,i)=>{const p=pm.getElementsByTagNameNS('*','Point')[0],c=p?.getElementsByTagNameNS('*','coordinates')[0];if(!c)return;const first=(c.textContent||'').trim().split(/\s+/)[0],[lngRaw,latRaw]=first.split(','),lat=Number(latRaw),lng=Number(lngRaw);if(!Number.isFinite(lat)||!Number.isFinite(lng))return;const name=(pm.getElementsByTagNameNS('*','name')[0]?.textContent||`POI ${i+1}`).trim(),folder=folderName(pm),source=`${folder} ${name}`,aux=RX.aux.test(folder),isAdded=!aux&&RX.added.test(folder),isExisting=!aux&&RX.existing.test(folder);out.push({id:`p${i+1}`,lat,lng,name,folder,isAdded,isExisting,isTarget:isAdded||isExisting,isSupport:RX.support.test(source)});});return out;}
+  function polygonCoords(pm){const node=pm.getElementsByTagNameNS('*','Polygon')[0]?.getElementsByTagNameNS('*','coordinates')[0];if(!node)return null;const coords=(node.textContent||'').trim().split(/\s+/).map(raw=>{const [lngRaw,latRaw]=raw.split(','),lat=Number(latRaw),lng=Number(lngRaw);return Number.isFinite(lat)&&Number.isFinite(lng)?{lat,lng}:null;}).filter(Boolean);return coords.length>=3?coords:null;}
+  function parseKml(text){const xml=new DOMParser().parseFromString(text,'application/xml');if(xml.querySelector('parsererror'))throw new Error('KMLを解析できませんでした。');const out=[];let activityPolygon=null;Array.from(xml.getElementsByTagNameNS('*','Placemark')).forEach((pm,i)=>{const name=(pm.getElementsByTagNameNS('*','name')[0]?.textContent||`POI ${i+1}`).trim(),folder=folderName(pm),label=`${folder} ${name}`.trim(),poly=polygonCoords(pm);if(poly&&RX.activity.test(label)&&!RX.aux.test(label)&&!activityPolygon)activityPolygon=poly;const p=pm.getElementsByTagNameNS('*','Point')[0],c=p?.getElementsByTagNameNS('*','coordinates')[0];if(!c)return;const first=(c.textContent||'').trim().split(/\s+/)[0],[lngRaw,latRaw]=first.split(','),lat=Number(latRaw),lng=Number(lngRaw);if(!Number.isFinite(lat)||!Number.isFinite(lng))return;const source=`${folder} ${name}`,aux=RX.aux.test(folder),isAdded=!aux&&RX.added.test(folder),isExisting=!aux&&RX.existing.test(folder);out.push({id:`p${i+1}`,lat,lng,name,folder,isAdded,isExisting,isTarget:isAdded||isExisting,isSupport:RX.support.test(source)});});return{points:out,activityPolygon};}
   async function readKml(file){const lower=file.name.toLowerCase();if(lower.endsWith('.kml'))return await file.text();if(!lower.endsWith('.kmz'))throw new Error('KMZまたはKMLを選択してください。');const zip=await JSZip.loadAsync(file),files=Object.values(zip.files).filter(e=>!e.dir&&e.name.toLowerCase().endsWith('.kml'));if(!files.length)throw new Error('KMZ内にKMLが見つかりません。');const preferred=files.find(e=>(/(^|\/)doc\.kml$/i).test(e.name))||files[0];return await preferred.async('string');}
   function classifyRisk(d){if(d<DENSE_LIMIT_M)return'密集';if(d<STAY_LIMIT_M)return'滞留';if(d<DISTANCE_LIMIT_M)return'軽微';return null;}
   function distanceWarnings(all){const t=all.filter(p=>p.isTarget),warnings=[];for(let i=0;i<t.length;i++)for(let j=i+1;j<t.length;j++){const a=t[i],b=t[j],d=distanceMeters(a,b);if(d>=DISTANCE_LIMIT_M)continue;warnings.push({a,b,distance:d,type:classifyRisk(d),referenceOnly:a.isExisting&&b.isExisting});}warnings.sort((a,b)=>a.distance-b.distance);return{active:warnings.filter(w=>!w.referenceOnly),reference:warnings.filter(w=>w.referenceOnly)};}
   function drawPoints(all){poiLayer.clearLayers();highlightLayer.clearLayers();const bounds=[];all.forEach(p=>{const color=p.isAdded?'#f59e0b':p.isExisting?'#60a5fa':p.isSupport?'#22c55e':'#64748b';L.circleMarker([p.lat,p.lng],{radius:p.isAdded?7:5,color,weight:p.isAdded?3:2,fillColor:color,fillOpacity:p.isTarget?.76:.35}).bindTooltip(`<strong>${esc(p.name)}</strong>${p.folder?`<br>${esc(p.folder)}`:''}`).addTo(poiLayer);bounds.push([p.lat,p.lng]);});if(bounds.length)map.fitBounds(bounds,{padding:[30,30],maxZoom:17});}
   function focusWarning(w){highlightLayer.clearLayers();if(!w)return;[w.a,w.b].forEach(p=>L.circleMarker([p.lat,p.lng],{radius:11,color:'#ef4444',weight:4,fillColor:'#fb923c',fillOpacity:.92}).addTo(highlightLayer));L.polyline([[w.a.lat,w.a.lng],[w.b.lat,w.b.lng]],{color:'#ef4444',weight:4,dashArray:'8 6'}).bindTooltip(`${w.distance.toFixed(1)}m / ${w.type}`).addTo(highlightLayer);map.fitBounds([[w.a.lat,w.a.lng],[w.b.lat,w.b.lng]],{padding:[90,90],maxZoom:19});}
-  function focusEvent(event){highlightLayer.clearLayers();if(!event)return;const palette=event.id==='PARKING_01'||event.id==='NARROW_PATH_01'?['#f59e0b','#fb923c']:event.id==='DENSITY_REST_01'?['#16a34a','#4ade80']:event.id==='LOOP_01'?['#0d9488','#2dd4bf']:['#2563eb','#60a5fa'];const pts=(event.matchedPoints||[]).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lng));if(event.id.startsWith('DENSITY')&&event.center)L.circle([event.center.lat,event.center.lng],{radius:100,color:palette[0],weight:3,dashArray:'8 6',fillColor:palette[1],fillOpacity:.12}).addTo(highlightLayer);pts.forEach(p=>L.circleMarker([p.lat,p.lng],{radius:p.id===event.center?.id?7:5,color:palette[0],weight:3,fillColor:palette[1],fillOpacity:.88}).addTo(highlightLayer));if(event.center&&Number.isFinite(event.center.lat))
-  map.flyTo([event.center.lat,event.center.lng],16,{duration:.8});
-  else if(pts.length)map.fitBounds(pts.map(p=>[p.lat,p.lng]),{padding:[80,80],maxZoom:18});}
-  function warningSequence(w){const d=w.distance,rounded=d.toFixed(1);let riku='',mina='';if(d<DENSE_LIMIT_M){riku=`ここは ${rounded}m。かなり近い。\nまず配置を調整した方がいい。`;mina='魅力は残したいけど、ここは少し離した方が良さそうだね。';}else if(d<STAY_LIMIT_M){riku=`ここは ${rounded}m。30mを切っている。\n滞留の影響を強く見たい。`;mina='じゃあ、どっちかを少し動かして使いやすくしよ！';}else{riku=`ここは ${rounded}m。40mには届いていない。\n調整候補として確認しておこう。`;mina='あとちょっとなら、雰囲気を壊さず調整できそう！';}return[{speaker:'system',text:`追加POIに関係する距離注意を検出しました。\n${w.a.name} × ${w.b.name}：${rounded}m（${w.type}）`,warning:w},{speaker:'riku',text:riku},{speaker:'mina',text:mina}];}
+  function focusEvent(event){highlightLayer.clearLayers();if(!event)return;const risk=/PARKING|NARROW|SHORTAGE/.test(event.id),good=/REST|LOOP|FAVORABLE|FOOD/.test(event.id);const palette=risk?['#dc6b3f','#fb923c']:good?['#15803d','#4ade80']:['#2563eb','#60a5fa'];const pts=(event.matchedPoints||[]).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lng));if(event.id.startsWith('DENSITY')&&event.center)L.circle([event.center.lat,event.center.lng],{radius:100,color:palette[0],weight:3,dashArray:'8 6',fillColor:palette[1],fillOpacity:.12}).addTo(highlightLayer);pts.forEach(p=>L.circleMarker([p.lat,p.lng],{radius:p.id===event.center?.id?8:5,color:palette[0],weight:3,fillColor:palette[1],fillOpacity:.88}).addTo(highlightLayer));if(event.center&&Number.isFinite(event.center.lat))map.flyTo([event.center.lat,event.center.lng],16,{duration:.8});else if(pts.length)map.fitBounds(pts.map(p=>[p.lat,p.lng]),{padding:[80,80],maxZoom:18});}
+  function warningSequence(w){const d=w.distance,rounded=d.toFixed(1);let riku='',mina='';if(d<DENSE_LIMIT_M){riku=`ここは ${rounded}m。かなり近い。\nまず配置を調整した方がいい。`;mina='魅力は残したいけど、ここは少し離した方が良さそうだね。';}else if(d<STAY_LIMIT_M){riku=`ここは ${rounded}m。30mを切っている。\n滞留の影響を強く見たい。`;mina='じゃあ、どっちかを少し動かして使いやすくしよ！';}else{riku=`ここは ${rounded}m。40mには届いていない。\n調整候補として確認しておこう。`;mina='あとちょっとなら、雰囲気を壊さず調整できそう！';}return[{speaker:'system',text:`追加POIに関係する距離注意を検出しました。\n${w.a.name} × ${w.b.name}：${rounded}m（${w.type}）`,warning:w,rikuExpression:'surprised',banner:'DISTANCE CHECK'},{speaker:'riku',text:riku,rikuExpression:'surprised',banner:'DISTANCE CHECK'},{speaker:'mina',text:mina,rikuExpression:'surprised',banner:'DISTANCE CHECK'}];}
   function normalizeEvents(events){const list=[...events];if(list.some(e=>e.id==='DENSITY_REST_01'))return list.filter(e=>e.id!=='DENSITY_01');return list;}
-  function eventSequence(events){const out=[];events.forEach((event,idx)=>{event.cuts.forEach((cut,cutIndex)=>out.push({speaker:cut.speaker,text:cut.text,event:cutIndex===0?event:null,eventId:event.id,eventTitle:event.title,eventNo:idx+1}));});return out;}
-  function buildSequence(warnings,events){const out=[];if(warnings.active.length)out.push(...warningSequence(warnings.active[0]));const normalized=normalizeEvents(events);if(normalized.length)out.push(...eventSequence(normalized));if(!out.length)out.push({speaker:'system',text:'大きな距離注意や自動軍議イベントは見つかりませんでした。'},{speaker:'riku',text:'距離条件はよく整理されている。この段階で無理に触る必要はない。'},{speaker:'mina',text:'よしっ！ 次は実際に歩いて楽しいか見てみよう！'});return out;}
-  function renderFacts(){if(!analysis){el.facts.innerHTML='';return;}const added=points.filter(p=>p.isAdded).length,existing=points.filter(p=>p.isExisting).length,events=analysis.events||[];const rows=[`Point：${points.length}件（既存 ${existing} / 追加 ${added}）`,`40m未満：${analysis.warnings.active.length}件`,`自動軍議：${events.length}件`,events.length?`最優先：${events[0].id}`:'最優先：なし'];el.facts.innerHTML=rows.map(x=>`<div class="fact">${esc(x)}</div>`).join('');}
+  function formatText(text,event){const category=CATEGORY_LABELS[event?.metrics?.category]||event?.metrics?.category||'同種POI';return String(text||'').replaceAll('{category}',category).replaceAll('{reason}',event?.reason||'');}
+  function eventSequence(events){const out=[];events.forEach((event,idx)=>{const presentation=window.GUNGI_DIALOGUES_V03?.[event.id],cuts=presentation?.cuts?.length?presentation.cuts:(event.cuts||[]),expr=presentation?.riku||'normal';cuts.forEach((cut,cutIndex)=>out.push({speaker:cut.speaker,text:formatText(cut.text,event),event:cutIndex===0?event:null,eventRef:event,eventId:event.id,eventTitle:event.title,eventNo:idx+1,eventTotal:events.length,rikuExpression:expr}));});return out;}
+  function buildSequence(warnings,events){const out=[];if(warnings.active.length)out.push(...warningSequence(warnings.active[0]));const normalized=normalizeEvents(events);if(normalized.length)out.push(...eventSequence(normalized));if(!out.length)out.push({speaker:'system',text:'大きな距離注意や自動軍議イベントは見つかりませんでした。',rikuExpression:'normal',banner:'ADV COUNCIL'},{speaker:'riku',text:'距離条件はよく整理されている。この段階で無理に触る必要はない。',rikuExpression:'normal',banner:'ADV COUNCIL'},{speaker:'mina',text:'よしっ！ 次は実際に歩いて楽しいか見てみよう！',rikuExpression:'normal',banner:'ADV COUNCIL'});return out;}
+  function renderFacts(){if(!analysis){el.facts.innerHTML='';return;}const added=scopedPoints.filter(p=>p.isAdded).length,existing=scopedPoints.filter(p=>p.isExisting).length,events=analysis.events||[];const rows=[`全Point：${points.length}件`,`判定対象：${scopedPoints.length}件（既存 ${existing} / 追加 ${added}）`,`活動範囲：${analysis.hasScope?'適用':'未検出'}`,`40m未満：${analysis.warnings.active.length}件`,`自動軍議：${events.length}件`,events.length?`最優先：${events[0].id}`:'最優先：なし',`エンジン：${window.GungiAutoEvents?.version||'unknown'}`];el.facts.innerHTML=rows.map(x=>`<div class="fact">${esc(x)}</div>`).join('');}
+  function setRikuExpression(name){const src=RIKU_IMAGES[name]||RIKU_IMAGES.normal;if(el.riku.getAttribute('src')!==src)el.riku.setAttribute('src',src);}
+  el.riku.addEventListener('error',()=>{if(el.riku.getAttribute('src')!==RIKU_IMAGES.normal)el.riku.setAttribute('src',RIKU_IMAGES.normal);});
   function setActor(s){el.riku.classList.toggle('active',s==='riku');el.mina.classList.toggle('active',s==='mina');el.scene.dataset.speaker=s;el.speaker.textContent=s==='riku'?'リク':s==='mina'?'ミナ':'SYSTEM';}
   function sync(){el.back.disabled=stepIndex<=0;el.next.disabled=stepIndex>=sequence.length-1;el.restart.disabled=!sequence.length;}
-  function renderStep(i){const step=sequence[i];if(!step)return;stepIndex=i;setActor(step.speaker);el.dialog.textContent=step.text;if(step.warning)focusWarning(step.warning);if(step.event)focusEvent(step.event);sync();}
-  async function handle(file){el.status.textContent='KMZを解析しています…';el.next.disabled=el.back.disabled=el.restart.disabled=true;setActor('system');el.dialog.textContent='地図を読み込んでいます。';const kml=await readKml(file);points=parseKml(kml);if(!points.length)throw new Error('Point形式のPOIを取得できませんでした。');drawPoints(points);const warnings=distanceWarnings(points),events=window.GungiAutoEvents?.detectAll({points})||[];analysis={warnings,events};sequence=buildSequence(warnings,events);renderFacts();el.status.innerHTML=`<strong class="ok">✓ ${esc(file.name)} を読み込みました。</strong><br>距離注意 ${warnings.active.length}件 / 自動軍議 ${events.length}件。ファイルはブラウザ内だけで処理します。`;renderStep(0);}
-  el.file.addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{await handle(file);}catch(error){console.error(error);points=[];analysis=null;sequence=[];poiLayer.clearLayers();highlightLayer.clearLayers();el.status.innerHTML=`<strong class="warn">⚠ ${esc(error.message||'読み込みに失敗しました。')}</strong>`;setActor('system');el.dialog.textContent='別のKMZ / KMLで試してください。';renderFacts();sync();}});
+  function renderStep(i){const step=sequence[i];if(!step)return;stepIndex=i;setRikuExpression(step.rikuExpression||'normal');setActor(step.speaker);el.dialog.textContent=step.text;if(step.warning)focusWarning(step.warning);if(step.event)focusEvent(step.event);if(step.eventRef)el.banner.textContent=`EVENT ${step.eventNo}/${step.eventTotal} · ${step.eventRef.title}`;else el.banner.textContent=step.banner||'ADV COUNCIL';sync();}
+  async function handle(file){el.scene.classList.add('signal-cut');el.banner.textContent='ANALYZING MAP...';el.status.textContent='KMZを解析しています…';el.next.disabled=el.back.disabled=el.restart.disabled=true;setRikuExpression('normal');setActor('system');el.dialog.textContent='地図を読み込んでいます。';const parsed=parseKml(await readKml(file));points=parsed.points;if(!points.length)throw new Error('Point形式のPOIを取得できませんでした。');scopedPoints=parsed.activityPolygon?window.GungiAutoEvents.scopePoints(points,{activityPolygon:parsed.activityPolygon}):points;drawPoints(points);const warnings=distanceWarnings(scopedPoints),events=window.GungiAutoEvents?.detectAll({points,activityPolygon:parsed.activityPolygon})||[];analysis={warnings,events,hasScope:!!parsed.activityPolygon};sequence=buildSequence(warnings,events);renderFacts();el.status.innerHTML=`<strong class="ok">✓ ${esc(file.name)} を読み込みました。</strong><br>判定対象 ${scopedPoints.length} POI / 自動軍議 ${events.length}イベント。`;el.scene.classList.remove('signal-cut');renderStep(0);}
+  el.file.addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{await handle(file);}catch(error){console.error(error);points=[];scopedPoints=[];analysis=null;sequence=[];poiLayer.clearLayers();highlightLayer.clearLayers();el.scene.classList.remove('signal-cut');el.status.innerHTML=`<strong class="warn">⚠ ${esc(error.message||'読み込みに失敗しました。')}</strong>`;setRikuExpression('normal');setActor('system');el.banner.textContent='ADV COUNCIL / ERROR';el.dialog.textContent='別のKMZ / KMLで試してください。';renderFacts();sync();}});
   el.back.addEventListener('click',()=>{if(stepIndex>0)renderStep(stepIndex-1);});el.next.addEventListener('click',()=>{if(stepIndex<sequence.length-1)renderStep(stepIndex+1);});el.restart.addEventListener('click',()=>{if(!sequence.length)return;drawPoints(points);renderStep(0);});
 })();
 </script>
