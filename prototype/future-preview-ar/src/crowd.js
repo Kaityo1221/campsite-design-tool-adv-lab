@@ -9,12 +9,11 @@ const BANDS = {
   far: { min: 24, max: 45 }
 };
 
-// 正面を中心に、左・中央・右へ扇状に散らす。
-// ±95°、±145°も混ぜて、端末を振った時に周囲にも人がいる状態を作る。
-const VIEW_SECTOR_OFFSETS_DEG = [
-  -48, -30, -14, 0, 15, 31, 49,
-  -72, 72, -95, 95, -145, 145, 180
-];
+const SECTORS = {
+  near: [-64, 58, -40, 36, -82, 78, -22, 20],
+  mid: [-58, -34, -12, 14, 36, 60, -76, 76, -104, 104],
+  far: [-70, -46, -22, 0, 24, 48, 72, -96, 96, -132, 132, 180]
+};
 
 let sharedTexture = null;
 
@@ -67,6 +66,11 @@ function offsetFrom(origin, distanceM, bearingRad) {
   return { lat, lng };
 }
 
+function offsetLocal(origin, forwardM, sideM, bearingRad) {
+  const forward = offsetFrom(origin, forwardM, bearingRad);
+  return offsetFrom(forward, sideM, bearingRad + Math.PI / 2);
+}
+
 function distanceMeters(a, b) {
   const lat0 = ((a.lat + b.lat) / 2) * Math.PI / 180;
   const dy = (b.lat - a.lat) * METERS_PER_DEGREE_LAT;
@@ -74,22 +78,21 @@ function distanceMeters(a, b) {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-function bandForIndex(index, count) {
+function bandKeyForIndex(index, count) {
   const ratio = index / Math.max(1, count);
-  // 近景を増やす。画面上で「人」と認識できる人数をまず確保する。
-  if (ratio < 0.38) return BANDS.near;
-  if (ratio < 0.78) return BANDS.mid;
-  return BANDS.far;
+  if (ratio < 0.42) return 'near';
+  if (ratio < 0.80) return 'mid';
+  return 'far';
 }
 
-function preferredBearingForCluster(clusterIndex, headingDeg) {
+function preferredBearingForCluster(clusterIndex, bandKey, headingDeg) {
   if (!Number.isFinite(headingDeg)) {
     return hash01(clusterIndex * 17.41 + 9.3) * Math.PI * 2;
   }
 
-  const offset = VIEW_SECTOR_OFFSETS_DEG[clusterIndex % VIEW_SECTOR_OFFSETS_DEG.length];
-  // 同じ角度へ一直線に重ならないよう、±8°程度だけ揺らす。
-  const jitter = (hash01(clusterIndex * 7.13 + 3.9) - 0.5) * 16;
+  const offsets = SECTORS[bandKey];
+  const offset = offsets[clusterIndex % offsets.length];
+  const jitter = (hash01(clusterIndex * 7.13 + bandKey.length * 2.9) - 0.5) * 12;
   return degreesToRadians(normalizeDegrees(headingDeg + offset + jitter));
 }
 
@@ -97,13 +100,11 @@ function sampleBandPoint(polygons, origin, seed, band, preferredBearing) {
   for (let attempt = 0; attempt < 240; attempt += 1) {
     const radius01 = hash01(seed + attempt * 3.17 + 11);
     const radius = band.min + Math.sqrt(radius01) * (band.max - band.min);
-
-    // 最初は希望方角の近くを探し、活動範囲外なら徐々に探索角を広げる。
-    const angularSpreadDeg = Math.min(90, 7 + attempt * 0.45);
+    const angularSpreadDeg = Math.min(85, 6 + attempt * 0.42);
     const angularOffsetDeg = (hash01(seed + attempt * 5.73 + 29) - 0.5) * angularSpreadDeg * 2;
     const bearing = preferredBearing + degreesToRadians(angularOffsetDeg);
     const point = offsetFrom(origin, radius, bearing);
-    if (insideAnyPolygon(point.lat, point.lng, polygons)) return point;
+    if (insideAnyPolygon(point.lat, point.lng, polygons)) return { point, bearing };
   }
   return null;
 }
@@ -115,13 +116,40 @@ function makeClusterPlan(count) {
 
   while (remaining > 0) {
     const roll = hash01(seed * 7.31 + count);
-    let size = roll < 0.28 ? 1 : roll < 0.61 ? 2 : roll < 0.86 ? 3 : 4;
+    let size = roll < 0.30 ? 1 : roll < 0.62 ? 2 : roll < 0.84 ? 3 : roll < 0.96 ? 4 : 5;
     size = Math.min(size, remaining);
     plan.push(size);
     remaining -= size;
     seed += 1;
   }
   return plan;
+}
+
+function clusterPattern(size, variant) {
+  const mirror = variant > 0.5 ? -1 : 1;
+  if (size === 1) return [{ side: 0, forward: 0 }];
+  if (size === 2) return [
+    { side: -0.72 * mirror, forward: -0.10 },
+    { side: 0.72 * mirror, forward: 0.18 }
+  ];
+  if (size === 3) return [
+    { side: -0.92 * mirror, forward: -0.15 },
+    { side: 0.90 * mirror, forward: -0.05 },
+    { side: 0.12 * mirror, forward: 0.82 }
+  ];
+  if (size === 4) return [
+    { side: -1.25 * mirror, forward: -0.18 },
+    { side: -0.35 * mirror, forward: 0.32 },
+    { side: 0.62 * mirror, forward: -0.08 },
+    { side: 1.32 * mirror, forward: 0.55 }
+  ];
+  return [
+    { side: -1.55 * mirror, forward: 0.02 },
+    { side: -0.72 * mirror, forward: -0.42 },
+    { side: 0.05 * mirror, forward: 0.55 },
+    { side: 0.85 * mirror, forward: -0.18 },
+    { side: 1.55 * mirror, forward: 0.38 }
+  ];
 }
 
 function makeSilhouetteSprite(index, distanceM) {
@@ -137,8 +165,6 @@ function makeSilhouetteSprite(index, distanceM) {
   });
 
   const sprite = new THREE.Sprite(material);
-
-  // 手前は少し存在感を強める。中遠景は実寸寄り。
   const height = distanceM <= 10
     ? 1.95 + hash01(index * 2.7) * 0.20
     : distanceM <= 24
@@ -185,13 +211,16 @@ export function renderCrowd({ locar, polygons, count, crowd, origin, headingDeg 
   let nearPlaced = 0;
   let midPlaced = 0;
   let farPlaced = 0;
+  let soloClusters = 0;
+  let socialClusters = 0;
 
   clusterPlan.forEach((clusterSize, clusterIndex) => {
     if (personIndex >= count) return;
 
-    const band = bandForIndex(personIndex, count);
-    const preferredBearing = preferredBearingForCluster(clusterIndex, headingDeg);
-    const center = sampleBandPoint(
+    const bandKey = bandKeyForIndex(personIndex, count);
+    const band = BANDS[bandKey];
+    const preferredBearing = preferredBearingForCluster(clusterIndex, bandKey, headingDeg);
+    const sampled = sampleBandPoint(
       polygons,
       origin,
       clusterIndex * 29.37 + count * 0.71,
@@ -199,21 +228,31 @@ export function renderCrowd({ locar, polygons, count, crowd, origin, headingDeg 
       preferredBearing
     );
 
-    if (!center) {
+    if (!sampled) {
       personIndex += clusterSize;
       return;
     }
 
-    for (let member = 0; member < clusterSize && personIndex < count; member += 1) {
-      let position = center;
+    if (clusterSize === 1) soloClusters += 1;
+    else socialClusters += 1;
 
-      if (member > 0) {
-        // 小集団内は横にばらける。重なって1人に見えるのを避ける。
-        const spacing = 1.0 + hash01(personIndex * 3.41) * 1.6;
-        const bearing = preferredBearing + degreesToRadians((hash01(personIndex * 5.19) - 0.5) * 85);
-        const candidate = offsetFrom(center, spacing, bearing);
-        if (insideAnyPolygon(candidate.lat, candidate.lng, polygons)) position = candidate;
-      }
+    const pattern = clusterPattern(clusterSize, hash01(clusterIndex * 13.17 + count));
+
+    for (let member = 0; member < clusterSize && personIndex < count; member += 1) {
+      const layout = pattern[member] || { side: 0, forward: 0 };
+      const spacingScale = bandKey === 'near' ? 1.0 : bandKey === 'mid' ? 1.25 : 1.5;
+      const sideJitter = (hash01(personIndex * 5.19 + 1.7) - 0.5) * 0.35;
+      const forwardJitter = (hash01(personIndex * 7.73 + 4.1) - 0.5) * 0.45;
+      const candidate = offsetLocal(
+        sampled.point,
+        (layout.forward + forwardJitter) * spacingScale,
+        (layout.side + sideJitter) * spacingScale,
+        sampled.bearing
+      );
+
+      const position = insideAnyPolygon(candidate.lat, candidate.lng, polygons)
+        ? candidate
+        : sampled.point;
 
       const distanceM = distanceMeters(origin, position);
       if (distanceM > PREVIEW_RADIUS_M) {
@@ -241,6 +280,7 @@ export function renderCrowd({ locar, polygons, count, crowd, origin, headingDeg 
     radiusMaxM: PREVIEW_RADIUS_M,
     originInside,
     headingUsed: Number.isFinite(headingDeg),
-    bands: { near: nearPlaced, mid: midPlaced, far: farPlaced }
+    bands: { near: nearPlaced, mid: midPlaced, far: farPlaced },
+    clusters: { solo: soloClusters, social: socialClusters }
   };
 }
