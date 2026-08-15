@@ -1,143 +1,31 @@
 (() => {
-  const events = window.GUNGI_EVENTS || [];
-  const presets = window.GUNGI_MAP_PRESETS || {};
-
-  const eventSelect = document.getElementById("eventSelect");
-  const nextButton = document.getElementById("nextButton");
-  const restartButton = document.getElementById("restartButton");
-  const dialogueText = document.getElementById("dialogueText");
-  const speakerBadge = document.getElementById("speakerBadge");
-  const cutCounter = document.getElementById("cutCounter");
-  const eventId = document.getElementById("eventId");
-  const eventType = document.getElementById("eventType");
-  const eventResult = document.getElementById("eventResult");
-  const rikuCard = document.getElementById("rikuCard");
-  const minaCard = document.getElementById("minaCard");
-  const mapPanel = document.getElementById("mapPanel");
-  const poiLayer = document.getElementById("poiLayer");
-
-  let currentEventIndex = 0;
-  let currentCutIndex = 0;
-
-  function speakerLabel(speaker) {
-    if (speaker === "riku") return "リク";
-    if (speaker === "mina") return "ミナ";
-    return "SYSTEM";
-  }
-
-  function setSpeakerState(speaker) {
-    [rikuCard, minaCard].forEach(card => {
-      card.classList.remove("is-speaking");
-      card.classList.add("is-dim");
-    });
-
-    if (speaker === "riku") {
-      rikuCard.classList.remove("is-dim");
-      rikuCard.classList.add("is-speaking");
-    }
-
-    if (speaker === "mina") {
-      minaCard.classList.remove("is-dim");
-      minaCard.classList.add("is-speaking");
-    }
-  }
-
-  function setSpeakerBadge(speaker) {
-    speakerBadge.className = "speaker-badge";
-    if (speaker === "riku") speakerBadge.classList.add("riku");
-    if (speaker === "mina") speakerBadge.classList.add("mina");
-    speakerBadge.textContent = speakerLabel(speaker);
-  }
-
-  function renderMap(presetKey) {
-    poiLayer.innerHTML = "";
-    const points = presets[presetKey] || [];
-
-    points.forEach(([x, y, kind]) => {
-      const poi = document.createElement("i");
-      poi.className = `poi ${kind}`;
-      poi.style.left = `${x}%`;
-      poi.style.top = `${y}%`;
-      poiLayer.appendChild(poi);
-    });
-  }
-
-  function renderEventMeta(event) {
-    eventId.textContent = event.id;
-    eventType.textContent = event.type;
-    eventResult.textContent = event.result;
-  }
-
-  function renderCut() {
-    const event = events[currentEventIndex];
-    const cut = event.cuts[currentCutIndex];
-
-    setSpeakerState(cut.speaker);
-    setSpeakerBadge(cut.speaker);
-
-    dialogueText.animate(
-      [
-        { opacity: 0, transform: "translateY(4px)" },
-        { opacity: 1, transform: "translateY(0)" }
-      ],
-      { duration: 180, easing: "ease-out" }
-    );
-
-    dialogueText.textContent = cut.text;
-    cutCounter.textContent = `CUT ${currentCutIndex + 1} / ${event.cuts.length}`;
-    mapPanel.dataset.highlight = cut.highlight || "neutral";
-
-    nextButton.textContent = currentCutIndex === event.cuts.length - 1 ? "もう一度" : "次へ";
-  }
-
-  function loadEvent(index) {
-    currentEventIndex = index;
-    currentCutIndex = 0;
-
-    const event = events[index];
-    renderMap(event.mapPreset);
-    renderEventMeta(event);
-    renderCut();
-  }
-
-  function populateEventSelect() {
-    eventSelect.innerHTML = "";
-
-    events.forEach((event, index) => {
-      const option = document.createElement("option");
-      option.value = String(index);
-      option.textContent = `${event.id} / ${event.title}`;
-      eventSelect.appendChild(option);
-    });
-  }
-
-  nextButton.addEventListener("click", () => {
-    const event = events[currentEventIndex];
-
-    if (currentCutIndex >= event.cuts.length - 1) {
-      currentCutIndex = 0;
-    } else {
-      currentCutIndex += 1;
-    }
-
-    renderCut();
-  });
-
-  restartButton.addEventListener("click", () => {
-    currentCutIndex = 0;
-    renderCut();
-  });
-
-  eventSelect.addEventListener("change", event => {
-    loadEvent(Number(event.target.value));
-  });
-
-  if (!events.length) {
-    dialogueText.textContent = "軍議イベントデータがありません。";
-    nextButton.disabled = true;
-    return;
-  }
-
-  populateEventSelect();
-  loadEvent(0);
+  'use strict';
+  const $=id=>document.getElementById(id);
+  const fileEl=$('briefingFile'),statusEl=$('briefingStatus'),eventSelect=$('eventSelect'),nextButton=$('nextButton'),restartButton=$('restartButton'),dialogueText=$('dialogueText'),speakerBadge=$('speakerBadge'),cutCounter=$('cutCounter'),eventId=$('eventId'),eventType=$('eventType'),eventResult=$('eventResult'),rikuCard=$('rikuCard'),minaCard=$('minaCard'),mapPanel=$('mapPanel'),poiLayer=$('poiLayer'),eventBanner=$('eventBanner'),eventBannerNo=$('eventBannerNo'),eventBannerTitle=$('eventBannerTitle'),detectedList=$('detectedList'),mapCenterLabel=$('mapCenterLabel');
+  let points=[],events=[],currentEventIndex=0,currentCutIndex=0,activityPolygon=null;
+  const RX={added:/(追加|追加希望|希望|新規|候補|add|addition|proposed|candidate|new|cagym|capokestop|capowerspot)/i,existing:/(既存|existing|current)/i,aux:/(50m|40m|30m|円|buffer|100ft|100feet|100フィート|ダミー)/i,activity:/(活動範囲|活動エリア|活動区域|対象範囲|対象エリア|activity\s*(area|range)|event\s*area)/i};
+  function direct(node,tag){const t=Array.from(node.children||[]).find(c=>c.localName===tag||c.tagName===tag);return t?(t.textContent||'').trim():''}
+  function folder(pm){let n=pm.parentElement,a=[];while(n){if(n.localName==='Folder'||n.tagName==='Folder'){const x=direct(n,'name');if(x)a.unshift(x)}n=n.parentElement}return a.join(' / ')}
+  function polygonCoords(pm){const node=pm.getElementsByTagNameNS('*','Polygon')[0]?.getElementsByTagNameNS('*','coordinates')[0];if(!node)return null;const coords=(node.textContent||'').trim().split(/\s+/).map(raw=>{const [lngRaw,latRaw]=raw.split(','),lat=Number(latRaw),lng=Number(lngRaw);return Number.isFinite(lat)&&Number.isFinite(lng)?{lat,lng}:null}).filter(Boolean);return coords.length>=3?coords:null}
+  function parseKml(text){const xml=new DOMParser().parseFromString(text,'application/xml');if(xml.querySelector('parsererror'))throw Error('KMLを解析できませんでした。');const out=[];let poly=null;Array.from(xml.getElementsByTagNameNS('*','Placemark')).forEach((pm,i)=>{const name=(pm.getElementsByTagNameNS('*','name')[0]?.textContent||`POI ${i+1}`).trim(),f=folder(pm),label=`${f} ${name}`.trim(),polygon=polygonCoords(pm);if(polygon&&RX.activity.test(label)&&!RX.aux.test(label)&&!poly)poly=polygon;const c=pm.getElementsByTagNameNS('*','Point')[0]?.getElementsByTagNameNS('*','coordinates')[0];if(!c)return;const [lngRaw,latRaw]=(c.textContent||'').trim().split(/\s+/)[0].split(','),lat=Number(latRaw),lng=Number(lngRaw);if(!Number.isFinite(lat)||!Number.isFinite(lng))return;const aux=RX.aux.test(f);out.push({id:`p${i+1}`,lat,lng,name,folder:f,isAdded:!aux&&RX.added.test(f),isExisting:!aux&&RX.existing.test(f)})});return {points:out,activityPolygon:poly}}
+  async function readKml(file){if(file.name.toLowerCase().endsWith('.kml'))return file.text();if(!file.name.toLowerCase().endsWith('.kmz'))throw Error('KMZまたはKMLを選択してください。');const z=await JSZip.loadAsync(file),fs=Object.values(z.files).filter(e=>!e.dir&&e.name.toLowerCase().endsWith('.kml'));if(!fs.length)throw Error('KMZ内にKMLがありません。');return (fs.find(e=>/(^|\/)doc\.kml$/i.test(e.name))||fs[0]).async('string')}
+  function speakerLabel(s){return s==='riku'?'リク':s==='mina'?'ミナ':'SYSTEM'}
+  function setSpeakerState(s){[rikuCard,minaCard].forEach(c=>{c.classList.remove('is-speaking');c.classList.add('is-dim')});if(s==='riku'){rikuCard.classList.remove('is-dim');rikuCard.classList.add('is-speaking')}if(s==='mina'){minaCard.classList.remove('is-dim');minaCard.classList.add('is-speaking')}}
+  function setSpeakerBadge(s){speakerBadge.className='speaker-badge';if(s==='riku')speakerBadge.classList.add('riku');if(s==='mina')speakerBadge.classList.add('mina');speakerBadge.textContent=speakerLabel(s)}
+  function resultText(e){return e.reason||e.systemText||'この条件について軍議します。'}
+  function makeCuts(e){const title=e.title||'この地点';const reason=e.reason||e.systemText||'';const risk=/確認型|対立型/.test(e.type||'');const analysis=/分析型|総合型/.test(e.type||'');return [
+    {speaker:'system',text:`${title}を検出しました。${reason}`,highlight:'neutral'},
+    {speaker:'riku',text:risk?`ここは注意して見たい。${title}が実際の人の流れや滞留にどう効くか確認しよう。`:analysis?`数字だけで決めず、${title}が全体の配置にどう効いているか見よう。`:`これは使えそうだ。${title}を回遊や運用の軸にできるか見てみよう。`,highlight:risk?'risk':'benefit'},
+    {speaker:'mina',text:risk?`でも魅力まで消したくないよね。安全に楽しめる使い方を探そう！`:`いいね！ここを歩く理由にできたら、サイト全体がもっと楽しくなりそう！`,highlight:'benefit'}
+  ]}
+  function eventCuts(e){return (e.cuts&&e.cuts.length>1)?e.cuts:makeCuts(e)}
+  function scopedPoints(){return activityPolygon?window.GungiAutoEvents.scopePoints(points,{activityPolygon}):points}
+  function renderMap(e){poiLayer.innerHTML='';const base=scopedPoints();if(!base.length)return;const matched=new Set((e.matchedPoints||[]).map(p=>String(p.id)));const support=new Set((e.supportPoints||[]).map(p=>String(p.id)));let minLat=Math.min(...base.map(p=>p.lat)),maxLat=Math.max(...base.map(p=>p.lat)),minLng=Math.min(...base.map(p=>p.lng)),maxLng=Math.max(...base.map(p=>p.lng));const latSpan=Math.max(maxLat-minLat,.0001),lngSpan=Math.max(maxLng-minLng,.0001);base.forEach(p=>{const i=document.createElement('i');let kind='existing';if(support.has(String(p.id)))kind='support';else if(matched.has(String(p.id)))kind='added';i.className=`poi ${kind}`;i.style.left=`${8+84*(p.lng-minLng)/lngSpan}%`;i.style.top=`${8+84*(maxLat-p.lat)/latSpan}%`;i.title=p.name||'';poiLayer.appendChild(i)});mapCenterLabel.textContent=`${base.length} POI / ${e.title}`}
+  function renderMeta(e){eventId.textContent=e.id;eventType.textContent=e.type||'-';eventResult.textContent=resultText(e);eventBannerNo.textContent=`EVENT ${currentEventIndex+1} / ${events.length}`;eventBannerTitle.textContent=e.title}
+  function renderCut(){const e=events[currentEventIndex],cuts=eventCuts(e),cut=cuts[currentCutIndex];setSpeakerState(cut.speaker);setSpeakerBadge(cut.speaker);dialogueText.textContent=cut.text;cutCounter.textContent=`CUT ${currentCutIndex+1} / ${cuts.length}`;mapPanel.dataset.highlight=cut.highlight||'neutral';nextButton.textContent=currentCutIndex===cuts.length-1?(currentEventIndex===events.length-1?'軍議終了':'次のイベントへ'):'次へ'}
+  function loadEvent(index){currentEventIndex=index;currentCutIndex=0;eventSelect.value=String(index);const e=events[index];renderMap(e);renderMeta(e);renderCut()}
+  function populate(){eventSelect.innerHTML='';events.forEach((e,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=`${i+1}. ${e.title}`;eventSelect.appendChild(o)});eventSelect.disabled=false;nextButton.disabled=false;restartButton.disabled=false;detectedList.innerHTML=events.map((e,i)=>`<button type="button" data-i="${i}"><b>${i+1}. ${e.title}</b><span>${e.id} / ${e.reason||''}</span></button>`).join('');detectedList.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>loadEvent(Number(b.dataset.i))))}
+  nextButton.addEventListener('click',()=>{if(!events.length)return;const cuts=eventCuts(events[currentEventIndex]);if(currentCutIndex<cuts.length-1){currentCutIndex++;renderCut();return}if(currentEventIndex<events.length-1){loadEvent(currentEventIndex+1);return}currentCutIndex=0;loadEvent(0)});
+  restartButton.addEventListener('click',()=>{currentCutIndex=0;renderCut()});eventSelect.addEventListener('change',e=>loadEvent(Number(e.target.value)));
+  fileEl.addEventListener('change',async()=>{const file=fileEl.files?.[0];if(!file)return;statusEl.textContent='解析中…';try{const parsed=parseKml(await readKml(file));points=parsed.points;activityPolygon=parsed.activityPolygon;if(!points.length)throw Error('Point形式のPOIを取得できませんでした。');events=window.GungiAutoEvents.detectAll({points,activityPolygon});const scoped=scopedPoints();if(!events.length){statusEl.textContent=`✓ ${file.name} / 判定対象 ${scoped.length} POI / 発火なし`;dialogueText.textContent='今回は軍議イベントが発火しませんでした。';return}populate();loadEvent(0);statusEl.textContent=`✓ ${file.name} / ${points.length} POI → 判定対象 ${scoped.length} / ${events.length} events。軍議開始！`;eventBanner.classList.add('is-live')}catch(err){console.error(err);statusEl.textContent=`⚠ ${err.message||'解析に失敗しました。'}`}});
 })();
