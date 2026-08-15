@@ -17,9 +17,9 @@
     playground: /(遊具|ブランコ|すべり台|滑り台|鉄棒|ジャングルジム|playground|athletic)/i,
     openSpace: /(公園|広場|芝生|原っぱ|グラウンド|park|square|lawn|plaza)/i,
     rest: /(トイレ|便所|restroom|toilet|水飲|給水|休憩|ベンチ|bench|東屋|あずまや|四阿|休憩所|レストハウス|案内所|information)/i,
-    transit: /(駅|station|改札|バス停|bus stop|タクシー|taxi|乗り場|船乗場)/i,
+    transit: /(改札|バス停|bus stop|タクシー乗り場|taxi stand|乗り場|船乗場|フェリー乗り場)/i,
     landmark: /(ランドマーク|landmark|塔|タワー|tower|記念碑|石碑|時計台|シンボル|symbol|モニュメント|monument|観覧車)/i,
-    art: /(アート|壁画|mural|彫刻|sculpture|銅像|statue|モニュメント|monument|オブジェ|タイル)/i,
+    art: /(壁画|mural|彫刻|sculpture|銅像|statue|モニュメント|monument|オブジェ|アート作品|アート広場|アートギャラリー|アートセンター|アートパーク|アートミュージアム)/i,
     history: /(史跡|遺跡|歴史|由来|文化財|旧.*住宅|ruins|historic|history|記念碑|石碑)/i,
     religious: /(神社|寺院|寺$|教会|church|shrine|temple|薬師堂|不動尊|大神宮|八幡宮|お堂|お社)/i,
     commercial: /(売店|商店|ショップ|shop|store|カフェ|cafe|restaurant|レストラン|market|mart|ホテル|hotel)/i,
@@ -65,11 +65,54 @@
   const toRad = deg => deg * Math.PI / 180;
   function distanceMeters(a,b){const dLat=toRad(b.lat-a.lat),dLng=toRad(b.lng-a.lng),lat1=toRad(a.lat),lat2=toRad(b.lat);const q=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;return 2*EARTH_RADIUS_M*Math.atan2(Math.sqrt(q),Math.sqrt(1-q));}
 
+  function isTransitName(name){
+    const value=String(name||'').trim();
+    if(!value)return false;
+    return /駅$/.test(value)||/\bstation\b/i.test(value)||RX.transit.test(value);
+  }
+
+  function isArtName(name){
+    const value=String(name||'').trim();
+    if(!value||/ヴィアート/i.test(value))return false;
+    if(RX.art.test(value))return true;
+    return /(?:^|[\s/・「」（）()【】])アート(?:$|[\s/・「」（）()【】])/.test(value);
+  }
+
+  function pointInPolygon(point,polygon){
+    if(!Array.isArray(polygon)||polygon.length<3)return true;
+    let inside=false;
+    for(let i=0,j=polygon.length-1;i<polygon.length;j=i++){
+      const xi=Number(polygon[i]?.lng),yi=Number(polygon[i]?.lat),xj=Number(polygon[j]?.lng),yj=Number(polygon[j]?.lat);
+      if(![xi,yi,xj,yj].every(Number.isFinite))continue;
+      const intersects=((yi>point.lat)!==(yj>point.lat))&&(point.lng<(xj-xi)*(point.lat-yi)/((yj-yi)||Number.EPSILON)+xi);
+      if(intersects)inside=!inside;
+    }
+    return inside;
+  }
+
+  function scopePoints(points,input){
+    let scoped=points;
+    if(Array.isArray(input.scopePointIds)&&input.scopePointIds.length){
+      const ids=new Set(input.scopePointIds.map(String));
+      scoped=scoped.filter(p=>ids.has(String(p.id)));
+    }
+    if(Array.isArray(input.activityPolygon)&&input.activityPolygon.length>=3){
+      scoped=scoped.filter(p=>pointInPolygon(p,input.activityPolygon));
+    }
+    if(input.activityBounds){
+      const {north,south,east,west}=input.activityBounds;
+      if([north,south,east,west].every(Number.isFinite))scoped=scoped.filter(p=>p.lat<=north&&p.lat>=south&&p.lng<=east&&p.lng>=west);
+    }
+    return scoped;
+  }
+
   function normalizePoint(point,index){
     const text=sourceText(point);
     const finalCategory=String(point.finalCategory || point.poiCategory || point.category || '').toUpperCase();
     const categories={};
     for(const [key,rx] of Object.entries(RX)) categories[key]=rx.test(text);
+    categories.transit=isTransitName(point?.name);
+    categories.art=isArtName(point?.name);
     if(finalCategory==='LOOP') categories.loop=true;
     if(finalCategory==='REST') categories.rest=true;
     if(finalCategory==='STAY') categories.stay=true;
@@ -117,7 +160,8 @@
   }
 
   function detectAll(input={}){
-    const points=(input.points||[]).map(normalizePoint).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lng));
+    const normalized=(input.points||[]).map(normalizePoint).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lng));
+    const points=scopePoints(normalized,input);
     const found=[];
     const push=e=>{if(e)found.push(e);};
 
@@ -151,9 +195,9 @@
   function detect(input={}){return detectAll(input)[0]||null;}
 
   window.GungiAutoEvents={
-    version:'0.2.1',
+    version:'0.2.2',
     constants:{densityRadiusM:DENSITY_RADIUS_M,densityMinExisting:DENSITY_MIN_EXISTING,supportRadiusM:SUPPORT_RADIUS_M,clusterRadiusM:CLUSTER_RADIUS_M},
     eventDefs:EVENT_DEFS,
-    detect,detectAll,distanceMeters
+    detect,detectAll,distanceMeters,pointInPolygon,scopePoints
   };
 })();
