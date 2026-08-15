@@ -5,57 +5,60 @@
   const DENSITY_RADIUS_M = 100;
   const DENSITY_MIN_EXISTING = 6;
   const SUPPORT_RADIUS_M = 100;
+  const CLUSTER_RADIUS_M = 140;
 
   const RX = {
     added: /(追加|追加希望|希望|新規|候補|add|addition|proposed|candidate|new|cagym|capokestop|capowerspot)/i,
     existing: /(既存|existing|current)/i,
-    support: /(トイレ|便所|restroom|toilet|水飲|給水|water fountain|休憩|ベンチ|bench|東屋|あずまや|四阿|売店|カフェ|cafe|案内所|information)/i,
+    entrance: /(入口|出入口|entrance|ゲート|gate|門|改札)/i,
+    loop: /(周回|回遊|loop|遊歩道|promenade|園路|trail|散策路|道標|案内図|案内板|map)/i,
+    narrow: /(狭路|狭い道|細い道|木道|boardwalk|橋|bridge|歩道橋|サイクリング|cycling|自転車道)/i,
     parking: /(駐車場|parking|ロータリー|rotary|車寄せ|車道|車両|vehicle)/i,
-    narrow: /(狭路|狭い道|細い道|木道|boardwalk|サイクリング|cycling|cycle road|自転車道)/i,
-    bridge: /(橋|bridge|跨線橋|歩道橋)/i,
-    entrance: /(入口|出入口|entrance|ゲート|gate|門|改札|駅前|station entrance)/i,
-    loop: /(周回|回遊|loop|遊歩道|promenade|園路|trail|散策路)/i,
     playground: /(遊具|ブランコ|すべり台|滑り台|鉄棒|ジャングルジム|playground|athletic)/i,
     openSpace: /(公園|広場|芝生|原っぱ|グラウンド|park|square|lawn|plaza)/i,
-    water: /(噴水|水飲|給水|池|pond|川|river|水辺|waterfront|滝|waterfall|井戸|well)/i,
-    art: /(アート|壁画|mural|彫刻|sculpture|銅像|statue|モニュメント|monument|シーサー|art)/i,
-    history: /(史跡|遺跡|跡$|歴史|由来|文化財|旧.*住宅|ruins|historic|history)/i,
+    rest: /(トイレ|便所|restroom|toilet|水飲|給水|休憩|ベンチ|bench|東屋|あずまや|四阿|休憩所|レストハウス|案内所|information)/i,
+    transit: /(駅|station|改札|バス停|bus stop|タクシー|taxi|乗り場|船乗場)/i,
+    landmark: /(ランドマーク|landmark|塔|タワー|tower|記念碑|石碑|時計台|シンボル|symbol|モニュメント|monument|観覧車)/i,
+    art: /(アート|壁画|mural|彫刻|sculpture|銅像|statue|モニュメント|monument|オブジェ|タイル)/i,
+    history: /(史跡|遺跡|歴史|由来|文化財|旧.*住宅|ruins|historic|history|記念碑|石碑)/i,
     religious: /(神社|寺院|寺$|教会|church|shrine|temple|薬師堂|不動尊|大神宮|八幡宮|お堂|お社)/i,
-    transit: /(駅$|駅前|station|改札|バス停|bus stop|タクシー|taxi|乗り場)/i,
     commercial: /(売店|商店|ショップ|shop|store|カフェ|cafe|restaurant|レストラン|market|mart|ホテル|hotel)/i,
-    landmark: /(ランドマーク|landmark|塔|タワー|tower|記念碑|碑|時計台|シンボル|symbol)/i,
-    shelter: /(東屋|あずまや|四阿|休憩所|屋根|シェルター|shelter|gazebo|pavilion)/i
+    food: /(カフェ|cafe|restaurant|レストラン|食堂|売店|コンビニ|convenience|market|mart|自販機|vending|bbq|バーベキュー)/i,
+    largeCommercial: /(モール|mall|ショッピングセンター|shopping center|百貨店|デパート|marketplace|商業施設)/i,
+    water: /(噴水|水飲|給水|池|pond|川|river|水辺|waterfront|滝|waterfall|井戸|well|渚|海岸|海浜)/i,
+    tourist: /(展望|view|観覧車|museum|博物館|水族館|aquarium|庭園|garden|記念|名所|観光|ビューポイント|viewpoint)/i
   };
 
   function eventDef(id, title, type, priority, story, systemText, suppress = []) {
-    return { id, title, type, priority, story, suppress, cuts: [{ speaker: 'system', text: systemText }] };
+    return { id, title, type, priority, story, systemText, suppress, cuts: [{ speaker: 'system', text: systemText }] };
   }
 
+  // 2026-08-14 agreed 24-event set. Dialogue is intentionally left to the user.
   const EVENT_DEFS = {
-    DENSITY_01: eventDef('DENSITY_01','密集地点','対立型',50,['発見','滞留リスクを読む','魅力との両立を考える'],'POIが集中している地点があります。'),
-    DENSITY_REST_01: eventDef('DENSITY_REST_01','密集＋休憩支援','補完型',80,['密集を発見','近くの支援設備を確認','休憩を含めた運用を考える'],'密集地点の周辺に休憩・支援設備があります。',['DENSITY_01']),
-    ENTRANCE_01: eventDef('ENTRANCE_01','入口・集合導線','対立型',70,['入口を発見','分かりやすさを評価','人流との衝突を考える'],'入口付近に追加POIまたは集合候補があります。'),
-    LOOP_01: eventDef('LOOP_01','回遊導線','補完型',45,['複数の導線候補を発見','周回性を読む','滞留分散へつなげる'],'周回・散策導線として使えそうなPOIが複数あります。'),
-    NARROW_PATH_01: eventDef('NARROW_PATH_01','狭路・木道','確認型',75,['狭い導線候補を発見','通過か滞留かを分ける','現地確認へ送る'],'狭い通路・木道などに関係する可能性がある候補があります。'),
-    PARKING_01: eventDef('PARKING_01','駐車場・車両動線','確認型',76,['車両動線候補を発見','歩行との重なりを読む','現地確認へ送る'],'駐車場・ロータリー・車両動線に近い可能性がある候補があります。'),
-    PLAYGROUND_01: eventDef('PLAYGROUND_01','遊具エリア','補完型',48,['遊具を発見','滞在型の魅力を読む','周囲の余白を見る'],'遊具に関係するPOIがまとまっています。'),
-    OPEN_SPACE_01: eventDef('OPEN_SPACE_01','広場・芝生','補完型',42,['広い空間候補を発見','集合・分散の余地を見る','導線との接続を考える'],'広場・芝生・公園空間に関係する候補があります。'),
-    REST_SUPPORT_01: eventDef('REST_SUPPORT_01','休憩・支援拠点','補完型',55,['支援設備を発見','長時間滞在への効きを読む','周辺イベントを補完する'],'休憩・支援設備の候補があります。'),
-    WATER_01: eventDef('WATER_01','水辺・水場','確認型',46,['水場を発見','魅力と安全の両面を見る','現地状況を確認する'],'水辺・水場に関係する候補があります。'),
-    ART_01: eventDef('ART_01','アート散策','発見型',38,['アートPOIを発見','連続性を見る','歩く理由へ変える'],'アート・彫刻・壁画などの候補があります。'),
-    HISTORY_01: eventDef('HISTORY_01','歴史・文化','発見型',39,['歴史POIを発見','地域性を読む','散策テーマへ変える'],'歴史・文化に関係する候補があります。'),
-    RELIGIOUS_01: eventDef('RELIGIOUS_01','寺社・宗教施設','確認型',44,['寺社等を発見','空間の性格を読む','滞留可否を現地確認する'],'寺社・宗教施設に関係する候補があります。'),
-    TRANSIT_01: eventDef('TRANSIT_01','交通アクセス','補完型',58,['駅・停留所を発見','アクセス性を評価','集合導線との関係を見る'],'駅・バス停など交通アクセスに関係する候補があります。'),
-    COMMERCIAL_01: eventDef('COMMERCIAL_01','商業・補給','補完型',41,['商業施設を発見','補給可能性を見る','主導線への影響を見る'],'売店・店舗・カフェなど商業施設の候補があります。'),
-    LANDMARK_01: eventDef('LANDMARK_01','ランドマーク','発見型',37,['目印を発見','集合時の分かりやすさを見る','ルートの節目へ使う'],'ランドマーク・記念碑などの候補があります。'),
-    BRIDGE_01: eventDef('BRIDGE_01','橋・横断導線','確認型',72,['橋を発見','通過導線を読む','滞留を避ける設計を考える'],'橋・歩道橋など横断導線に関係する候補があります。'),
-    SHELTER_01: eventDef('SHELTER_01','屋根・退避地点','補完型',57,['屋根付き地点を発見','天候対応力を見る','休憩支援へつなげる'],'東屋・シェルターなど屋根付き候補があります。'),
-    FAMILY_01: eventDef('FAMILY_01','遊具＋休憩','複合型',69,['遊具を発見','休憩設備との組み合わせを見る','滞在しやすさを考える'],'遊具の近くに休憩・支援候補があります。',['PLAYGROUND_01','REST_SUPPORT_01']),
-    CULTURE_WALK_01: eventDef('CULTURE_WALK_01','文化散策ルート','複合型',64,['文化系POIを複数発見','点を線につなぐ','散策テーマを作る'],'アートと歴史・文化の候補が組み合わさっています。',['ART_01','HISTORY_01']),
-    WATER_REST_01: eventDef('WATER_REST_01','水辺＋休憩','複合型',63,['水辺を発見','休憩地点との近さを見る','滞在場所として評価する'],'水辺の近くに休憩・支援候補があります。',['WATER_01','REST_SUPPORT_01']),
-    ENTRANCE_DENSITY_01: eventDef('ENTRANCE_DENSITY_01','入口密集','対立型',90,['入口周辺の集中を発見','アクセス利点と滞留リスクを並べる','分散案を考える'],'入口周辺にPOIが集中しています。',['ENTRANCE_01','DENSITY_01']),
-    SUPPORT_GAP_01: eventDef('SUPPORT_GAP_01','支援空白','確認型',67,['活動候補の集中を発見','支援設備の不足を見る','現地の代替手段を探す'],'活動候補がある一方、近くに休憩・支援候補が見つかりません。'),
-    MIXED_ATTRACTION_01: eventDef('MIXED_ATTRACTION_01','多様な見どころ','発見型',60,['異なるカテゴリを発見','偏りの少なさを見る','複数テーマの回遊へつなげる'],'異なる種類の見どころが複数そろっています。')
+    DENSITY_01: eventDef('DENSITY_01','密集地点','対立型',60,['密集を発見','滞留リスクを読む','魅力との両立を考える'],'POIが集中している地点があります。'),
+    DENSITY_REST_01: eventDef('DENSITY_REST_01','密集＋休憩','補完型',82,['密集を発見','近くの休憩条件を確認','運用上の救いを評価する'],'密集地点の周辺に休憩・支援候補があります。',['DENSITY_01']),
+    ENTRANCE_01: eventDef('ENTRANCE_01','入口・集合','対立型',72,['入口を発見','集合の分かりやすさを見る','人流との衝突を考える'],'入口・集合導線に関係する候補があります。'),
+    LOOP_01: eventDef('LOOP_01','回遊導線','補完型',56,['回遊候補を発見','点を線につなぐ','滞留分散へつなげる'],'回遊に使えそうなPOIが複数あります。'),
+    NARROW_PATH_01: eventDef('NARROW_PATH_01','狭路・橋・木道','確認型',78,['狭い導線を発見','通過か滞留かを分ける','現地確認へ送る'],'狭路・橋・木道に関係する可能性があります。'),
+    PARKING_01: eventDef('PARKING_01','駐車場・車両','確認型',79,['車両動線を発見','歩行との重なりを見る','現地確認へ送る'],'駐車場・車両動線に関係する可能性があります。'),
+    PLAYGROUND_01: eventDef('PLAYGROUND_01','遊具集中','発見型',50,['遊具POIを発見','集中度を見る','滞在型エリアとして読む'],'遊具に関係するPOIがまとまっています。'),
+    PARK_PLAZA_01: eventDef('PARK_PLAZA_01','公園・広場','発見型',46,['広い空間を発見','集合と分散の余地を見る','導線との接続を考える'],'公園・広場・芝生に関係する候補があります。'),
+    REST_01: eventDef('REST_01','休憩設備','補完型',58,['休憩候補を発見','長時間滞在への効きを見る','周辺イベントを補完する'],'休憩・支援設備の候補があります。'),
+    REST_SHORTAGE_01: eventDef('REST_SHORTAGE_01','休憩不足','確認型',68,['活動候補の多さを見る','休憩候補の少なさを確認','代替手段を探す'],'活動候補に対して休憩・支援候補が少ない可能性があります。'),
+    TRANSIT_01: eventDef('TRANSIT_01','駅・交通アクセス','補完型',61,['交通拠点を発見','アクセス性を評価','集合導線との関係を見る'],'駅・停留所など交通アクセスの候補があります。'),
+    LANDMARK_CLUSTER_01: eventDef('LANDMARK_CLUSTER_01','ランドマーク集中','発見型',52,['目印を複数発見','集合の分かりやすさを見る','ルートの節目へ使う'],'ランドマーク候補が複数あります。'),
+    ART_CLUSTER_01: eventDef('ART_CLUSTER_01','アート集中','発見型',43,['アートPOIを複数発見','連続性を見る','歩く理由へ変える'],'アート・彫刻などの候補が複数あります。'),
+    HISTORY_CLUSTER_01: eventDef('HISTORY_CLUSTER_01','歴史・文化集中','発見型',44,['歴史文化POIを複数発見','地域性を読む','散策テーマへ変える'],'歴史・文化に関係する候補が複数あります。'),
+    RELIGIOUS_01: eventDef('RELIGIOUS_01','寺社・宗教周辺','確認型',55,['寺社等を発見','空間の性格を読む','滞留可否を確認する'],'寺社・宗教施設に関係する候補があります。'),
+    COMMERCIAL_CLUSTER_01: eventDef('COMMERCIAL_CLUSTER_01','商業集中','確認型',54,['商業POIを複数発見','一般利用者の人流を見る','イベント導線との重なりを考える'],'商業施設の候補が複数あります。'),
+    FOOD_SUPPLY_01: eventDef('FOOD_SUPPLY_01','飲食・補給','補完型',57,['飲食・補給候補を発見','長時間活動への効きを見る','休憩条件と組み合わせる'],'飲食・補給に使えそうな候補があります。'),
+    LARGE_COMMERCIAL_01: eventDef('LARGE_COMMERCIAL_01','大型商業施設内','確認型',74,['大型商業施設を発見','屋内人流を意識','利用条件を確認する'],'大型商業施設内に関係する可能性があります。'),
+    WATER_01: eventDef('WATER_01','水辺・噴水・井戸','確認型',48,['水辺候補を発見','魅力と安全の両面を見る','現地状況を確認する'],'水辺・噴水・井戸などに関係する候補があります。'),
+    TOURIST_CLUSTER_01: eventDef('TOURIST_CLUSTER_01','観光POI集中','発見型',51,['観光性の高いPOIを発見','来訪者の集中を読む','回遊テーマへつなげる'],'観光性の高いPOIが複数あります。'),
+    SAME_TYPE_BURST_01: eventDef('SAME_TYPE_BURST_01','同種POI連続','分析型',63,['同種POIの連続を発見','偏りか特色かを判断','配置の意味を読む'],'同じ種類のPOIが多くまとまっています。'),
+    ATTRIBUTE_SKEW_01: eventDef('ATTRIBUTE_SKEW_01','POI属性偏り','分析型',62,['POI構成を集計','一属性への偏りを見る','回遊の単調さを検討する'],'POI属性に大きな偏りがあります。'),
+    LANDMARK_SHORTAGE_01: eventDef('LANDMARK_SHORTAGE_01','集合目印不足','確認型',59,['活動候補を確認','集合目印の不足を見る','入口や目印候補を探す'],'活動候補に対して集合時の目印が少ない可能性があります。'),
+    FAVORABLE_COMPOSITE_01: eventDef('FAVORABLE_COMPOSITE_01','複合好条件','総合型',85,['回遊性を確認','休憩・補給を確認','目印やアクセスを確認','総合的な使いやすさを評価する'],'回遊・休憩・アクセスなど複数の好条件がそろっています。',['REST_SHORTAGE_01','LANDMARK_SHORTAGE_01'])
   };
 
   const sourceText = point => `${point?.folder || ''} ${point?.name || ''}`.trim();
@@ -64,68 +67,93 @@
 
   function normalizePoint(point,index){
     const text=sourceText(point);
+    const finalCategory=String(point.finalCategory || point.poiCategory || point.category || '').toUpperCase();
     const categories={};
     for(const [key,rx] of Object.entries(RX)) categories[key]=rx.test(text);
-    return {...point,id:point.id||`p${index+1}`,_text:text,categories,
+    if(finalCategory==='LOOP') categories.loop=true;
+    if(finalCategory==='REST') categories.rest=true;
+    if(finalCategory==='STAY') categories.stay=true;
+    if(finalCategory==='CAUTION') categories.caution=true;
+    return {...point,id:point.id||`p${index+1}`,_text:text,finalCategory,categories,
       isAdded:typeof point.isAdded==='boolean'?point.isAdded:categories.added,
       isExisting:typeof point.isExisting==='boolean'?point.isExisting:categories.existing,
-      isSupport:typeof point.isSupport==='boolean'?point.isSupport:categories.support};
+      isSupport:typeof point.isSupport==='boolean'?point.isSupport:categories.rest};
   }
 
   function eventResult(id,payload={}){const def=EVENT_DEFS[id];return {...def,...payload,cuts:def.cuts.map(x=>({...x})),story:[...def.story],suppress:[...def.suppress]};}
-  function categoryPoints(points,key){return points.filter(p=>p.categories[key]);}
+  function cat(points,key){return points.filter(p=>p.categories[key]);}
   function categoryEvent(points,id,key,minCount=1,confidence='medium'){
-    const matched=categoryPoints(points,key); if(matched.length<minCount)return null;
+    const matched=cat(points,key); if(matched.length<minCount)return null;
     return eventResult(id,{confidence,reason:`${EVENT_DEFS[id].title} に関係するPOIを${matched.length}件検出`,center:matched[0],matchedPoints:matched,metrics:{matchedCount:matched.length}});
   }
   function nearPairs(a,b,radius){const pairs=[];for(const x of a)for(const y of b){if(x.id===y.id)continue;const d=distanceMeters(x,y);if(d<=radius)pairs.push({a:x,b:y,distance:d});}return pairs.sort((x,y)=>x.distance-y.distance);}
 
   function detectDensity(points){
     const added=points.filter(p=>p.isAdded),existing=points.filter(p=>p.isExisting);let best=null;
-    for(const center of added){const nearbyExisting=existing.map(p=>({point:p,distance:distanceMeters(center,p)})).filter(x=>x.distance<=DENSITY_RADIUS_M).sort((a,b)=>a.distance-b.distance);if(!best||nearbyExisting.length>best.nearbyExisting.length)best={center,nearbyExisting};}
-    if(!best||best.nearbyExisting.length<DENSITY_MIN_EXISTING)return [];
+    for(const center of added){const nearby=existing.map(p=>({point:p,distance:distanceMeters(center,p)})).filter(x=>x.distance<=DENSITY_RADIUS_M);if(!best||nearby.length>best.nearby.length)best={center,nearby};}
+    if(!best||best.nearby.length<DENSITY_MIN_EXISTING)return [];
     const support=points.filter(p=>p.isSupport&&p.id!==best.center.id).map(p=>({point:p,distance:distanceMeters(best.center,p)})).filter(x=>x.distance<=SUPPORT_RADIUS_M);
-    const common={confidence:'high',center:best.center,matchedPoints:[best.center,...best.nearbyExisting.map(x=>x.point)],supportPoints:support.map(x=>x.point),metrics:{radiusM:DENSITY_RADIUS_M,nearbyExistingCount:best.nearbyExisting.length,supportCount:support.length}};
-    const out=[eventResult('DENSITY_01',{...common,reason:`追加POIの100m以内に既存POIが${best.nearbyExisting.length}件`})];
-    if(support.length)out.push(eventResult('DENSITY_REST_01',{...common,reason:`密集地点の100m以内に休憩・支援候補が${support.length}件`}));
-    else out.push(eventResult('SUPPORT_GAP_01',{...common,reason:'密集地点の100m以内に休憩・支援候補なし'}));
-    const entrances=categoryPoints(points,'entrance');
-    if(entrances.some(e=>distanceMeters(e,best.center)<=100))out.push(eventResult('ENTRANCE_DENSITY_01',{...common,reason:'密集地点が入口・ゲート候補の100m以内'}));
+    const common={confidence:'high',center:best.center,matchedPoints:[best.center,...best.nearby.map(x=>x.point)],supportPoints:support.map(x=>x.point),metrics:{radiusM:DENSITY_RADIUS_M,nearbyExistingCount:best.nearby.length,supportCount:support.length}};
+    const out=[eventResult('DENSITY_01',{...common,reason:`追加POIの100m以内に既存POIが${best.nearby.length}件`})];
+    if(support.length)out.push(eventResult('DENSITY_REST_01',{...common,reason:`密集地点の100m以内に休憩候補が${support.length}件`}));
     return out;
   }
 
-  function detectComposite(points){
+  function detectComposition(points){
+    const keys=['playground','openSpace','rest','transit','landmark','art','history','religious','commercial','food','largeCommercial','water','tourist','loop'];
+    const counts=Object.fromEntries(keys.map(k=>[k,cat(points,k).length]));
+    const active=keys.filter(k=>counts[k]>0);
+    const totalTagged=active.reduce((n,k)=>n+counts[k],0);
+    const maxEntry=active.map(k=>[k,counts[k]]).sort((a,b)=>b[1]-a[1])[0]||[null,0];
     const out=[];
-    const playground=categoryPoints(points,'playground'),support=points.filter(p=>p.isSupport),water=categoryPoints(points,'water'),art=categoryPoints(points,'art'),history=categoryPoints(points,'history');
-    const family=nearPairs(playground,support,100); if(family.length)out.push(eventResult('FAMILY_01',{confidence:'high',reason:'遊具と休憩・支援候補が100m以内',center:family[0].a,matchedPoints:[family[0].a,family[0].b],metrics:{distanceM:Math.round(family[0].distance)}}));
-    const wr=nearPairs(water,support,100); if(wr.length)out.push(eventResult('WATER_REST_01',{confidence:'high',reason:'水辺・水場と休憩・支援候補が100m以内',center:wr[0].a,matchedPoints:[wr[0].a,wr[0].b],metrics:{distanceM:Math.round(wr[0].distance)}}));
-    if(art.length&&history.length)out.push(eventResult('CULTURE_WALK_01',{confidence:'medium',reason:`アート${art.length}件＋歴史文化${history.length}件`,center:art[0],matchedPoints:[...art,...history]}));
-    const attractionKeys=['playground','water','art','history','religious','landmark','openSpace'];
-    const present=attractionKeys.filter(k=>categoryPoints(points,k).length>0);
-    if(present.length>=3)out.push(eventResult('MIXED_ATTRACTION_01',{confidence:'medium',reason:`見どころカテゴリが${present.length}種類`,matchedPoints:points.filter(p=>present.some(k=>p.categories[k])),metrics:{categories:present}}));
+    if(maxEntry[1]>=8) out.push(eventResult('SAME_TYPE_BURST_01',{confidence:'medium',reason:`${maxEntry[0]} 系POIを${maxEntry[1]}件検出`,matchedPoints:cat(points,maxEntry[0]),metrics:{category:maxEntry[0],count:maxEntry[1]}}));
+    if(totalTagged>=10 && maxEntry[1]/totalTagged>=0.55) out.push(eventResult('ATTRIBUTE_SKEW_01',{confidence:'medium',reason:`分類可能POIの${Math.round(maxEntry[1]/totalTagged*100)}%が${maxEntry[0]}系`,matchedPoints:cat(points,maxEntry[0]),metrics:{category:maxEntry[0],ratio:maxEntry[1]/totalTagged}}));
+    const activityCount=counts.loop+counts.openSpace+counts.playground+cat(points,'stay').length;
+    if(activityCount>=4 && counts.rest===0) out.push(eventResult('REST_SHORTAGE_01',{confidence:'medium',reason:`活動候補${activityCount}件に対して休憩候補を検出できず`,matchedPoints:points.filter(p=>p.categories.loop||p.categories.openSpace||p.categories.playground||p.categories.stay)}));
+    if(activityCount>=4 && counts.landmark===0 && counts.entrance===0) out.push(eventResult('LANDMARK_SHORTAGE_01',{confidence:'medium',reason:`活動候補${activityCount}件に対して集合目印候補を検出できず`,matchedPoints:points.filter(p=>p.categories.loop||p.categories.openSpace||p.categories.playground||p.categories.stay)}));
+    const favorable=(counts.loop>=2?1:0)+(counts.rest>=1?1:0)+(counts.transit>=1?1:0)+(counts.landmark>=1?1:0)+(counts.food>=1?1:0)+(counts.openSpace>=1?1:0);
+    if(favorable>=4) out.push(eventResult('FAVORABLE_COMPOSITE_01',{confidence:'medium',reason:`回遊・休憩・交通・目印・補給・広場のうち${favorable}条件を確認`,matchedPoints:points,metrics:{favorableConditions:favorable}}));
     return out;
-  }
-
-  function applySuppression(events){
-    const suppressed=new Set();
-    for(const e of events)for(const id of e.suppress||[])suppressed.add(id);
-    return events.filter(e=>!suppressed.has(e.id));
   }
 
   function detectAll(input={}){
     const points=(input.points||[]).map(normalizePoint).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lng));
     const found=[];
-    const simple=[
-      ['PARKING_01','parking',1],['NARROW_PATH_01','narrow',1],['BRIDGE_01','bridge',1],['ENTRANCE_01','entrance',1],['LOOP_01','loop',2],
-      ['PLAYGROUND_01','playground',2],['OPEN_SPACE_01','openSpace',1],['REST_SUPPORT_01','support',1],['WATER_01','water',1],['ART_01','art',2],
-      ['HISTORY_01','history',1],['RELIGIOUS_01','religious',1],['TRANSIT_01','transit',1],['COMMERCIAL_01','commercial',1],['LANDMARK_01','landmark',1],['SHELTER_01','shelter',1]
-    ];
-    for(const [id,key,min] of simple){const e=categoryEvent(points,id,key,min);if(e)found.push(e);}
-    found.push(...detectDensity(points),...detectComposite(points));
-    const unique=[...new Map(found.map(e=>[e.id,e])).values()];
-    return applySuppression(unique).sort((a,b)=>b.priority-a.priority);
+    const push=e=>{if(e)found.push(e);};
+
+    push(categoryEvent(points,'ENTRANCE_01','entrance',1));
+    push(categoryEvent(points,'LOOP_01','loop',2));
+    push(categoryEvent(points,'NARROW_PATH_01','narrow',1));
+    push(categoryEvent(points,'PARKING_01','parking',1));
+    push(categoryEvent(points,'PLAYGROUND_01','playground',2));
+    push(categoryEvent(points,'PARK_PLAZA_01','openSpace',2));
+    push(categoryEvent(points,'REST_01','rest',1));
+    push(categoryEvent(points,'TRANSIT_01','transit',1));
+    push(categoryEvent(points,'LANDMARK_CLUSTER_01','landmark',2));
+    push(categoryEvent(points,'ART_CLUSTER_01','art',2));
+    push(categoryEvent(points,'HISTORY_CLUSTER_01','history',2));
+    push(categoryEvent(points,'RELIGIOUS_01','religious',1));
+    push(categoryEvent(points,'COMMERCIAL_CLUSTER_01','commercial',2));
+    push(categoryEvent(points,'FOOD_SUPPLY_01','food',1));
+    push(categoryEvent(points,'LARGE_COMMERCIAL_01','largeCommercial',1));
+    push(categoryEvent(points,'WATER_01','water',1));
+    push(categoryEvent(points,'TOURIST_CLUSTER_01','tourist',2));
+    found.push(...detectDensity(points));
+    found.push(...detectComposition(points));
+
+    const byId=new Map();
+    for(const event of found){const prev=byId.get(event.id);if(!prev||event.priority>prev.priority)byId.set(event.id,event);}
+    const suppressed=new Set();
+    for(const event of byId.values())for(const id of event.suppress||[])suppressed.add(id);
+    return [...byId.values()].filter(e=>!suppressed.has(e.id)).sort((a,b)=>b.priority-a.priority);
   }
 
   function detect(input={}){return detectAll(input)[0]||null;}
-  window.GungiAutoEvents={version:'0.2.0',constants:{densityRadiusM:DENSITY_RADIUS_M,densityMinExisting:DENSITY_MIN_EXISTING,supportRadiusM:SUPPORT_RADIUS_M,eventCount:Object.keys(EVENT_DEFS).length},eventDefs:EVENT_DEFS,detect,detectAll,distanceMeters};
+
+  window.GungiAutoEvents={
+    version:'0.2.1',
+    constants:{densityRadiusM:DENSITY_RADIUS_M,densityMinExisting:DENSITY_MIN_EXISTING,supportRadiusM:SUPPORT_RADIUS_M,clusterRadiusM:CLUSTER_RADIUS_M},
+    eventDefs:EVENT_DEFS,
+    detect,detectAll,distanceMeters
+  };
 })();
