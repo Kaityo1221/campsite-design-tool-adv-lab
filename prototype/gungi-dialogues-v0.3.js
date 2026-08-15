@@ -125,4 +125,80 @@
       { speaker: 'mina', text: 'これは強い！歩いて、休んで、また遊べる流れが作れそう！' }
     ])
   };
+
+  // v0.3.1: highlighted/event-picked points stay tappable even when an overlay sits on top.
+  function installInteractiveMapOverlayPatch(){
+    if(!window.L || window.__ADV_INTERACTIVE_OVERLAYS_V031__) return;
+    window.__ADV_INTERACTIVE_OVERLAYS_V031__=true;
+
+    L.Map.addInitHook(function(){ window.__ADV_ACTIVE_MAP__=this; });
+
+    const originalAddLayer=L.LayerGroup.prototype.addLayer;
+    const isCircleLayer=layer=>layer instanceof L.CircleMarker;
+    const currentEventLabel=()=>{
+      const raw=(document.getElementById('eventBanner')?.textContent||'ADV EVENT').trim();
+      return raw.replace(/^EVENT\s+\d+\/\d+\s*·\s*/i,'')||'ADV EVENT';
+    };
+    const nearestNamedMarker=(map,anchor,ignore)=>{
+      let best=null,bestDistance=Infinity;
+      map.eachLayer(candidate=>{
+        if(candidate===ignore || !(candidate instanceof L.CircleMarker)) return;
+        const tooltip=candidate.getTooltip?.(),ll=candidate.getLatLng?.();
+        if(!tooltip||!ll) return;
+        const d=map.distance(anchor,ll);
+        if(d<bestDistance){best=candidate;bestDistance=d;}
+      });
+      return bestDistance<=45?best:null;
+    };
+    const openInfo=(layer,e,kind)=>{
+      const map=layer._map||window.__ADV_ACTIVE_MAP__;
+      if(!map) return;
+      const anchor=layer.getLatLng?.()||e?.latlng;
+      const source=anchor?nearestNamedMarker(map,anchor,layer):null;
+      const sourceHtml=source?.getTooltip?.()?.getContent?.()||'<strong>イベント判定エリア</strong>';
+      const eventLabel=currentEventLabel();
+      const html=`<div style="min-width:190px;line-height:1.55;font-size:12px">${sourceHtml}<hr style="border:0;border-top:1px solid #d1d5db;margin:7px 0"><div><strong>表示</strong>：${kind}</div><div><strong>ピックアップ理由</strong>：${eventLabel}</div></div>`;
+      L.popup({closeButton:true,autoPan:true,offset:[0,-6],maxWidth:300})
+        .setLatLng(e?.latlng||anchor)
+        .setContent(html)
+        .openOn(map);
+    };
+    const attachNormalMarker=layer=>{
+      if(!isCircleLayer(layer)||layer.__advNormalClickBound__) return;
+      const tooltip=layer.getTooltip?.();
+      if(!tooltip) return;
+      layer.__advNormalClickBound__=true;
+      layer.on('click',e=>{
+        const map=layer._map||window.__ADV_ACTIVE_MAP__;
+        if(!map) return;
+        const sourceHtml=tooltip.getContent?.()||'<strong>POI</strong>';
+        const html=`<div style="min-width:170px;line-height:1.55;font-size:12px">${sourceHtml}<hr style="border:0;border-top:1px solid #d1d5db;margin:7px 0"><div><strong>表示</strong>：POI</div></div>`;
+        L.popup({closeButton:true,autoPan:true,offset:[0,-6],maxWidth:300}).setLatLng(e.latlng).setContent(html).openOn(map);
+      });
+    };
+    const attachOverlay=layer=>{
+      if(!isCircleLayer(layer)||layer.__advOverlayClickBound__||layer.getTooltip?.()||layer.getPopup?.()) return;
+      layer.__advOverlayClickBound__=true;
+      const isArea=layer instanceof L.Circle;
+      if(!isArea && typeof layer.getRadius==='function' && typeof layer.setRadius==='function'){
+        const r=Number(layer.getRadius());
+        if(Number.isFinite(r)&&r<8) layer.setRadius(8);
+      }
+      layer.options.interactive=true;
+      layer.on('click',e=>openInfo(layer,e,isArea?'判定エリア／中心地点':'イベントでピックアップされたPOI'));
+      layer.on('add',()=>{
+        const node=layer.getElement?.();
+        if(node){node.style.cursor='pointer';node.style.pointerEvents='auto';}
+      });
+    };
+
+    L.LayerGroup.prototype.addLayer=function(layer){
+      const result=originalAddLayer.call(this,layer);
+      attachNormalMarker(layer);
+      attachOverlay(layer);
+      return result;
+    };
+  }
+
+  installInteractiveMapOverlayPatch();
 })();
