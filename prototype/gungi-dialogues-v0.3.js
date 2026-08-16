@@ -157,8 +157,8 @@
       const source=anchor?nearestNamedMarker(map,anchor,layer):null;
       const sourceHtml=source?.getTooltip?.()?.getContent?.()||'<strong>イベント判定エリア</strong>';
       const eventLabel=currentEventLabel();
-      const html=`<div style="min-width:190px;line-height:1.55;font-size:12px">${sourceHtml}<hr style="border:0;border-top:1px solid #d1d5db;margin:7px 0"><div><strong>表示</strong>：${kind}</div><div><strong>ピックアップ理由</strong>：${eventLabel}</div></div>`;
-      L.popup({closeButton:true,autoPan:true,offset:[0,-6],maxWidth:300})
+      const html=`<div style="max-width:190px;line-height:1.4;font-size:11px;overflow-wrap:anywhere">${sourceHtml}<hr style="border:0;border-top:1px solid #d1d5db;margin:5px 0"><div><strong>表示</strong>：${kind}</div><div><strong>ピックアップ理由</strong>：${eventLabel}</div></div>`;
+      L.popup({closeButton:true,autoPan:true,offset:[0,-6],maxWidth:220})
         .setLatLng(e?.latlng||anchor)
         .setContent(html)
         .openOn(map);
@@ -172,8 +172,8 @@
         const map=layer._map||window.__ADV_ACTIVE_MAP__;
         if(!map) return;
         const sourceHtml=tooltip.getContent?.()||'<strong>POI</strong>';
-        const html=`<div style="min-width:170px;line-height:1.55;font-size:12px">${sourceHtml}<hr style="border:0;border-top:1px solid #d1d5db;margin:7px 0"><div><strong>表示</strong>：POI</div></div>`;
-        L.popup({closeButton:true,autoPan:true,offset:[0,-6],maxWidth:300}).setLatLng(e.latlng).setContent(html).openOn(map);
+        const html=`<div style="max-width:180px;line-height:1.4;font-size:11px;overflow-wrap:anywhere">${sourceHtml}<hr style="border:0;border-top:1px solid #d1d5db;margin:5px 0"><div><strong>表示</strong>：POI</div></div>`;
+        L.popup({closeButton:true,autoPan:true,offset:[0,-6],maxWidth:210}).setLatLng(e.latlng).setContent(html).openOn(map);
       });
     };
     const attachOverlay=layer=>{
@@ -200,5 +200,25 @@
     };
   }
 
+  function installCompactPopupStyle(){
+    if(document.getElementById('advCompactPopupStyle')) return;
+    const style=document.createElement('style');
+    style.id='advCompactPopupStyle';
+    style.textContent=`
+      #map .leaflet-popup{max-width:230px}
+      #map .leaflet-popup-content-wrapper{border-radius:10px}
+      #map .leaflet-popup-content{width:auto!important;max-width:200px;margin:8px 10px;line-height:1.38;font-size:11px;overflow-wrap:anywhere}
+      @media(max-width:760px){
+        #map .leaflet-popup{max-width:190px!important}
+        #map .leaflet-popup-content-wrapper{max-width:190px;border-radius:8px}
+        #map .leaflet-popup-content{width:auto!important;max-width:164px!important;max-height:94px;overflow-y:auto;margin:6px 8px;padding-right:2px;font-size:9.5px;line-height:1.3}
+        #map .leaflet-popup-content strong{font-size:10px}
+        #map .leaflet-popup-close-button{width:20px;height:20px;font-size:16px;line-height:18px}
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   installInteractiveMapOverlayPatch();
+  installCompactPopupStyle();
 })();
