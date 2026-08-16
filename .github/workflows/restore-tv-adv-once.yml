@@ -1,0 +1,32 @@
+name: restore-tv-adv-once
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/restore-tv-adv-once.yml']
+permissions:
+  contents: write
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restore TV-style ADV files from last completed version
+        run: |
+          git fetch origin 7f67ab8b89071431ae50bd666b667040208c6a4f
+          git show 7f67ab8b89071431ae50bd666b667040208c6a4f:prototype/gungi-auto-room.html > prototype/gungi-auto-room.html
+          git show 7f67ab8b89071431ae50bd666b667040208c6a4f:prototype/gungi-auto-engine.js > prototype/gungi-auto-engine.js
+          git show 7f67ab8b89071431ae50bd666b667040208c6a4f:prototype/gungi-dialogues-v0.3.js > prototype/gungi-dialogues-v0.3.js
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('prototype/index.html')
+          p.write_text('''<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><title>ADV LAB</title><script>location.replace('./gungi-auto-room.html')</script></head><body><a href="./gungi-auto-room.html">ADVを開く</a></body></html>''',encoding='utf-8')
+          PY
+      - name: Commit restored ADV
+        run: |
+          git config user.name "Kaityo1221"
+          git config user.email "rakugo100@gmail.com"
+          git add prototype/gungi-auto-room.html prototype/gungi-auto-engine.js prototype/gungi-dialogues-v0.3.js prototype/index.html
+          git commit -m "Restore TV-style ADV council screen" || exit 0
+          git push origin main
