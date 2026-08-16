@@ -1,0 +1,39 @@
+name: sync-creative-runtime-once
+
+on:
+  push:
+    paths:
+      - '.github/workflows/sync-creative-runtime-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Clone current Campsite Design Tool
+        run: |
+          rm -rf /tmp/cdt-source
+          git clone --depth 1 https://github.com/Kaityo1221/Campsite-Design-Tool-JP.git /tmp/cdt-source
+      - name: Copy into isolated development runtime
+        run: |
+          rm -rf creative/runtime
+          mkdir -p creative/runtime
+          rsync -a --exclude='.git' --exclude='.github' /tmp/cdt-source/ creative/runtime/
+          printf '%s\n' 'This directory is an isolated development snapshot copied from Campsite-Design-Tool-JP/main.' > creative/runtime/DEVELOPMENT_SNAPSHOT.txt
+      - name: Commit development runtime snapshot
+        run: |
+          git config user.name 'Kaityo1221'
+          git config user.email 'rakugo100@gmail.com'
+          git add creative/runtime
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git commit -m 'Sync real CREATIVE MODE into development runtime'
+          git push origin HEAD:main
