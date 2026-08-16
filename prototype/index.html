@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <title>Campsite ADV Briefing</title>
-  <link rel="stylesheet" href="./styles.css?v=0.4.0">
+  <link rel="stylesheet" href="./styles.css?v=0.5.0">
 </head>
 <body>
   <main class="app-shell">
@@ -13,6 +13,7 @@
       <div>
         <p class="eyebrow">CAMPSITE DESIGN TOOL / PRIVATE ADV LAB</p>
         <h1>ADV 軍議</h1>
+        <p class="mode-copy">Campsite Design Tool の研究・検証エリア</p>
       </div>
       <div class="topbar-actions">
         <span class="status-chip">AUTO TEST</span>
@@ -43,11 +44,11 @@
       </div>
 
       <div class="character character-riku is-dim" id="rikuCard">
-        <div class="portrait portrait-riku" aria-hidden="true">R</div>
+        <div class="portrait portrait-riku"><img src="https://raw.githubusercontent.com/Kaityo1221/Campsite-Design-Tool-JP/main/assets/riku_decided.png" alt="リク"></div>
         <div class="character-meta"><strong>リク</strong><span>分析・安全・運用</span></div>
       </div>
       <div class="character character-mina is-dim" id="minaCard">
-        <div class="portrait portrait-mina" aria-hidden="true">M</div>
+        <div class="portrait portrait-mina"><img src="https://raw.githubusercontent.com/Kaityo1221/Campsite-Design-Tool-JP/main/assets/ren_normal.png" alt="ミナ側キャラクター表示"></div>
         <div class="character-meta"><strong>ミナ</strong><span>魅力・楽しさ・にぎわい</span></div>
       </div>
 
@@ -69,6 +70,7 @@
       </section>
       <div id="detectedList" class="detected-list"></div>
     </details>
+    <a class="hub-back" href="../">← Development Hubへ戻る</a>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
