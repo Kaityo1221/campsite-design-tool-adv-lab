@@ -127,11 +127,9 @@
   };
 
   function installInteractiveMapOverlayPatch(){
-    if(!window.L || window.__ADV_INTERACTIVE_OVERLAYS_V033__) return;
-    window.__ADV_INTERACTIVE_OVERLAYS_V033__=true;
-
+    if(!window.L || window.__ADV_INTERACTIVE_OVERLAYS_V034__) return;
+    window.__ADV_INTERACTIVE_OVERLAYS_V034__=true;
     L.Map.addInitHook(function(){ window.__ADV_ACTIVE_MAP__=this; });
-
     const originalAddLayer=L.LayerGroup.prototype.addLayer;
     const isCircleLayer=layer=>layer instanceof L.CircleMarker;
     const currentEventLabel=()=>{
@@ -149,29 +147,16 @@
       });
       return bestDistance<=45?best:null;
     };
-    const popupOptions=()=>({
-      closeButton:true,
-      autoPan:true,
-      keepInView:true,
-      offset:[0,-6],
-      minWidth:190,
-      maxWidth:240,
-      className:'adv-poi-popup'
-    });
+    const popupOptions=()=>({closeButton:true,autoPan:true,keepInView:true,offset:[0,-6],minWidth:190,maxWidth:240,className:'adv-poi-popup'});
     const popupCard=(sourceHtml,kind,eventLabel)=>`<div class="adv-popup-card"><div class="adv-popup-source">${sourceHtml}</div><hr><div class="adv-popup-meta"><strong>表示</strong>：${kind}</div>${eventLabel?`<div class="adv-popup-meta"><strong>ピックアップ理由</strong>：${eventLabel}</div>`:''}</div>`;
-
     const openInfo=(layer,e,kind)=>{
       const map=layer._map||window.__ADV_ACTIVE_MAP__;
       if(!map) return;
       const anchor=layer.getLatLng?.()||e?.latlng;
       const source=anchor?nearestNamedMarker(map,anchor,layer):null;
       const sourceHtml=source?.getTooltip?.()?.getContent?.()||'<strong>イベント判定エリア</strong>';
-      L.popup(popupOptions())
-        .setLatLng(e?.latlng||anchor)
-        .setContent(popupCard(sourceHtml,kind,currentEventLabel()))
-        .openOn(map);
+      L.popup(popupOptions()).setLatLng(e?.latlng||anchor).setContent(popupCard(sourceHtml,kind,currentEventLabel())).openOn(map);
     };
-
     const attachNormalMarker=layer=>{
       if(!isCircleLayer(layer)||layer.__advNormalClickBound__) return;
       const tooltip=layer.getTooltip?.();
@@ -184,7 +169,6 @@
         L.popup(popupOptions()).setLatLng(e.latlng).setContent(popupCard(sourceHtml,'POI','')).openOn(map);
       });
     };
-
     const attachOverlay=layer=>{
       if(!isCircleLayer(layer)||layer.__advOverlayClickBound__||layer.getTooltip?.()||layer.getPopup?.()) return;
       layer.__advOverlayClickBound__=true;
@@ -200,7 +184,6 @@
         if(node){node.style.cursor='pointer';node.style.pointerEvents='auto';}
       });
     };
-
     L.LayerGroup.prototype.addLayer=function(layer){
       const result=originalAddLayer.call(this,layer);
       attachNormalMarker(layer);
@@ -238,7 +221,6 @@
     const scene=document.getElementById('strategyScene');
     const mapEl=document.getElementById('map');
     if(!scene||!mapEl) return;
-
     const sync=()=>{
       const mobile=window.matchMedia('(max-width:760px)').matches;
       if(!mobile){
@@ -262,14 +244,99 @@
       }
       requestAnimationFrame(()=>window.__ADV_ACTIVE_MAP__?.invalidateSize?.({pan:false}));
     };
-
     sync();
     window.addEventListener('resize',sync,{passive:true});
     window.addEventListener('orientationchange',()=>setTimeout(sync,120),{passive:true});
     if('ResizeObserver' in window)new ResizeObserver(sync).observe(scene);
   }
 
+  function installMobileCouncilImmersiveMode(){
+    if(window.__ADV_MOBILE_IMMERSIVE_V034__) return;
+    window.__ADV_MOBILE_IMMERSIVE_V034__=true;
+    const mobile=()=>window.matchMedia('(max-width:760px)').matches;
+    const scene=document.getElementById('strategyScene');
+    const banner=document.getElementById('eventBanner');
+    const file=document.getElementById('kmzFile');
+    const controls=document.querySelector('.controls');
+    if(!scene||!banner||!controls) return;
+
+    const style=document.createElement('style');
+    style.id='advMobileImmersiveStyle';
+    style.textContent=`
+      #advMobileControlsToggle,#advMobileExit{display:none}
+      @media(max-width:760px){
+        html.adv-mobile-council,body.adv-mobile-council{margin:0;width:100%;height:100%;overflow:hidden!important;overscroll-behavior:none;background:#050a11}
+        body.adv-mobile-council .page{position:fixed;inset:0;z-index:2147483000;width:100vw;height:100dvh;max-width:none;margin:0;padding:0;display:flex;flex-direction:column;background:#050a11;overflow:hidden}
+        body.adv-mobile-council .labbar,body.adv-mobile-council .status,body.adv-mobile-council .debug{display:none!important}
+        body.adv-mobile-council .strategy-scene{flex:1 1 auto;width:100%;height:auto;min-height:0;aspect-ratio:auto;border:0;border-radius:0;margin:0;background-size:auto 100%;background-repeat:no-repeat;background-position:center center}
+        body.adv-mobile-council .controls{position:relative;z-index:2147483010;flex:0 0 auto;margin:0;padding:7px max(8px,env(safe-area-inset-right)) max(7px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));background:linear-gradient(180deg,rgba(4,10,18,.2),rgba(4,10,18,.96));transition:transform .22s ease,opacity .18s ease,max-height .22s ease,padding .22s ease;max-height:90px;overflow:hidden}
+        body.adv-mobile-council .controls button{padding:10px 7px;font-size:12px;border-radius:11px}
+        body.adv-mobile-council.adv-controls-hidden .controls{position:absolute;left:0;right:0;bottom:0;opacity:0;pointer-events:none;transform:translateY(115%);max-height:0;padding-top:0;padding-bottom:0}
+        #advMobileControlsToggle,#advMobileExit{position:fixed;z-index:2147483020;border:1px solid rgba(191,219,254,.3);background:rgba(4,12,22,.78);color:#e5eef7;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 5px 18px rgba(0,0,0,.3);font-weight:800;line-height:1;cursor:pointer}
+        body.adv-mobile-council #advMobileControlsToggle,body.adv-mobile-council #advMobileExit{display:flex;align-items:center;justify-content:center}
+        #advMobileControlsToggle{right:10px;bottom:max(94px,calc(env(safe-area-inset-bottom) + 76px));min-width:72px;height:32px;padding:0 9px;border-radius:999px;font-size:10px}
+        body.adv-mobile-council.adv-controls-hidden #advMobileControlsToggle{bottom:max(12px,env(safe-area-inset-bottom))}
+        #advMobileExit{left:10px;top:max(10px,env(safe-area-inset-top));width:34px;height:34px;border-radius:50%;font-size:18px}
+      }
+    `;
+    document.head.appendChild(style);
+
+    const toggle=document.createElement('button');
+    toggle.id='advMobileControlsToggle';
+    toggle.type='button';
+    toggle.textContent='操作を隠す';
+    toggle.setAttribute('aria-label','進む・戻るボタンの表示を切り替える');
+    document.body.appendChild(toggle);
+
+    const exit=document.createElement('button');
+    exit.id='advMobileExit';
+    exit.type='button';
+    exit.textContent='×';
+    exit.setAttribute('aria-label','全画面表示を終了');
+    document.body.appendChild(exit);
+
+    const requestNativeFullscreen=()=>{
+      const root=document.documentElement;
+      const fn=root.requestFullscreen||root.webkitRequestFullscreen;
+      if(typeof fn==='function'){
+        try{const result=fn.call(root);result?.catch?.(()=>{});}catch(_e){}
+      }
+    };
+    const enter=()=>{
+      if(!mobile()||document.body.classList.contains('adv-mobile-council')) return;
+      document.documentElement.classList.add('adv-mobile-council');
+      document.body.classList.add('adv-mobile-council');
+      document.body.classList.remove('adv-controls-hidden');
+      toggle.textContent='操作を隠す';
+      requestAnimationFrame(()=>window.__ADV_ACTIVE_MAP__?.invalidateSize?.({pan:false}));
+    };
+    const leave=()=>{
+      document.documentElement.classList.remove('adv-mobile-council');
+      document.body.classList.remove('adv-mobile-council','adv-controls-hidden');
+      toggle.textContent='操作を隠す';
+      if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});
+      requestAnimationFrame(()=>window.__ADV_ACTIVE_MAP__?.invalidateSize?.({pan:false}));
+    };
+    const updateFromBanner=()=>{
+      const text=(banner.textContent||'').trim();
+      if(/^EVENT\s+\d+\/\d+/i.test(text)||/^DISTANCE CHECK/i.test(text))enter();
+    };
+
+    toggle.addEventListener('click',()=>{
+      if(!document.body.classList.contains('adv-mobile-council')) return;
+      const hidden=document.body.classList.toggle('adv-controls-hidden');
+      toggle.textContent=hidden?'操作を表示':'操作を隠す';
+      setTimeout(()=>window.__ADV_ACTIVE_MAP__?.invalidateSize?.({pan:false}),240);
+    });
+    exit.addEventListener('click',leave);
+    new MutationObserver(updateFromBanner).observe(banner,{childList:true,characterData:true,subtree:true});
+    file?.addEventListener('change',()=>{if(mobile())requestNativeFullscreen();},{capture:true});
+    window.addEventListener('orientationchange',()=>setTimeout(()=>window.__ADV_ACTIVE_MAP__?.invalidateSize?.({pan:false}),180),{passive:true});
+    updateFromBanner();
+  }
+
   installInteractiveMapOverlayPatch();
   installCompactPopupStyle();
   installMobileMapScreenFit();
+  installMobileCouncilImmersiveMode();
 })();
