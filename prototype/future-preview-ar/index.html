@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#101a16" />
+  <title>Campsite 未来プレビュー AR | Phase 1</title>
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">CAMPSITE DESIGN TOOL / EXPERIMENT</p>
+        <h1>未来プレビュー AR</h1>
+      </div>
+      <div class="virtual-badge">VIRTUAL PREVIEW</div>
+    </header>
+
+    <main class="hud" id="hud">
+      <section class="panel setup-panel">
+        <div class="panel-title">第一段階</div>
+        <p class="lead">完成KMZ / KMLの活動範囲を読み込み、現在地から50m以内を現地カメラ上で未来化します。</p>
+
+        <label class="file-picker">
+          <span>1. KMZ / KMLを選ぶ</span>
+          <input id="kmzFile" type="file" />
+        </label>
+
+        <button id="startArBtn" class="primary" type="button" disabled>2. AR権限・カメラを開始</button>
+
+        <fieldset id="peopleFieldset" disabled>
+          <legend>3. 人数</legend>
+          <div class="segmented" id="peopleButtons">
+            <button type="button" data-count="20">20人</button>
+            <button type="button" data-count="50" class="selected">50人</button>
+            <button type="button" data-count="100">100人</button>
+          </div>
+        </fieldset>
+
+        <button id="showFutureBtn" class="future" type="button" disabled>未来を見る</button>
+
+        <div class="status-grid" aria-live="polite">
+          <div class="status-row"><span>KMZ</span><strong id="kmzStatus">未読込</strong></div>
+          <div class="status-row"><span>モーション・方向</span><strong id="motionStatus">未確認</strong></div>
+          <div class="status-row"><span>カメラ</span><strong id="cameraStatus">未開始</strong></div>
+          <div class="status-row"><span>AR</span><strong id="arStatus">未開始</strong></div>
+          <div class="status-row"><span>GPS</span><strong id="gpsStatus">未取得</strong></div>
+        </div>
+
+        <p id="message" class="message">まず完成KMZまたはKMLを選択してください。</p>
+      </section>
+
+      <section id="liveCard" class="live-card hidden">
+        <div>
+          <span class="live-dot"></span>
+          <strong id="liveCount">50人規模</strong>
+        </div>
+        <span id="accuracyText">GPS待機中</span>
+      </section>
+
+      <div id="previewControls" class="preview-controls hidden">
+        <button id="settingsBtn" class="settings-btn" type="button">設定</button>
+        <button id="resetBtn" class="reset" type="button">終了</button>
+      </div>
+    </main>
+
+    <div class="watermark" aria-hidden="true">VIRTUAL</div>
+    <div class="safety-note">仮想表示です。KMZ・提出データには保存されません。</div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
