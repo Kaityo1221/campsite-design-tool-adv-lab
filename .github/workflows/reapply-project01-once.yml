@@ -1,0 +1,47 @@
+name: reapply-project01-once
+
+on:
+  push:
+    paths:
+      - '.github/workflows/reapply-project01-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  reapply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Restore Project 01 integration
+        shell: bash
+        run: |
+          set -e
+          git show 2578ff14d741f676be3637e4334c3d9750c9e516:creative/runtime/js/project01-development.js > creative/runtime/js/project01-development.js
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('creative/runtime/field-mode.html')
+          s = p.read_text(encoding='utf-8')
+          if 'field-mode-entry.css?v=dev1' not in s:
+              s = s.replace(
+                  '<link rel="stylesheet" href="css/field-mode.css?v=3">',
+                  '<link rel="stylesheet" href="css/field-mode.css?v=3">\n  <link rel="stylesheet" href="css/field-mode-entry.css?v=dev1">\n  <link rel="stylesheet" href="css/field-mode-entry-position.css?v=dev1">\n  <link rel="stylesheet" href="css/field-mode-entry-transition.css?v=dev1">'
+              )
+          script = '<script src="js/project01-development.js?v=2"></script>'
+          if 'project01-development.js' not in s:
+              s = s.replace('</body></html>', script + '\n</body></html>')
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit integration
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add creative/runtime/field-mode.html creative/runtime/js/project01-development.js
+          git diff --cached --quiet || git commit -m "Restore Project 01 inside development Creative Mode"
+          git push origin main
