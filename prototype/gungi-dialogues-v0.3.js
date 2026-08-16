@@ -126,10 +126,9 @@
     ])
   };
 
-  // v0.3.1: highlighted/event-picked points stay tappable even when an overlay sits on top.
   function installInteractiveMapOverlayPatch(){
-    if(!window.L || window.__ADV_INTERACTIVE_OVERLAYS_V031__) return;
-    window.__ADV_INTERACTIVE_OVERLAYS_V031__=true;
+    if(!window.L || window.__ADV_INTERACTIVE_OVERLAYS_V033__) return;
+    window.__ADV_INTERACTIVE_OVERLAYS_V033__=true;
 
     L.Map.addInitHook(function(){ window.__ADV_ACTIVE_MAP__=this; });
 
@@ -150,19 +149,29 @@
       });
       return bestDistance<=45?best:null;
     };
+    const popupOptions=()=>({
+      closeButton:true,
+      autoPan:true,
+      keepInView:true,
+      offset:[0,-6],
+      minWidth:190,
+      maxWidth:240,
+      className:'adv-poi-popup'
+    });
+    const popupCard=(sourceHtml,kind,eventLabel)=>`<div class="adv-popup-card"><div class="adv-popup-source">${sourceHtml}</div><hr><div class="adv-popup-meta"><strong>表示</strong>：${kind}</div>${eventLabel?`<div class="adv-popup-meta"><strong>ピックアップ理由</strong>：${eventLabel}</div>`:''}</div>`;
+
     const openInfo=(layer,e,kind)=>{
       const map=layer._map||window.__ADV_ACTIVE_MAP__;
       if(!map) return;
       const anchor=layer.getLatLng?.()||e?.latlng;
       const source=anchor?nearestNamedMarker(map,anchor,layer):null;
       const sourceHtml=source?.getTooltip?.()?.getContent?.()||'<strong>イベント判定エリア</strong>';
-      const eventLabel=currentEventLabel();
-      const html=`<div style="max-width:190px;line-height:1.4;font-size:11px;overflow-wrap:anywhere">${sourceHtml}<hr style="border:0;border-top:1px solid #d1d5db;margin:5px 0"><div><strong>表示</strong>：${kind}</div><div><strong>ピックアップ理由</strong>：${eventLabel}</div></div>`;
-      L.popup({closeButton:true,autoPan:true,offset:[0,-6],maxWidth:220})
+      L.popup(popupOptions())
         .setLatLng(e?.latlng||anchor)
-        .setContent(html)
+        .setContent(popupCard(sourceHtml,kind,currentEventLabel()))
         .openOn(map);
     };
+
     const attachNormalMarker=layer=>{
       if(!isCircleLayer(layer)||layer.__advNormalClickBound__) return;
       const tooltip=layer.getTooltip?.();
@@ -172,10 +181,10 @@
         const map=layer._map||window.__ADV_ACTIVE_MAP__;
         if(!map) return;
         const sourceHtml=tooltip.getContent?.()||'<strong>POI</strong>';
-        const html=`<div style="max-width:180px;line-height:1.4;font-size:11px;overflow-wrap:anywhere">${sourceHtml}<hr style="border:0;border-top:1px solid #d1d5db;margin:5px 0"><div><strong>表示</strong>：POI</div></div>`;
-        L.popup({closeButton:true,autoPan:true,offset:[0,-6],maxWidth:210}).setLatLng(e.latlng).setContent(html).openOn(map);
+        L.popup(popupOptions()).setLatLng(e.latlng).setContent(popupCard(sourceHtml,'POI','')).openOn(map);
       });
     };
+
     const attachOverlay=layer=>{
       if(!isCircleLayer(layer)||layer.__advOverlayClickBound__||layer.getTooltip?.()||layer.getPopup?.()) return;
       layer.__advOverlayClickBound__=true;
@@ -205,20 +214,62 @@
     const style=document.createElement('style');
     style.id='advCompactPopupStyle';
     style.textContent=`
-      #map .leaflet-popup{max-width:230px}
-      #map .leaflet-popup-content-wrapper{border-radius:10px}
-      #map .leaflet-popup-content{width:auto!important;max-width:200px;margin:8px 10px;line-height:1.38;font-size:11px;overflow-wrap:anywhere}
+      #map .adv-poi-popup .leaflet-popup-content-wrapper{border-radius:10px}
+      #map .adv-poi-popup .leaflet-popup-content{width:210px!important;max-width:210px!important;margin:8px 10px;line-height:1.38;font-size:11px}
+      #map .adv-popup-card,#map .adv-popup-source,#map .adv-popup-source *{writing-mode:horizontal-tb!important;text-orientation:mixed!important;white-space:normal!important}
+      #map .adv-popup-card{width:210px;max-width:210px;overflow-wrap:anywhere;word-break:normal}
+      #map .adv-popup-source strong{display:block;font-size:12px;line-height:1.35;margin-bottom:2px}
+      #map .adv-popup-card hr{border:0;border-top:1px solid #d1d5db;margin:6px 0}
+      #map .adv-popup-meta{margin-top:2px}
       @media(max-width:760px){
-        #map .leaflet-popup{max-width:190px!important}
-        #map .leaflet-popup-content-wrapper{max-width:190px;border-radius:8px}
-        #map .leaflet-popup-content{width:auto!important;max-width:164px!important;max-height:94px;overflow-y:auto;margin:6px 8px;padding-right:2px;font-size:9.5px;line-height:1.3}
-        #map .leaflet-popup-content strong{font-size:10px}
-        #map .leaflet-popup-close-button{width:20px;height:20px;font-size:16px;line-height:18px}
+        #map .adv-poi-popup{min-width:210px!important;max-width:230px!important}
+        #map .adv-poi-popup .leaflet-popup-content-wrapper{min-width:210px!important;max-width:230px!important;border-radius:9px}
+        #map .adv-poi-popup .leaflet-popup-content{width:190px!important;max-width:190px!important;max-height:118px;overflow-y:auto;margin:7px 10px;padding-right:2px;font-size:10.5px;line-height:1.36}
+        #map .adv-popup-card{width:190px;max-width:190px;min-width:190px;writing-mode:horizontal-tb!important}
+        #map .adv-popup-source{display:block;width:190px;max-width:190px;writing-mode:horizontal-tb!important}
+        #map .adv-popup-source strong{display:block;width:100%;font-size:12px;line-height:1.35;writing-mode:horizontal-tb!important;white-space:normal!important}
+        #map .leaflet-popup-close-button{width:22px;height:22px;font-size:17px;line-height:20px}
       }
     `;
     document.head.appendChild(style);
   }
 
+  function installMobileMapScreenFit(){
+    const scene=document.getElementById('strategyScene');
+    const mapEl=document.getElementById('map');
+    if(!scene||!mapEl) return;
+
+    const sync=()=>{
+      const mobile=window.matchMedia('(max-width:760px)').matches;
+      if(!mobile){
+        ['left','top','width','height'].forEach(prop=>mapEl.style.removeProperty(prop));
+      }else{
+        const rect=scene.getBoundingClientRect();
+        if(rect.width>0&&rect.height>0){
+          const backgroundAspect=1.5;
+          const bgWidth=rect.height*backgroundAspect;
+          const cropX=(bgWidth-rect.width)/2;
+          const rawLeft=bgWidth*0.293-cropX;
+          const rawRight=rawLeft+bgWidth*0.403;
+          const left=Math.max(0,rawLeft);
+          const right=Math.min(rect.width,rawRight);
+          const width=Math.max(1,right-left);
+          mapEl.style.setProperty('left',`${left}px`,'important');
+          mapEl.style.setProperty('top',`${rect.height*0.158}px`,'important');
+          mapEl.style.setProperty('width',`${width}px`,'important');
+          mapEl.style.setProperty('height',`${rect.height*0.372}px`,'important');
+        }
+      }
+      requestAnimationFrame(()=>window.__ADV_ACTIVE_MAP__?.invalidateSize?.({pan:false}));
+    };
+
+    sync();
+    window.addEventListener('resize',sync,{passive:true});
+    window.addEventListener('orientationchange',()=>setTimeout(sync,120),{passive:true});
+    if('ResizeObserver' in window)new ResizeObserver(sync).observe(scene);
+  }
+
   installInteractiveMapOverlayPatch();
   installCompactPopupStyle();
+  installMobileMapScreenFit();
 })();
