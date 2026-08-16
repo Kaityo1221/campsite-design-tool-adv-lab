@@ -340,3 +340,88 @@
   installMobileMapScreenFit();
   installMobileCouncilImmersiveMode();
 })();
+
+(() => {
+  'use strict';
+  if(document.getElementById('advSideNavPatchV035')) return;
+  const style=document.createElement('style');
+  style.id='advSideNavPatchV035';
+  style.textContent=`
+    @media(max-width:760px){
+      body.adv-mobile-council #advMobileControlsToggle{display:none!important}
+      body.adv-mobile-council .controls{
+        position:fixed!important;
+        inset:0!important;
+        z-index:2147483015!important;
+        display:block!important;
+        margin:0!important;
+        padding:0!important;
+        max-height:none!important;
+        overflow:visible!important;
+        background:none!important;
+        pointer-events:none!important;
+        transform:none!important;
+        opacity:1!important;
+      }
+      body.adv-mobile-council .controls button{
+        position:absolute!important;
+        flex:none!important;
+        pointer-events:auto!important;
+        margin:0!important;
+        box-shadow:0 5px 18px rgba(0,0,0,.36)!important;
+      }
+      body.adv-mobile-council #backBtn,
+      body.adv-mobile-council #nextBtn{
+        top:56%!important;
+        width:42px!important;
+        min-width:42px!important;
+        max-width:42px!important;
+        height:118px!important;
+        padding:9px 7px!important;
+        border-radius:999px!important;
+        transform:translateY(-50%)!important;
+        writing-mode:vertical-rl!important;
+        text-orientation:upright!important;
+        letter-spacing:.12em!important;
+        font-size:0!important;
+        line-height:1!important;
+        background:rgba(9,24,42,.9)!important;
+        color:#e7f1ff!important;
+        border:1px solid rgba(147,197,253,.42)!important;
+        backdrop-filter:blur(8px);
+        -webkit-backdrop-filter:blur(8px);
+      }
+      body.adv-mobile-council #backBtn{left:max(6px,env(safe-area-inset-left))!important}
+      body.adv-mobile-council #nextBtn{right:max(6px,env(safe-area-inset-right))!important}
+      body.adv-mobile-council #backBtn::before,
+      body.adv-mobile-council #nextBtn::before{
+        display:block;
+        font-size:13px;
+        font-weight:900;
+        writing-mode:vertical-rl;
+        text-orientation:upright;
+        letter-spacing:.12em;
+      }
+      body.adv-mobile-council #backBtn::before{content:'戻る'}
+      body.adv-mobile-council #nextBtn::before{content:'進む'}
+      body.adv-mobile-council #restartBtn{
+        left:50%!important;
+        bottom:max(8px,env(safe-area-inset-bottom))!important;
+        width:auto!important;
+        min-width:84px!important;
+        height:30px!important;
+        padding:0 12px!important;
+        border-radius:999px!important;
+        transform:translateX(-50%)!important;
+        writing-mode:horizontal-tb!important;
+        font-size:10px!important;
+        opacity:.72;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+  requestAnimationFrame(()=>{
+    const toggle=document.getElementById('advMobileControlsToggle');
+    if(toggle) toggle.style.setProperty('display','none','important');
+  });
+})();
