@@ -12,7 +12,9 @@ const shell=document.createElement('section');shell.id='fieldModeEntryShell';she
 const start=shell.querySelector('#fieldModeEntryStart'),projectBtn=shell.querySelector('#fieldDevProject01'),freeBtn=shell.querySelector('#fieldDevFreeCreative'),fileBar=shell.querySelector('.field-mode-entry-filebar'),state=shell.querySelector('#fieldModeEntryFileState'),hint=shell.querySelector('#fieldModeEntryHint'),filename=shell.querySelector('#fieldModeEntryFilename');
 function coreReady(){try{return !!fileLoaded}catch(_){return false}}
 function sync(){const isProject=mode==='project01';projectBtn.classList.toggle('is-selected',isProject);freeBtn.classList.toggle('is-selected',!isProject);projectBtn.disabled=false;freeBtn.disabled=false;fileBar.style.display=isProject?'none':'';state.style.display=isProject?'none':'';hint.style.display=isProject?'none':'';if(isProject){start.disabled=false;start.classList.add('is-ready');start.textContent='PROJECT 01をはじめる'}else{const r=coreReady();start.disabled=!r;start.classList.toggle('is-ready',r);start.textContent='創作をはじめる'}}
-const goProject=()=>{location.href='project01-v3.html?v=20260817-v5'};
-projectBtn.addEventListener('click',goProject);freeBtn.addEventListener('click',()=>{mode='free';sync()});start.addEventListener('click',()=>{if(mode==='project01'){goProject();return}if(!coreReady())return;shell.classList.add('is-starting');setTimeout(()=>{shell.hidden=true;body.classList.add('field-mode-entry-started');try{window.FieldCreative?.enter?.()}catch(_){ }try{map.invalidateSize()}catch(_){ }},220)});
+const goProject=()=>{location.href='project01-v3.html?v=20260817-v6'};
+projectBtn.addEventListener('click',()=>{mode='project01';sync()});
+freeBtn.addEventListener('click',()=>{mode='free';sync()});
+start.addEventListener('click',()=>{if(mode==='project01'){goProject();return}if(!coreReady())return;shell.classList.add('is-starting');setTimeout(()=>{shell.hidden=true;body.classList.add('field-mode-entry-started');try{window.FieldCreative?.enter?.()}catch(_){ }try{map.invalidateSize()}catch(_){ }},220)});
 fileInput.addEventListener('change',()=>{const f=fileInput.files?.[0];filename.textContent=f?f.name:'未選択';setTimeout(sync,300)});sync();
 })();
