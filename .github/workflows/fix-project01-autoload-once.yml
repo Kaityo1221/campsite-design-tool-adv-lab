@@ -1,0 +1,93 @@
+name: fix-project01-autoload-once
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-project01-autoload-once.yml'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch Project 01 bundled KMZ autoload
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('creative/runtime/js/project01-development.js')
+          s=p.read_text()
+          marker='PROJECT01_BUNDLED_AUTOLOAD_V2'
+          if marker not in s:
+              addon=r'''
+
+/* PROJECT01_BUNDLED_AUTOLOAD_V2 */
+(()=>{
+  'use strict';
+  const input=document.getElementById('fieldModeFile');
+  const projectBtn=document.getElementById('fieldDevProject01');
+  const freeBtn=document.getElementById('fieldDevFreeCreative');
+  const start=document.getElementById('fieldModeEntryStart');
+  const shell=document.getElementById('fieldModeEntryShell');
+  if(!input||!projectBtn||!freeBtn||!start||!shell)return;
+  const fileBar=shell.querySelector('.field-mode-entry-filebar');
+  const state=shell.querySelector('#fieldModeEntryFileState');
+  const hint=shell.querySelector('#fieldModeEntryHint');
+  let loading=false;
+
+  function projectSelected(){return projectBtn.classList.contains('is-selected');}
+  function setProjectChrome(){
+    const on=projectSelected();
+    if(fileBar)fileBar.style.display=on?'none':'';
+    if(state)state.style.display=on?'none':'';
+    if(hint)hint.style.display=on?'none':'';
+  }
+  async function loadBundled(){
+    if(loading)return;
+    loading=true;
+    start.disabled=true;
+    start.classList.remove('is-ready');
+    try{
+      const res=await fetch('project-data/project01/kasai_rinkaipark.kmz?v=20260817-2',{cache:'no-store'});
+      if(!res.ok)throw new Error('KMZ '+res.status);
+      const blob=await res.blob();
+      const f=new File([blob],'kasai_rinkaipark.kmz',{type:'application/vnd.google-earth.kmz'});
+      const dt=new DataTransfer();
+      dt.items.add(f);
+      input.files=dt.files;
+      input.dispatchEvent(new Event('change',{bubbles:true}));
+      let n=0;
+      const timer=setInterval(()=>{
+        n++;
+        let ready=false;
+        try{ready=!!fileLoaded}catch(_){ready=false}
+        if(ready){
+          clearInterval(timer);
+          if(projectSelected()){
+            start.disabled=false;
+            start.classList.add('is-ready');
+            start.textContent='PROJECT 01をはじめる';
+            setProjectChrome();
+          }
+          loading=false;
+        }else if(n>120){clearInterval(timer);loading=false;}
+      },100);
+    }catch(e){
+      console.error('[PROJECT01] bundled KMZ load failed',e);
+      loading=false;
+    }
+  }
+  projectBtn.addEventListener('click',()=>{setProjectChrome();loadBundled();});
+  freeBtn.addEventListener('click',setProjectChrome);
+  setProjectChrome();
+  if(projectSelected())loadBundled();
+})();
+'''
+              p.write_text(s+addon)
+          PY
+      - name: Commit fix
+        run: |
+          git config user.name 'Kaityo1221'
+          git config user.email 'rakugo100@gmail.com'
+          git add creative/runtime/js/project01-development.js
+          git diff --cached --quiet || git commit -m 'Fix Project 01 bundled KMZ autoload'
+          git push
