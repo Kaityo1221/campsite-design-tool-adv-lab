@@ -1,0 +1,39 @@
+name: inject-project01-bundled-data-once
+
+on:
+  push:
+    paths:
+      - '.github/workflows/inject-project01-bundled-data-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Inject bundled Project 01 loader
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('creative/runtime/field-mode.html')
+          s=p.read_text(encoding='utf-8')
+          tag='<script src="js/project01-bundled-data.js?v=1"></script>'
+          if tag not in s:
+              if '</body>' not in s:
+                  raise SystemExit('missing </body>')
+              s=s.replace('</body>', tag+'\n</body>', 1)
+              p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name "Kaityo1221"
+          git config user.email "rakugo100@gmail.com"
+          git add creative/runtime/field-mode.html
+          git diff --cached --quiet || git commit -m "Use bundled KMZ in Project 01"
+          git push origin main
