@@ -27,7 +27,7 @@
     start.disabled=true;
     start.classList.remove('is-ready');
     try{
-      const res=await fetch('project-data/project01/kasai_rinkaipark.kmz?v=20260817-5',{cache:'no-store'});
+      const res=await fetch('project-data/project01/kasai_rinkaipark.kmz?v=20260817-6',{cache:'no-store'});
       if(!res.ok)throw new Error(`KMZ ${res.status}`);
       const blob=await res.blob();
       const file=new File([blob],'kasai_rinkaipark.kmz',{type:'application/vnd.google-earth.kmz'});
