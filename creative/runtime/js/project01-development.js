@@ -241,7 +241,7 @@
   }
 
   start.addEventListener('click',()=>{
-    if(!isReady())return;
+    if(start.disabled)return;
     shell.classList.add('is-starting');
     setTimeout(()=>{
       shell.hidden=true;
@@ -249,7 +249,7 @@
       try{map.invalidateSize();}catch(_){}
       if(mode==='project01')startProject01();
       else window.FieldCreative?.enter?.();
-    },1500);
+    },450);
   });
 
   const statusNode=document.getElementById('fieldModeStatus');
