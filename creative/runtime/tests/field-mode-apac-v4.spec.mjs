@@ -71,7 +71,7 @@ test('Ver4用語・50m基本ルール・位置変更後の但し書き再評価�
     applyMove(record,[35.6822,139.7682]);
   });
   await expect.poll(()=>page.evaluate(()=>window.FieldModeApacV4.under50Count())).toBe(0);
-  await expect(page.locator('#fieldModeExceptionPanel')).toContainText('最終TXTには出力しません');
+  await expect(page.locator('#fieldModeExceptionPanel')).toBeHidden();
 
   await page.evaluate(()=>{
     const record=poiRecords.find(item=>item.added&&!item.fieldDeleted);
