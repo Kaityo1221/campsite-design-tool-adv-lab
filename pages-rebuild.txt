@@ -1,2 +1,3 @@
 force GitHub Pages rebuild for static assets
 project01 standalone rebuild 2026-08-17T08:52Z
+project01 v3 gamespots rebuild 2026-08-17T09:42Z
