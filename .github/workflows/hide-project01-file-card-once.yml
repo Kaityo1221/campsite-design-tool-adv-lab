@@ -1,0 +1,35 @@
+name: hide-project01-file-card-once
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/hide-project01-file-card-once.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Hide bundled KMZ picker in Project 01
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('creative/runtime/js/project01-development.js')
+          s=p.read_text()
+          s=s.replace("const resumeSlot=shell.querySelector('#fieldModeEntryResumeSlot');", "const resumeSlot=shell.querySelector('#fieldModeEntryResumeSlot');\n  const fileBar=shell.querySelector('.field-mode-entry-filebar');")
+          old="""    const label=shell.querySelector('.field-mode-entry-filelabel');\n    if(label)label.textContent=mode==='project01'?'葛西臨海公園の練習MAPを選択':'ゲームスポット元データを選択';\n    syncReady();"""
+          new="""    const label=shell.querySelector('.field-mode-entry-filelabel');\n    if(label)label.textContent=mode==='project01'?'葛西臨海公園の練習MAPを選択':'ゲームスポット元データを選択';\n    if(fileBar)fileBar.style.display=mode==='project01'?'none':'';\n    if(mode==='project01'){ state.style.display='none'; hint.style.display='none'; } else { state.style.display=''; hint.style.display=''; }\n    syncReady();"""
+          if old not in s:
+              raise SystemExit('target block not found')
+          s=s.replace(old,new)
+          s=s.replace("  syncReady();\n})();", "  setMode(mode);\n})();")
+          p.write_text(s)
+          PY
+      - name: Commit
+        run: |
+          git config user.name "Kaityo1221"
+          git config user.email "rakugo100@gmail.com"
+          git add creative/runtime/js/project01-development.js
+          git commit -m "Hide KMZ picker in Project 01" || exit 0
+          git push
