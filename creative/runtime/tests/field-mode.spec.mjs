@@ -66,7 +66,7 @@ async function beginNewPoiPlacement(page){
   await expect(poi).toBeEnabled();
   await poi.click();
   await expect(page.locator('#fieldModeNewPoiButton')).toBeVisible();
-  await expect(page.locator('#fieldModeNewPoiButton')).toContainText('この位置に設置');
+  await expect(page.locator('#fieldModeNewPoiButton')).toContainText('＋ 新規設置');
   await expect(page.locator('#fieldModeCrosshair')).toBeVisible();
 }
 
