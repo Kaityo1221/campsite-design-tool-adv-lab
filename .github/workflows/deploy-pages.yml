@@ -29,7 +29,7 @@ jobs:
 
       - name: Bust CREATIVE MODE cache
         run: |
-          sed -i 's/project01-development.js?v=2/project01-development.js?v=7/g' creative/runtime/field-mode.html
+          sed -i 's/project01-development.js?v=2/project01-development.js?v=8/g' creative/runtime/field-mode.html
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
