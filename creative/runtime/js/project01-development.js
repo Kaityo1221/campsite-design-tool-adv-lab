@@ -72,6 +72,7 @@
   const projectBtn=shell.querySelector('#fieldDevProject01');
   const freeBtn=shell.querySelector('#fieldDevFreeCreative');
   const resumeSlot=shell.querySelector('#fieldModeEntryResumeSlot');
+  const fileBar=shell.querySelector('.field-mode-entry-filebar');
 
   const resumePanel=document.getElementById('fieldModeResumePanel');
   const resumeStatus=document.getElementById('fieldModeSessionStatus');
@@ -95,6 +96,8 @@
     start.textContent=mode==='project01'?'PROJECT 01をはじめる':'創作をはじめる';
     const label=shell.querySelector('.field-mode-entry-filelabel');
     if(label)label.textContent=mode==='project01'?'葛西臨海公園の練習MAPを選択':'ゲームスポット元データを選択';
+    if(fileBar)fileBar.style.display=mode==='project01'?'none':'';
+    if(mode==='project01'){ state.style.display='none'; hint.style.display='none'; } else { state.style.display=''; hint.style.display=''; }
     syncReady();
   }
   projectBtn.addEventListener('click',()=>setMode('project01'));
@@ -251,5 +254,5 @@
 
   const statusNode=document.getElementById('fieldModeStatus');
   if(statusNode)new MutationObserver(syncReady).observe(statusNode,{childList:true,subtree:true,characterData:true});
-  syncReady();
+  setMode(mode);
 })();
