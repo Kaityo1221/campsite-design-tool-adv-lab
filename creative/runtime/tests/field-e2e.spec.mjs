@@ -97,7 +97,7 @@ async function addNewPoi(page, typeLabel) {
   await selectPoiType(page, typeLabel);
   const confirmButton = page.locator('#fieldModeNewPoiButton');
   await expect(confirmButton).toBeVisible();
-  await expect(confirmButton).toContainText('この位置に設置');
+  await expect(confirmButton).toContainText('＋ 新規設置');
   await confirmButton.click();
   await expect(page.locator('#fieldModeSelectionTitle')).toContainText(`${typeLabel} 1`);
 }

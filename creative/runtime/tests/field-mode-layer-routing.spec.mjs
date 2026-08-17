@@ -75,7 +75,7 @@ async function addCurrentTypePoi(page,typeLabel='ポケストップ'){
   await selectPoiType(page,typeLabel);
   const confirm=page.locator('#fieldModeNewPoiButton');
   await expect(confirm).toBeVisible();
-  await expect(confirm).toContainText('この位置に設置');
+  await expect(confirm).toContainText('＋ 新規設置');
   await confirm.click();
   await expect(confirm).toBeHidden();
   await expect(page.locator('#fieldModeSelectionTitle')).toContainText(`${typeLabel} 1`);
