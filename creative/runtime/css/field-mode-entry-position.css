@@ -7,6 +7,50 @@
   .field-mode-entry-start{margin-top:0!important}
 }
 
+/* Larger PROJECT / FREE CREATIVE selector cards for touch. */
+.field-dev-project-switch{
+  width:min(100%,620px)!important;
+  margin:12px auto 0!important;
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:12px!important;
+}
+.field-dev-project-choice{
+  min-height:58px!important;
+  padding:10px 12px!important;
+  border-radius:16px!important;
+  border:1px solid rgba(255,236,184,.72)!important;
+  background:linear-gradient(180deg,rgba(69,56,36,.9),rgba(42,34,24,.9))!important;
+  color:#fff7df!important;
+  font-size:16px!important;
+  line-height:1.08!important;
+  font-weight:950!important;
+  letter-spacing:.02em!important;
+  box-shadow:0 7px 18px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.08)!important;
+  opacity:1!important;
+  cursor:pointer!important;
+  -webkit-tap-highlight-color:transparent;
+}
+.field-dev-project-choice small{
+  display:block!important;
+  margin-top:5px!important;
+  font-size:11px!important;
+  line-height:1.2!important;
+  font-weight:850!important;
+  color:#eadcb9!important;
+}
+.field-dev-project-choice.is-selected{
+  border-color:#ffe89b!important;
+  background:linear-gradient(180deg,rgba(128,91,20,.98),rgba(77,53,13,.96))!important;
+  box-shadow:0 0 0 1px rgba(255,240,166,.42),0 0 24px rgba(226,176,50,.58),0 8px 20px rgba(0,0,0,.3)!important;
+}
+.field-dev-project-choice:active{transform:scale(.98)}
+@media(max-width:520px){
+  .field-dev-project-switch{gap:10px!important;margin-top:10px!important}
+  .field-dev-project-choice{min-height:60px!important;padding:9px 8px!important;font-size:15px!important}
+  .field-dev-project-choice small{font-size:10px!important}
+}
+
 /* When a saved session exists, call it out above the restore panel without moving the panel itself. */
 .field-mode-entry-resume-slot .field-session-panel.active::before{
   content:"↓ 前回のデータがあるみたい";
