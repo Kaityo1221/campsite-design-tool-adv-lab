@@ -2,7 +2,9 @@
 'use strict';
 const body=document.body,fileInput=document.getElementById('fieldModeFile');if(!body||!fileInput)return;
 const projects=[
-  {id:'project01',label:'PROJECT 01',description:'葛西臨海公園を観察せよ',href:'project01-v3.html?v=20260817-v6'}
+  {id:'project01',label:'PROJECT 01',description:'葛西臨海公園を観察せよ',href:'project01-v3.html?v=20260817-v6',ready:true},
+  {id:'project02',label:'PROJECT 02',description:'COMING SOON',ready:false},
+  {id:'project03',label:'PROJECT 03',description:'COMING SOON',ready:false}
 ];
 let mode=projects[0].id;
 const style=document.createElement('style');style.textContent=`
@@ -30,7 +32,7 @@ function updateRailFade(){const atEnd=projectScroll.scrollWidth-projectScroll.cl
 function sync(){const project=currentProject();const isProject=!!project;projectBtns.forEach(button=>{const selected=button.dataset.projectId===mode;button.classList.toggle('is-selected',selected);button.setAttribute('aria-pressed',String(selected));button.disabled=false});freeBtn.classList.toggle('is-selected',!isProject);freeBtn.setAttribute('aria-pressed',String(!isProject));freeBtn.disabled=false;fileBar.style.display=isProject?'none':'';state.style.display=isProject?'none':'';hint.style.display=isProject?'none':'';if(isProject){start.disabled=false;start.classList.add('is-ready');start.textContent=`${project.label}をはじめる`}else{const r=coreReady();start.disabled=!r;start.classList.toggle('is-ready',r);start.textContent='創作をはじめる'}}
 projectBtns.forEach(button=>button.addEventListener('click',()=>{mode=button.dataset.projectId;sync();button.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'})}));
 freeBtn.addEventListener('click',()=>{mode='free';sync()});
-start.addEventListener('click',()=>{const project=currentProject();if(project){location.href=project.href;return}if(!coreReady())return;shell.classList.add('is-starting');setTimeout(()=>{shell.hidden=true;body.classList.add('field-mode-entry-started');try{window.FieldCreative?.enter?.()}catch(_){ }try{map.invalidateSize()}catch(_){ }},220)});
+start.addEventListener('click',()=>{const project=currentProject();if(project){if(!project.ready){start.textContent='準備中';setTimeout(sync,900);return}location.href=project.href;return}if(!coreReady())return;shell.classList.add('is-starting');setTimeout(()=>{shell.hidden=true;body.classList.add('field-mode-entry-started');try{window.FieldCreative?.enter?.()}catch(_){ }try{map.invalidateSize()}catch(_){ }},220)});
 projectScroll.addEventListener('scroll',updateRailFade,{passive:true});window.addEventListener('resize',updateRailFade);
 fileInput.addEventListener('change',()=>{const f=fileInput.files?.[0];filename.textContent=f?f.name:'未選択';setTimeout(sync,300)});sync();requestAnimationFrame(updateRailFade);
 })();
