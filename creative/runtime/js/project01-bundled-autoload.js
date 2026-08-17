@@ -27,38 +27,34 @@
     start.disabled=true;
     start.classList.remove('is-ready');
     try{
-      const res=await fetch('project-data/project01/kasai_rinkaipark.kmz?v=20260817-3',{cache:'no-store'});
+      const res=await fetch('project-data/project01/kasai_rinkaipark.kmz?v=20260817-5',{cache:'no-store'});
       if(!res.ok)throw new Error(`KMZ ${res.status}`);
       const blob=await res.blob();
       const file=new File([blob],'kasai_rinkaipark.kmz',{type:'application/vnd.google-earth.kmz'});
-      const dt=new DataTransfer();
-      dt.items.add(file);
-      input.files=dt.files;
-      input.dispatchEvent(new Event('change',{bubbles:true}));
 
-      let tries=0;
-      const timer=setInterval(()=>{
-        tries++;
-        let ready=false;
-        try{ready=!!fileLoaded}catch(_){ready=false}
-        if(ready){
-          clearInterval(timer);
-          loading=false;
-          if(isProject()){
-            syncChrome();
-            start.disabled=false;
-            start.classList.add('is-ready');
-            start.textContent='PROJECT 01をはじめる';
-          }
-        }else if(tries>=150){
-          clearInterval(timer);
-          loading=false;
-          console.error('[PROJECT01] bundled KMZ parse timeout');
-        }
-      },100);
+      fileLoaded=false;
+      updateNewPoiButton();
+      sourceFileName=file.name;
+      fileStatus.textContent=`読込中：${file.name}`;
+      modeStatus.textContent='読込中';
+
+      const kmlText=await readKmlText(file);
+      fileStatus.textContent=`選択中：${file.name}`;
+      renderKml(kmlText);
+
+      loading=false;
+      if(isProject()&&fileLoaded){
+        syncChrome();
+        start.disabled=false;
+        start.classList.add('is-ready');
+        start.textContent='PROJECT 01をはじめる';
+      }
     }catch(err){
       loading=false;
       console.error('[PROJECT01] bundled KMZ load failed',err);
+      modeStatus.textContent='読込失敗';
+      start.disabled=true;
+      start.classList.remove('is-ready');
     }
   }
 
