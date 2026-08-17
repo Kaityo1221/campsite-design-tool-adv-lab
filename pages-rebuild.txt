@@ -1,1 +1,2 @@
 force GitHub Pages rebuild for static assets
+project01 standalone rebuild 2026-08-17T08:52Z
