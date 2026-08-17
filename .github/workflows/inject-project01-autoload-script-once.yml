@@ -1,0 +1,22 @@
+name: inject-project01-autoload-script-once
+on:
+  push:
+    paths:
+      - '.github/workflows/inject-project01-autoload-script-once.yml'
+permissions:
+  contents: write
+jobs:
+  inject:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inject script tag
+        run: |
+          python -c "from pathlib import Path; p=Path('creative/runtime/field-mode.html'); s=p.read_text(); tag='<script src=\"js/project01-bundled-autoload.js?v=1\"></script>'; p.write_text(s if tag in s else s.replace('</body>', tag+'\\n</body>'))"
+      - name: Commit
+        run: |
+          git config user.name 'Kaityo1221'
+          git config user.email 'rakugo100@gmail.com'
+          git add creative/runtime/field-mode.html
+          git diff --cached --quiet || git commit -m 'Load bundled Project 01 KMZ automatically'
+          git push
