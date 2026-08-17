@@ -3,7 +3,7 @@
 const body=document.body,fileInput=document.getElementById('fieldModeFile');if(!body||!fileInput)return;
 const projects=[
   {id:'project01',label:'PROJECT 01',description:'葛西臨海公園を観察せよ',href:'project01-v3.html?v=20260817-v6',ready:true},
-  {id:'project02',label:'PROJECT 02',description:'COMING SOON',ready:false},
+  {id:'project02',label:'PROJECT 02',description:'空いてる場所を選べ',href:'project02.html?v=20260817-v1',ready:true},
   {id:'project03',label:'PROJECT 03',description:'COMING SOON',ready:false}
 ];
 let mode=projects[0].id;
