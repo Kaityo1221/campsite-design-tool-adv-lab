@@ -1,0 +1,65 @@
+name: project01-direct-loader-once
+on:
+  push:
+    paths:
+      - '.github/workflows/project01-direct-loader-once.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch direct bundled KMZ loader
+        shell: bash
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          html = Path('creative/runtime/field-mode.html')
+          s = html.read_text()
+          old = "fileInput.addEventListener('change',async()=>{const file=fileInput.files&&fileInput.files[0];if(!file)return;fileLoaded=false;updateNewPoiButton();sourceFileName=file.name;fileStatus.textContent=`読込中：${file.name}`;modeStatus.textContent='読込中';try{const kmlText=await readKmlText(file);fileStatus.textContent=`選択中：${file.name}`;renderKml(kmlText);}catch(error){console.error(error);dataLayer.clearLayers();resetPoiSelection();placeholder.style.display='';modeStatus.textContent='読込失敗';fileStatus.textContent=`⚠ ${error.message||'ファイルを読み込めませんでした。'}`;}});"
+          new = "async function loadFieldModeFile(file){if(!file)return false;fileLoaded=false;updateNewPoiButton();sourceFileName=file.name;fileStatus.textContent=`読込中：${file.name}`;modeStatus.textContent='読込中';try{const kmlText=await readKmlText(file);fileStatus.textContent=`選択中：${file.name}`;renderKml(kmlText);return true;}catch(error){console.error(error);dataLayer.clearLayers();resetPoiSelection();placeholder.style.display='';modeStatus.textContent='読込失敗';fileStatus.textContent=`⚠ ${error.message||'ファイルを読み込めませんでした。'}`;return false;}}window.FieldModeLoadFile=loadFieldModeFile;fileInput.addEventListener('change',async()=>{const file=fileInput.files&&fileInput.files[0];if(!file)return;await loadFieldModeFile(file);});"
+          if old not in s:
+              raise SystemExit('field-mode loader target not found')
+          html.write_text(s.replace(old,new,1))
+
+          js = Path('creative/runtime/js/project01-bundled-autoload.js')
+          j = js.read_text()
+          start = j.index('  async function loadBundled(){')
+          end = j.index("\n\n  projectBtn.addEventListener", start)
+          replacement = '''  async function loadBundled(){
+    if(loading)return;
+    loading=true;
+    syncChrome();
+    start.disabled=true;
+    start.classList.remove('is-ready');
+    try{
+      const res=await fetch('project-data/project01/kasai_rinkaipark.kmz?v=20260817-4',{cache:'no-store'});
+      if(!res.ok)throw new Error(`KMZ ${res.status}`);
+      const blob=await res.blob();
+      const file=new File([blob],'kasai_rinkaipark.kmz',{type:'application/vnd.google-earth.kmz'});
+      if(typeof window.FieldModeLoadFile!=='function')throw new Error('FieldModeLoadFile unavailable');
+      const ok=await window.FieldModeLoadFile(file);
+      loading=false;
+      if(!ok)throw new Error('KMZ parse failed');
+      if(isProject()){
+        syncChrome();
+        start.disabled=false;
+        start.classList.add('is-ready');
+        start.textContent='PROJECT 01をはじめる';
+      }
+    }catch(err){
+      loading=false;
+      console.error('[PROJECT01] bundled KMZ load failed',err);
+    }
+  }'''
+          js.write_text(j[:start]+replacement+j[end:])
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name 'Kaityo1221'
+          git config user.email 'rakugo100@gmail.com'
+          git add creative/runtime/field-mode.html creative/runtime/js/project01-bundled-autoload.js
+          git diff --cached --quiet || git commit -m 'Fix Project 01 start with direct bundled KMZ loader'
+          git push
