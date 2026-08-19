@@ -528,3 +528,27 @@
 .field-creative-active.field-creative-tool-poi .field-location-badge {
   bottom: 74px;
 }
+
+
+/* creative-map-license-attribution-v1 */
+.field-mode-stage .leaflet-control-attribution {
+  margin: 0 0 1px 1px !important;
+  padding: 1px 3px !important;
+  max-width: calc(100% - 12px) !important;
+  background: rgba(255,255,255,.72) !important;
+  color: #555 !important;
+  font-size: 7px !important;
+  line-height: 1.1 !important;
+  white-space: normal !important;
+  box-shadow: none !important;
+}
+.field-mode-stage .leaflet-control-attribution a {
+  color: inherit !important;
+  font-size: inherit !important;
+}
+@media (max-width: 520px) {
+  .field-mode-stage .leaflet-control-attribution {
+    max-width: 78vw !important;
+    font-size: 6px !important;
+  }
+}
