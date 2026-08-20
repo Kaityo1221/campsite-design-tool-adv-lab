@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="robots" content="noindex,nofollow">
+<title>CREATIVE MODE Review Panel Test</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--cream:#fffaf0;--ink:#2f2a21;--brown:#6f471c;--line:#b99558;--warn:#f59e0b;--danger:#dc4c3f;--ok:#238b57;--blue:#1687e8}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#24170d;color:var(--ink)}button,input,textarea{font:inherit}.app{position:fixed;inset:0;overflow:hidden}.map{position:absolute;inset:0}.leaflet-control-zoom{display:none!important}.leaflet-control-attribution{font-size:8px!important}.float{position:absolute;z-index:800;border:1.5px solid rgba(126,85,20,.62);background:rgba(255,252,242,.96);box-shadow:0 5px 16px rgba(55,34,9,.18);color:#34291c;font-weight:900;backdrop-filter:blur(12px)}.back{top:max(14px,env(safe-area-inset-top));left:14px;height:54px;padding:0 18px;border-radius:17px;font-size:17px}.alert{top:max(14px,env(safe-area-inset-top));right:14px;width:58px;height:58px;border-radius:18px;font-size:25px}.alert .count{position:absolute;right:-5px;top:-7px;min-width:23px;height:23px;padding:0 6px;border-radius:99px;background:#e63b2f;color:white;border:2px solid white;font-size:12px;display:grid;place-items:center}.save{left:14px;bottom:84px;height:56px;padding:0 16px;border-radius:17px;color:#0b70c8;font-size:17px}.toolbox{right:14px;bottom:84px;width:58px;height:58px;border-radius:17px;font-size:25px}.current{left:50%;bottom:20px;transform:translateX(-50%);height:60px;min-width:128px;padding:0 20px;border-radius:18px;font-size:16px}.history{position:absolute;z-index:800;right:86px;bottom:84px;display:none;gap:8px}.history.show{display:flex}.history button{height:50px;padding:0 13px;border-radius:15px;border:1.5px solid rgba(126,85,20,.6);background:rgba(255,252,242,.96);font-weight:900;box-shadow:0 5px 16px rgba(55,34,9,.16)}.tool-pop{position:absolute;z-index:850;right:14px;bottom:152px;width:170px;display:none;gap:8px;flex-direction:column;padding:10px;border:1px solid #b99558;border-radius:18px;background:rgba(255,250,240,.98);box-shadow:0 12px 28px rgba(0,0,0,.25)}.tool-pop.open{display:flex}.tool-pop button{min-height:46px;border:1px solid #c9b58f;border-radius:12px;background:white;font-weight:800}.warning-dot{width:22px;height:22px;border-radius:50%;border:3px solid white;box-shadow:0 0 0 2px #d64536;background:#fff4ef;display:grid;place-items:center;color:#d64536;font-size:11px;font-weight:900}.warning-dot.done{box-shadow:0 0 0 2px var(--ok);background:#e9fff1;color:var(--ok)}.sheet-backdrop{position:absolute;z-index:900;inset:0;background:rgba(23,17,10,.32);opacity:0;pointer-events:none;transition:.18s}.sheet-backdrop.open{opacity:1;pointer-events:auto}.sheet{position:absolute;z-index:910;left:0;right:0;top:max(48px,calc(env(safe-area-inset-top) + 18px));max-height:72%;padding:12px 14px 18px;border-radius:0 0 24px 24px;background:rgba(255,252,245,.985);box-shadow:0 18px 35px rgba(0,0,0,.28);transform:translateY(-115%);transition:transform .22s ease;overflow:auto}.sheet.open{transform:translateY(0)}.grabber{width:42px;height:5px;border-radius:99px;background:#c8c1b7;margin:0 auto 12px}.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.sheet-head h2{margin:0;font-size:17px}.iconbtn{width:42px;height:42px;border:0;border-radius:14px;background:#eee8de;font-size:20px}.spot-list{display:grid;gap:9px}.spot-card{width:100%;text-align:left;border:1px solid #ddd2c0;border-radius:15px;padding:12px;background:#fff;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px}.dist{min-width:43px;padding:5px 7px;border-radius:9px;background:#ea4c3d;color:white;font-size:12px;font-weight:900;text-align:center}.spot-name{font-weight:900;font-size:15px}.spot-sub{display:block;font-size:11px;color:#6f6659;margin-top:3px}.status{font-size:11px;font-weight:900;color:#db3f33}.status.done{color:var(--ok)}.detail{display:none}.detail.open{display:block}.reason-title{font-weight:900;margin:8px 0 10px}.choices{display:grid;gap:8px}.choice{width:100%;text-align:left;border:1px solid #d8cfbf;border-radius:12px;background:#fff;padding:11px 12px;font-weight:800}.choice.selected{border-color:#58ad79;background:#edfff3;color:#176f42}.comment{width:100%;min-height:90px;margin-top:12px;padding:11px;border:1px solid #d8cfbf;border-radius:12px;background:white;resize:none}.save-detail{width:100%;min-height:50px;border:0;border-radius:13px;background:var(--ok);color:#fff;font-weight:900;margin-top:12px}.hint{position:absolute;z-index:780;left:50%;top:max(84px,calc(env(safe-area-inset-top) + 70px));transform:translateX(-50%);padding:7px 11px;border-radius:99px;background:rgba(255,252,245,.91);border:1px solid rgba(126,85,20,.4);font-size:11px;font-weight:900;box-shadow:0 4px 12px rgba(0,0,0,.12);pointer-events:none}.test-badge{position:absolute;z-index:780;left:50%;top:max(10px,env(safe-area-inset-top));transform:translateX(-50%);padding:5px 9px;border-radius:99px;background:rgba(55,39,23,.88);color:#fff;font-size:10px;font-weight:900;letter-spacing:.08em;pointer-events:none}@media(max-width:390px){.back{height:50px;padding:0 14px}.alert{width:54px;height:54px}.save{height:52px}.toolbox{width:54px;height:54px}.current{min-width:118px;height:56px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="map" class="map"></div>
+  <div class="test-badge">BRANCH TEST</div>
+  <button id="back" class="float back">← 戻る</button>
+  <button id="alert" class="float alert" aria-label="要確認スポット"><span>⚠️</span><span id="alertCount" class="count">3</span></button>
+  <button id="save" class="float save">💾 保存</button>
+  <div id="history" class="history"><button>↶ 戻す</button><button>やり直す ↷</button></div>
+  <button id="toolbox" class="float toolbox" aria-label="道具箱">🧰</button>
+  <button id="current" class="float current">◎ 現在地</button>
+  <div id="toolPop" class="tool-pop"><button id="mapSwitch">地図切り替え</button><button>レイヤー</button><button id="circleToggle">距離円</button></div>
+  <div class="hint">50m未満は右上の ⚠️ から確認</div>
+  <div id="backdrop" class="sheet-backdrop"></div>
+  <section id="sheet" class="sheet" aria-label="要確認スポット">
+    <div class="grabber"></div>
+    <div class="sheet-head"><h2 id="sheetTitle">要確認スポット（3件）</h2><button id="close" class="iconbtn">×</button></div>
+    <div id="list" class="spot-list"></div>
+    <div id="detail" class="detail"></div>
+  </section>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const map=L.map('map',{zoomControl:false}).setView([35.6433,139.8608],16);
+const osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:20,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const aerial=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:20,attribution:'Tiles &copy; Esri'});let aerialMode=false,circlesVisible=true;
+const spots=[
+ {id:1,name:'芝生広場 北側',lat:35.6444,lng:139.8600,dist:43,done:false,reasons:[],comment:''},
+ {id:2,name:'水辺デッキ付近',lat:35.6429,lng:139.8621,dist:47,done:false,reasons:[],comment:''},
+ {id:3,name:'公園入口付近',lat:35.6419,lng:139.8591,dist:38,done:false,reasons:[],comment:''}
+];
+const circles=[],markers=[];spots.forEach(s=>{const c=L.circle([s.lat,s.lng],{radius:50,color:'#b48716',weight:2,opacity:.78,fillOpacity:.03,dashArray:'6 5'}).addTo(map);circles.push(c);const icon=L.divIcon({className:'',html:`<div id="mk-${s.id}" class="warning-dot">!</div>`,iconSize:[22,22],iconAnchor:[11,11]});const m=L.marker([s.lat,s.lng],{icon}).addTo(map).bindTooltip(`${s.name} / ${s.dist}m`,{direction:'top'});m.on('click',()=>openDetail(s.id));markers.push(m)});
+[[35.6452,139.8593],[35.6439,139.8614],[35.6424,139.8607],[35.6415,139.8617]].forEach(p=>L.circleMarker(p,{radius:7,color:'#fff',weight:3,fillColor:'#1687e8',fillOpacity:1}).addTo(map));
+const $=id=>document.getElementById(id),sheet=$('sheet'),backdrop=$('backdrop'),list=$('list'),detail=$('detail'),alertCount=$('alertCount'),sheetTitle=$('sheetTitle');
+function remaining(){return spots.filter(s=>!s.done).length}
+function sync(){const n=remaining();alertCount.textContent=n;sheetTitle.textContent=`要確認スポット（${n}件）`;spots.forEach(s=>{const el=document.getElementById(`mk-${s.id}`);if(el){el.textContent=s.done?'✓':'!';el.classList.toggle('done',s.done)}});renderList()}
+function openSheet(){detail.classList.remove('open');list.style.display='grid';sheet.classList.add('open');backdrop.classList.add('open')}
+function closeSheet(){sheet.classList.remove('open');backdrop.classList.remove('open')}
+function renderList(){list.innerHTML=spots.map(s=>`<button class="spot-card" onclick="openDetail(${s.id})"><span class="dist">${s.dist}m</span><span><span class="spot-name">${s.name}</span><span class="spot-sub">他のスポットまで ${s.dist}m</span></span><span class="status ${s.done?'done':''}">${s.done?'入力済':'未入力'} ›</span></button>`).join('')}
+const reasons=['十分な滞留スペースがある','動線が分離されている','一般利用者への影響が小さい','景観・地域特有の魅力がある','季節や時間で魅力が変わる','その他'];
+window.openDetail=function(id){const s=spots.find(x=>x.id===id);if(!s)return;openSheet();list.style.display='none';detail.classList.add('open');detail.innerHTML=`<div class="sheet-head"><div><strong>${s.name}</strong><span class="spot-sub">他のスポットまで ${s.dist}m</span></div><span class="dist">${s.dist}m</span></div><div class="reason-title">なぜ50m未満でも候補にしましたか？<br><small style="font-weight:600;color:#6f6659">複数選択可</small></div><div class="choices">${reasons.map(r=>`<button class="choice ${s.reasons.includes(r)?'selected':''}" data-r="${r}">${s.reasons.includes(r)?'✓ ':''}${r}</button>`).join('')}</div><textarea class="comment" placeholder="補足コメント（任意）">${s.comment||''}</textarea><button class="save-detail">保存する</button>`;detail.querySelectorAll('.choice').forEach(btn=>btn.onclick=()=>btn.classList.toggle('selected'));detail.querySelector('.save-detail').onclick=()=>{s.reasons=[...detail.querySelectorAll('.choice.selected')].map(b=>b.dataset.r);s.comment=detail.querySelector('.comment').value.trim();s.done=true;sync();list.style.display='grid';detail.classList.remove('open');document.getElementById('history').classList.add('show')}}
+$('alert').onclick=openSheet;$('close').onclick=closeSheet;backdrop.onclick=closeSheet;$('toolbox').onclick=()=>$('toolPop').classList.toggle('open');$('mapSwitch').onclick=()=>{aerialMode=!aerialMode;if(aerialMode){map.removeLayer(osm);aerial.addTo(map)}else{map.removeLayer(aerial);osm.addTo(map)};$('toolPop').classList.remove('open')};$('circleToggle').onclick=()=>{circlesVisible=!circlesVisible;circles.forEach(c=>circlesVisible?c.addTo(map):map.removeLayer(c))};$('current').onclick=()=>map.flyTo([35.6433,139.8608],16,{duration:.5});$('back').onclick=()=>history.length>1?history.back():location.href='lab.html';$('save').onclick=()=>{const payload={savedAt:new Date().toISOString(),spots};localStorage.setItem('creative-review-panel-test',JSON.stringify(payload));$('save').textContent='✓ 保存済';setTimeout(()=>$('save').textContent='💾 保存',1400)};
+try{const saved=JSON.parse(localStorage.getItem('creative-review-panel-test')||'null');if(saved?.spots?.length){saved.spots.forEach(x=>{const s=spots.find(y=>y.id===x.id);if(s){s.done=!!x.done;s.reasons=Array.isArray(x.reasons)?x.reasons:[];s.comment=x.comment||''}})}}catch(_){ }
+sync();
+</script>
+</body>
+</html>
