@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="robots" content="noindex,nofollow">
+<title>CREATIVE MODE Bottom Sheet Test</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--ink:#2f2a21;--line:#b99558;--ok:#238b57;--note:#8a6b31;--blue:#1687e8}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#24170d;color:var(--ink)}button,textarea{font:inherit}.app{position:fixed;inset:0;overflow:hidden}.map{position:absolute;inset:0}.leaflet-control-zoom{display:none!important}.leaflet-control-attribution{font-size:8px!important}.float{position:absolute;z-index:800;border:1.5px solid rgba(126,85,20,.62);background:rgba(255,252,242,.96);box-shadow:0 5px 16px rgba(55,34,9,.18);color:#34291c;font-weight:900}.back{top:max(14px,env(safe-area-inset-top));left:14px;height:54px;padding:0 18px;border-radius:17px;font-size:17px}.save{left:14px;bottom:94px;height:56px;padding:0 16px;border-radius:17px;color:#0b70c8;font-size:17px}.toolbox{right:14px;bottom:94px;width:58px;height:58px;border-radius:17px;font-size:25px}.bottom-bar{position:absolute;z-index:790;left:0;right:0;bottom:0;height:calc(84px + env(safe-area-inset-bottom));background:rgba(59,49,37,.96);box-shadow:0 -8px 24px rgba(40,31,20,.16)}.current{left:50%;bottom:calc(12px + env(safe-area-inset-bottom));transform:translateX(-50%);height:60px;min-width:128px;padding:0 20px;border-radius:18px;font-size:16px}.test-badge{position:absolute;z-index:780;left:50%;top:max(10px,env(safe-area-inset-top));transform:translateX(-50%);padding:5px 9px;border-radius:99px;background:rgba(55,39,23,.88);color:#fff;font-size:10px;font-weight:900;letter-spacing:.08em}.note-dot{width:28px;height:28px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--note);background:#fffaf0;display:grid;place-items:center;font-size:14px}.note-dot.done{box-shadow:0 0 0 2px var(--ok);background:#e9fff1;color:var(--ok)}
+.sheet-backdrop{position:absolute;z-index:900;inset:0;background:rgba(23,17,10,.28);opacity:0;pointer-events:none;transition:opacity .18s}.sheet-backdrop.open{opacity:1;pointer-events:auto}.sheet{position:absolute;z-index:910;left:8px;right:8px;bottom:calc(86px + env(safe-area-inset-bottom));max-height:58vh;border-radius:24px;background:rgba(255,252,245,.985);box-shadow:0 18px 42px rgba(0,0,0,.3);transform:translateY(calc(100% + 110px));transition:transform .28s cubic-bezier(.22,.8,.22,1);overflow:hidden}.sheet.open{transform:translateY(0)}.grabber{width:48px;height:5px;border-radius:99px;background:#aaa196;margin:10px auto 6px}.sheet-body{padding:4px 14px 16px;overflow:auto;max-height:calc(58vh - 20px)}.sheet-title{display:flex;justify-content:space-between;gap:12px;align-items:center}.sheet-title strong{font-size:17px}.dist{padding:6px 9px;border-radius:10px;background:#efe3c6;color:#6b5321;font-weight:900}.sub{display:block;margin-top:3px;font-size:12px;color:#6f6659}.primary{width:100%;min-height:50px;border:0;border-radius:14px;background:#2f85df;color:white;font-weight:900;margin-top:14px}.secondary{width:100%;min-height:46px;border:1px solid #d8cfbf;border-radius:14px;background:#fff;color:#5b4b35;font-weight:900;margin-top:9px}.choices{display:grid;gap:8px;margin-top:12px}.choice{width:100%;text-align:left;border:1px solid #d8cfbf;border-radius:12px;background:#fff;padding:11px 12px;font-weight:800}.choice.selected{border-color:#58ad79;background:#edfff3;color:#176f42}.comment{width:100%;min-height:96px;margin-top:12px;padding:11px;border:1px solid #d8cfbf;border-radius:12px;background:#fff}.hint{position:absolute;z-index:780;left:50%;top:max(86px,calc(env(safe-area-inset-top) + 70px));transform:translateX(-50%);padding:7px 11px;border-radius:999px;background:rgba(255,252,245,.92);border:1px solid rgba(126,85,20,.35);font-size:11px;font-weight:900;box-shadow:0 4px 12px rgba(0,0,0,.12);pointer-events:none;transition:opacity .3s}.hint.hide{opacity:0}
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="map" class="map"></div>
+  <div class="test-badge">BOTTOM SHEET TEST</div>
+  <button id="back" class="float back">← 戻る</button>
+  <button id="save" class="float save">💾 保存</button>
+  <button class="float toolbox">🧰</button>
+  <div class="bottom-bar"></div>
+  <button id="current" class="float current">◎ 現在地</button>
+  <div id="hint" class="hint">📝付きの追加POIをタップして補足</div>
+  <div id="backdrop" class="sheet-backdrop"></div>
+  <section id="sheet" class="sheet"><div class="grabber"></div><div id="sheetBody" class="sheet-body"></div></section>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const map=L.map('map',{zoomControl:false}).setView([35.6433,139.8608],16);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:20,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const spots=[{id:1,name:'芝生広場 北側',lat:35.6444,lng:139.8600,dist:43,done:false,reasons:[],comment:''},{id:2,name:'水辺デッキ付近',lat:35.6429,lng:139.8621,dist:47,done:false,reasons:[],comment:''},{id:3,name:'公園入口付近',lat:35.6419,lng:139.8591,dist:38,done:false,reasons:[],comment:''}];
+const $=id=>document.getElementById(id),sheet=$('sheet'),backdrop=$('backdrop'),sheetBody=$('sheetBody'),hint=$('hint');
+function markerHtml(s){return `<div id="mk-${s.id}" class="note-dot ${s.done?'done':''}">${s.done?'✓':'📝'}</div>`}
+spots.forEach(s=>{L.circle([s.lat,s.lng],{radius:50,color:'#b48716',weight:2,opacity:.78,fillOpacity:.03,dashArray:'6 5'}).addTo(map);const icon=L.divIcon({className:'',html:markerHtml(s),iconSize:[28,28],iconAnchor:[14,14]});const m=L.marker([s.lat,s.lng],{icon}).addTo(map);m.on('click',()=>openSpot(s.id))});[[35.6452,139.8593],[35.6439,139.8614],[35.6424,139.8607],[35.6415,139.8617]].forEach(p=>L.circleMarker(p,{radius:7,color:'#fff',weight:3,fillColor:'#1687e8',fillOpacity:1}).addTo(map));
+function openSheet(){sheet.classList.add('open');backdrop.classList.add('open');hint.classList.add('hide')}function closeSheet(){sheet.classList.remove('open');backdrop.classList.remove('open')}
+function openSpot(id){const s=spots.find(x=>x.id===id);openSheet();sheetBody.innerHTML=`<div class="sheet-title"><div><strong>${s.name}</strong><span class="sub">他のスポットまで ${s.dist}m</span></div><span class="dist">${s.dist}m</span></div><button id="addInfo" class="primary">このスポットの情報を追加</button><button id="closeSheet" class="secondary">地図に戻る</button>`;document.getElementById('addInfo').onclick=()=>openForm(s);document.getElementById('closeSheet').onclick=closeSheet}
+const reasons=['十分な滞留スペースがある','動線が分離されている','一般利用者への影響が小さい','景観・地域特有の魅力がある','季節や時間で魅力が変わる','その他'];
+function openForm(s){sheetBody.innerHTML=`<div class="sheet-title"><div><strong>${s.name}</strong><span class="sub">なぜ50m未満でも候補にしましたか？</span></div><span class="dist">${s.dist}m</span></div><div class="choices">${reasons.map(r=>`<button class="choice ${s.reasons.includes(r)?'selected':''}" data-r="${r}">${r}</button>`).join('')}</div><textarea id="comment" class="comment" placeholder="補足コメント（任意）">${s.comment||''}</textarea><button id="saveDetail" class="primary">保存して地図に戻る</button><button id="backSpot" class="secondary">戻る</button>`;sheetBody.querySelectorAll('.choice').forEach(b=>b.onclick=()=>b.classList.toggle('selected'));document.getElementById('saveDetail').onclick=()=>{s.reasons=[...sheetBody.querySelectorAll('.choice.selected')].map(b=>b.dataset.r);s.comment=document.getElementById('comment').value.trim();s.done=true;const mk=document.getElementById(`mk-${s.id}`);if(mk){mk.textContent='✓';mk.classList.add('done')}closeSheet()};document.getElementById('backSpot').onclick=()=>openSpot(s.id)}
+backdrop.onclick=closeSheet;$('current').onclick=()=>map.flyTo([35.6433,139.8608],16,{duration:.5});$('back').onclick=()=>history.length>1?history.back():location.href='lab.html';$('save').onclick=()=>{$('save').textContent='✓ 保存済';setTimeout(()=>$('save').textContent='💾 保存',1200)};setTimeout(()=>hint.classList.add('hide'),3500);
+</script>
+</body></html>
