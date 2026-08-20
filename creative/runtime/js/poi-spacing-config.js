@@ -30,9 +30,9 @@
   }
 
   /*
-   * Load the final circle-output guard after legacy KMZ wrappers have settled.
-   * This keeps the completed KMZ's existing radii exactly as-is, while a new
-   * KMZ always receives 50m circles for every real POI, including Power Spots.
+   * Load the final circle-output guard after all legacy KMZ wrappers settle.
+   * New KMZ: 50m is guaranteed for every real POI, including Power Spots.
+   * Completed KMZ: keep exactly the circle radii already present in the file.
    */
   const loadCircleOutputFix = () => {
     if (window.__poiCircleOutputFixLoading) return;
@@ -43,9 +43,13 @@
     });
   };
 
+  const scheduleCircleOutputFix = () => {
+    window.setTimeout(loadCircleOutputFix, 1200);
+  };
+
   if (document.readyState === 'complete') {
-    loadCircleOutputFix();
+    scheduleCircleOutputFix();
   } else {
-    window.addEventListener('load', loadCircleOutputFix, { once: true });
+    window.addEventListener('load', scheduleCircleOutputFix, { once: true });
   }
 })();
