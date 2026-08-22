@@ -48,6 +48,14 @@ window.loadCampsiteEngineDecisions = loadCampsiteEngineDecisions;
   document.head.appendChild(script);
 })();
 
+/* POI Masterで育てた既存名称辞書をADV推論へ接続する。 */
+(() => {
+  const script = document.createElement('script');
+  script.src = 'js/poi-master-adv-bridge.js?v=1';
+  script.async = false;
+  document.head.appendChild(script);
+})();
+
 /* Support bot extension */
 (() => {
   const style = document.createElement('link');
