@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>ADV LAB</title>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050a11}iframe{display:block;width:100%;height:100%;border:0;background:#050a11}</style>
+</head>
+<body>
+<iframe id="advRoom" src="./gungi-auto-room.html" allow="fullscreen" allowfullscreen></iframe>
+<script>
+(() => {
+  'use strict';
+  const patch = {
+    DENSITY_01: { riku: 'surprised', cuts: [
+      { speaker: 'system', text: '既存POIが集中している地点があります。' },
+      { speaker: 'riku', text: '新規ゲームスポットを設置するならば、間隔に気をつけないとだな' }
+    ]},
+    DENSITY_REST_01: { riku: 'normal', cuts: [
+      { speaker: 'system', text: '密集地点の周辺に休憩・支援設備があります。' },
+      { speaker: 'riku', text: '条件は悪くない。近くに休憩できる場所がある。長時間でも立て直せる。' },
+      { speaker: 'mina', text: 'POIも近くに多くて、定点捕獲ができるね！' },
+      { speaker: 'riku', text: '時には休息も大事だ' }
+    ]},
+    ENTRANCE_01: { riku: 'normal', cuts: [
+      { speaker: 'system', text: '人の出入りがありそうな地点があります。' },
+      { speaker: 'riku', text: 'ここは人の出入りがありそうだな' },
+      { speaker: 'mina', text: '初めて来る人にはめっちゃ分かりやすいよ！' },
+      { speaker: 'riku', text: '突然出てきた人にぶつからないよう注意してプレイしよう' }
+    ]},
+    LOOP_01: { riku: 'curious', cuts: [
+      { speaker: 'system', text: '複数のPOIが周回しやすい形でつながっています。' },
+      { speaker: 'riku', text: '回遊に向いた場所だな' },
+      { speaker: 'mina', text: 'ルートが作れそうだね！' },
+      { speaker: 'riku', text: 'うまく繋げれば、歩きながら楽しめるキャンプサイトになりそうだ。' }
+    ]},
+    NARROW_PATH_01: { riku: 'surprised', cuts: [
+      { speaker: 'system', text: '狭い通路・橋・木道などに関係する可能性がある候補があります。' },
+      { speaker: 'riku', text: 'ここは道が狭いかもしれないな。' },
+      { speaker: 'mina', text: '人とすれ違う時は気をつけないとね。' },
+      { speaker: 'mina', text: '最近、もずくダイエット始めたよ！' },
+      { speaker: 'riku', text: '今朝ポストに届いていたが、君だったのか' },
+      { speaker: 'riku', text: '回避ルートも視野に入れてレスポンシブに動こう' }
+    ]},
+    PARKING_01: { riku: 'surprised', cuts: [
+      { speaker: 'system', text: '駐車場・ロータリー・車両動線に近い可能性がある候補があります。' },
+      { speaker: 'riku', text: 'この辺は車の出入りがあるかもしれないな。' },
+      { speaker: 'mina', text: 'ゲームに夢中になって、車道に出ないようにしないとね。' },
+      { speaker: 'riku', text: 'そうだな。状況によって、先導する時は参加者に声掛けが大事だ' }
+    ]},
+    PLAYGROUND_01: { riku: 'curious', cuts: [
+      { speaker: 'system', text: '遊具に関係するPOIがまとまっています。' },
+      { speaker: 'riku', text: 'この辺は遊具が多そうだな。' },
+      { speaker: 'mina', text: 'ほんと！？ ブランコあるかな！' },
+      { speaker: 'riku', text: '……遊びに来たんじゃないぞ。' },
+      { speaker: 'mina', text: '滑り台もあったら完璧だね！' },
+      { speaker: 'riku', text: '何が完璧だ。' },
+      { speaker: 'mina', text: '遊具の近くは子どもたちが急に走ってくることもあるよね。' },
+      { speaker: 'riku', text: 'ミナのようにな。' },
+      { speaker: 'mina', text: 'どういう意味！？' }
+    ]},
+    PARK_PLAZA_01: { riku: 'normal', cuts: [
+      { speaker: 'system', text: '公園・広場・芝生に関係する候補があります。' },
+      { speaker: 'riku', text: 'ここは広々として集まりやすいな' },
+      { speaker: 'mina', text: 'みんなで写真撮るのにも良さそう！' },
+      { speaker: 'riku', text: 'それはいいな。記念に残せそうだ' }
+    ]},
+    REST_01: { riku: 'normal', cuts: [
+      { speaker: 'system', text: '休憩・支援設備の候補があります。' },
+      { speaker: 'riku', text: 'ここは休憩に使えそうだな。' },
+      { speaker: 'mina', text: 'ここで休もう！' }
+    ]},
+    REST_SHORTAGE_01: { riku: 'surprised', cuts: [
+      { speaker: 'system', text: '活動候補に対して休憩・支援候補が少ない可能性があります。' },
+      { speaker: 'riku', text: 'POIの数に比べて、休憩できそうな場所が少ないな。' },
+      { speaker: 'mina', text: '長く遊ぶなら、ちゃんと休める場所も欲しいね。' },
+      { speaker: 'mina', text: '木や屋根をうまく活用して休憩も取ろう' }
+    ]}
+  };
+
+  const frame = document.getElementById('advRoom');
+  frame.addEventListener('load', () => {
+    const w = frame.contentWindow;
+    let tries = 0;
+    const apply = () => {
+      if (w?.GUNGI_DIALOGUES_V03) {
+        Object.assign(w.GUNGI_DIALOGUES_V03, patch);
+        w.__ADV_APPROVED_DIALOGUES_20260824__ = true;
+        return;
+      }
+      if (++tries < 100) setTimeout(apply, 50);
+    };
+    apply();
+  });
+})();
+</script>
+</body>
+</html>
