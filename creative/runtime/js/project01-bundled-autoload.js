@@ -1,1 +1,0 @@
-(()=>{'use strict';/* PROJECT 01 now runs on its standalone project01.html page. Legacy entry-page KMZ autoload is intentionally disabled. */})();
