@@ -1,1 +1,0 @@
-This directory is an isolated development snapshot copied from Campsite-Design-Tool-JP/main.
