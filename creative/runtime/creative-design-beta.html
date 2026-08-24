@@ -63,5 +63,6 @@ function downloadBlob(blob,name){const url=URL.createObjectURL(blob),a=document.
 exportBtn.addEventListener('click',async()=>{if(!sourceText)return;exportBtn.disabled=true;fileStatus.textContent='書き出し中…';try{const kml=rebuildKml();if(sourceIsKmz){const zip=await JSZip.loadAsync(await sourceZip.generateAsync({type:'blob'}));zip.file(sourceKmlPath,kml);downloadBlob(await zip.generateAsync({type:'blob',compression:'DEFLATE'}),`${sourceName}_CREATIVE.kmz`)}else downloadBlob(new Blob([kml],{type:'application/vnd.google-earth.kml+xml'}),`${sourceName}_CREATIVE.kml`);fileStatus.textContent='書き出し完了。距離チェックへ進めます。'}catch(e){console.error(e);fileStatus.textContent=`⚠ 書き出し失敗：${e.message||e}`}finally{exportBtn.disabled=false}});
 setPlacementMode(false);openSheet();
 </script>
+<script src="js/creative-backfill-upload.js?v=1"></script>
 </body>
 </html>
