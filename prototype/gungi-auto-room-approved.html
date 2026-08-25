@@ -79,11 +79,72 @@
     ]}
   };
 
+  function applyUiPatch(w) {
+    const d = w.document;
+    if (!d || d.getElementById('adv-mobile-layout-patch')) return;
+
+    const style = d.createElement('style');
+    style.id = 'adv-mobile-layout-patch';
+    style.textContent = `
+      @media (max-width:760px) {
+        .strategy-scene[data-speaker="riku"] .dialog-text,
+        .strategy-scene[data-speaker="mina"] .dialog-text {
+          box-sizing:border-box !important;
+          min-height:4.35em !important;
+          height:4.35em !important;
+          padding-top:.95em !important;
+          align-items:flex-start !important;
+          line-height:1.28 !important;
+        }
+
+        #restartBtn {
+          position:fixed !important;
+          z-index:9999 !important;
+          left:72px !important;
+          top:max(10px, env(safe-area-inset-top)) !important;
+          width:auto !important;
+          min-width:0 !important;
+          flex:none !important;
+          padding:8px 12px !important;
+          border-radius:999px !important;
+          font-size:11px !important;
+          line-height:1 !important;
+          opacity:.88 !important;
+          background:rgba(7,17,30,.82) !important;
+          color:#dbeafe !important;
+          border:1px solid rgba(148,163,184,.35) !important;
+          box-shadow:0 6px 18px rgba(0,0,0,.28) !important;
+          backdrop-filter:blur(8px) !important;
+        }
+
+        #backBtn, #nextBtn {
+          opacity:.82 !important;
+          box-shadow:0 5px 14px rgba(0,0,0,.18) !important;
+        }
+
+        .controls {
+          padding-bottom:max(8px, env(safe-area-inset-bottom)) !important;
+        }
+      }
+    `;
+    d.head.appendChild(style);
+
+    const restart = d.getElementById('restartBtn');
+    if (restart) {
+      restart.textContent = '↺ 最初へ';
+      restart.setAttribute('aria-label', '最初へ戻る');
+      restart.title = '最初へ戻る';
+    }
+
+    w.__ADV_MOBILE_LAYOUT_20260825__ = true;
+  }
+
   const frame = document.getElementById('advRoom');
   frame.addEventListener('load', () => {
     const w = frame.contentWindow;
     let tries = 0;
     const apply = () => {
+      applyUiPatch(w);
       if (w?.GUNGI_DIALOGUES_V03) {
         Object.assign(w.GUNGI_DIALOGUES_V03, patch);
         w.__ADV_APPROVED_DIALOGUES_20260824__ = true;
