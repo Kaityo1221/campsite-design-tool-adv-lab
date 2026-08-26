@@ -11,7 +11,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: production-pages
   cancel-in-progress: true
 
 jobs:
@@ -29,7 +29,11 @@ jobs:
 
       - name: Bust CREATIVE MODE cache
         run: |
-          sed -i 's/project01-development.js?v=2/project01-development.js?v=8/g' creative/runtime/field-mode.html
+          if [ -f creative/runtime/field-mode.html ]; then
+            sed -i 's/project01-development.js?v=2/project01-development.js?v=8/g' creative/runtime/field-mode.html
+          else
+            echo 'creative/runtime/field-mode.html not found; skipping cache-bust step.'
+          fi
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
