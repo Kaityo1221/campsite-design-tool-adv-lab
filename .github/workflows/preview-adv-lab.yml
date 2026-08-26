@@ -1,6 +1,9 @@
 name: Preview ADV LAB
 
 on:
+  push:
+    branches:
+      - agent/dialogue-layout-buffer-20260825
   workflow_dispatch:
     inputs:
       ref:
@@ -33,7 +36,7 @@ jobs:
       - name: Checkout preview branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref_name }}
           path: preview-src
 
       - name: Build preview directory
