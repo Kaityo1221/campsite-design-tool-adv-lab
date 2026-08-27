@@ -86,6 +86,10 @@
     const style = d.createElement('style');
     style.id = 'adv-mobile-layout-patch';
     style.textContent = `
+      .strategy-scene[data-speaker="mina"] .dialog-text {
+        left:53% !important;
+      }
+
       @media (max-width:760px) {
         .strategy-scene[data-speaker="riku"] .dialog-text,
         .strategy-scene[data-speaker="mina"] .dialog-text {
@@ -96,6 +100,10 @@
           align-items:flex-start !important;
           line-height:1.28 !important;
           transform:translateY(22px) !important;
+        }
+
+        .strategy-scene[data-speaker="mina"] .dialog-text {
+          left:53% !important;
         }
 
         #restartBtn {
