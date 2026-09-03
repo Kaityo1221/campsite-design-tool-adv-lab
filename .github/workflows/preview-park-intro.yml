@@ -1,0 +1,63 @@
+name: Preview PARK_INTRO_01 from main
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/preview-park-intro.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: preview-pages
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}preview/prototype/gungi-auto-room.html?demoParkIntro=1
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main site
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: site
+
+      - name: Checkout PARK_INTRO branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/park-intro-v0.1
+          path: preview-src
+
+      - name: Build preview directory
+        run: |
+          rm -rf site/preview
+          mkdir -p site/preview
+          rsync -a --delete \
+            --exclude '.git' \
+            --exclude '.github' \
+            preview-src/ site/preview/
+          cat > site/preview/PREVIEW.txt <<'EOF'
+          ADV LAB PARK_INTRO_01 development preview
+          Root site remains main. /preview contains feature/park-intro-v0.1.
+          Use ?demoParkIntro=1 to display the explicit demo FACILITY payload until live Campsite AI HTTP wiring is available.
+          EOF
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy preview
+        id: deployment
+        uses: actions/deploy-pages@v4
