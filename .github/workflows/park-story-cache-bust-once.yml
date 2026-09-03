@@ -1,0 +1,26 @@
+name: Cache-bust PARK_STORY once
+
+on:
+  push:
+    branches:
+      - feature/park-intro-v0.1
+    paths:
+      - .github/workflows/park-story-cache-bust-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update Park Intro asset version
+        run: sed -i 's/gungi-park-intro.js?v=0.1.0/gungi-park-intro.js?v=0.2.0/' prototype/gungi-auto-room.html
+      - name: Commit change
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add prototype/gungi-auto-room.html
+          git commit -m 'Load PARK_STORY v0.2.0 asset'
+          git push
