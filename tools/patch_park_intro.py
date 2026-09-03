@@ -1,0 +1,83 @@
+from pathlib import Path
+
+path = Path('prototype/gungi-auto-room.html')
+s = path.read_text(encoding='utf-8')
+
+
+def replace_once(old: str, new: str, label: str) -> None:
+    global s
+    if old not in s:
+        raise SystemExit(f'patch needle not found: {label}')
+    s = s.replace(old, new, 1)
+
+
+css_needle = "    @media(max-width:760px){.page{padding:0}"
+css_insert = """    .park-info-card{display:none;position:absolute;z-index:17;left:50%;top:11%;transform:translateX(-50%);width:min(43%,430px);padding:12px 14px;border-radius:16px;background:linear-gradient(180deg,rgba(4,16,30,.94),rgba(8,28,49,.92));border:1px solid rgba(125,211,252,.48);box-shadow:0 14px 42px rgba(0,0,0,.42);backdrop-filter:blur(10px);color:#eaf5ff}.strategy-scene.park-intro-active .park-info-card{display:block}.park-info-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}.park-info-kicker{font-size:10px;font-weight:950;letter-spacing:.12em;color:#93c5fd}.park-confidence{padding:3px 7px;border-radius:999px;background:rgba(34,197,94,.14);border:1px solid rgba(74,222,128,.4);color:#bbf7d0;font-size:9px;font-weight:950;letter-spacing:.08em}.park-name{font-size:clamp(15px,1.55vw,25px);font-weight:950;line-height:1.12}.park-address{margin-top:5px;color:#cbd5e1;font-size:clamp(9px,.9vw,13px);font-weight:750}.park-evidence{margin-top:8px;padding-top:7px;border-top:1px solid rgba(148,163,184,.18);color:#9fb0c4;font-size:9px;line-height:1.45}.park-demo{color:#fde68a}.strategy-scene.park-intro-active #map{filter:saturate(.8) brightness(.72)}
+    @media(max-width:760px){.park-info-card{top:8%;width:74%;padding:9px 11px;border-radius:12px}.park-name{font-size:clamp(14px,4.2vw,20px)}.park-address{font-size:clamp(9px,2.7vw,12px)}.park-evidence{font-size:8px}}
+"""
+replace_once(css_needle, css_insert + css_needle, 'park card css')
+
+replace_once(
+    '    <div id="eventBanner" class="event-banner">ADV COUNCIL / READY</div>\n',
+    '    <div id="eventBanner" class="event-banner">ADV COUNCIL / READY</div>\n'
+    '    <div id="parkInfoCard" class="park-info-card" aria-live="polite">\n'
+    '      <div class="park-info-head"><span class="park-info-kicker">📍 PARK INFO</span><span id="parkConfidence" class="park-confidence">UNKNOWN</span></div>\n'
+    '      <div id="parkDisplayName" class="park-name"></div>\n'
+    '      <div id="parkDisplayAddress" class="park-address"></div>\n'
+    '      <div id="parkEvidence" class="park-evidence"></div>\n'
+    '    </div>\n',
+    'park card html',
+)
+
+replace_once(
+    '<script src="./gungi-dialogues-v0.3.js?v=0.3.4"></script>\n',
+    '<script src="./gungi-dialogues-v0.3.js?v=0.3.4"></script>\n<script src="./gungi-park-intro.js?v=0.1.0"></script>\n',
+    'park intro script',
+)
+
+old_el = "  const el={file:document.getElementById('kmzFile'),status:document.getElementById('status'),facts:document.getElementById('facts'),speaker:document.getElementById('speaker'),dialog:document.getElementById('dialogText'),back:document.getElementById('backBtn'),next:document.getElementById('nextBtn'),restart:document.getElementById('restartBtn'),riku:document.getElementById('actorRiku'),mina:document.getElementById('actorMina'),scene:document.getElementById('strategyScene'),banner:document.getElementById('eventBanner')};"
+new_el = "  const el={file:document.getElementById('kmzFile'),status:document.getElementById('status'),facts:document.getElementById('facts'),speaker:document.getElementById('speaker'),dialog:document.getElementById('dialogText'),back:document.getElementById('backBtn'),next:document.getElementById('nextBtn'),restart:document.getElementById('restartBtn'),riku:document.getElementById('actorRiku'),mina:document.getElementById('actorMina'),scene:document.getElementById('strategyScene'),banner:document.getElementById('eventBanner'),parkCard:document.getElementById('parkInfoCard'),parkName:document.getElementById('parkDisplayName'),parkAddress:document.getElementById('parkDisplayAddress'),parkConfidence:document.getElementById('parkConfidence'),parkEvidence:document.getElementById('parkEvidence')};"
+replace_once(old_el, new_el, 'element map')
+
+replace_once(
+    '  let points=[],scopedPoints=[],analysis=null,sequence=[],stepIndex=0;',
+    '  let points=[],scopedPoints=[],analysis=null,sequence=[],stepIndex=0,parkIntroResolved=null;',
+    'state',
+)
+
+old_build = "  function buildSequence(warnings,events){const out=[];if(warnings.active.length)out.push(...warningSequence(warnings.active[0]));const normalized=normalizeEvents(events);if(normalized.length)out.push(...eventSequence(normalized));if(!out.length)out.push({speaker:'system',text:'大きな距離注意や自動軍議イベントは見つかりませんでした。',rikuExpression:'normal',banner:'ADV COUNCIL'},{speaker:'riku',text:'距離条件はよく整理されている。この段階で無理に触る必要はない。',rikuExpression:'normal',banner:'ADV COUNCIL'},{speaker:'mina',text:'よしっ！ 次は実際に歩いて楽しいか見てみよう！',rikuExpression:'normal',banner:'ADV COUNCIL'});return out;}"
+new_build = "  function buildSequence(warnings,events){const out=[];const intro=window.GungiParkIntro?.buildSequence?.(parkIntroResolved)||[];if(intro.length)out.push(...intro);if(warnings.active.length)out.push(...warningSequence(warnings.active[0]));const normalized=normalizeEvents(events);if(normalized.length)out.push(...eventSequence(normalized));if(!out.length)out.push({speaker:'system',text:'大きな距離注意や自動軍議イベントは見つかりませんでした。',rikuExpression:'normal',banner:'ADV COUNCIL'},{speaker:'riku',text:'距離条件はよく整理されている。この段階で無理に触る必要はない。',rikuExpression:'normal',banner:'ADV COUNCIL'},{speaker:'mina',text:'よしっ！ 次は実際に歩いて楽しいか見てみよう！',rikuExpression:'normal',banner:'ADV COUNCIL'});return out;}"
+replace_once(old_build, new_build, 'sequence prelude')
+
+old_facts = "  function renderFacts(){if(!analysis){el.facts.innerHTML='';return;}const added=scopedPoints.filter(p=>p.isAdded).length,existing=scopedPoints.filter(p=>p.isExisting).length,events=analysis.events||[];const rows=[`全Point：${points.length}件`,`判定対象：${scopedPoints.length}件（既存 ${existing} / 追加 ${added}）`,`活動範囲：${analysis.hasScope?'適用':'未検出'}`,`40m未満：${analysis.warnings.active.length}件`,`自動軍議：${events.length}件`,events.length?`最優先：${events[0].id}`:'最優先：なし',`エンジン：${window.GungiAutoEvents?.version||'unknown'}`];el.facts.innerHTML=rows.map(x=>`<div class=\"fact\">${esc(x)}</div>`).join('');}"
+new_facts = "  function renderFacts(){if(!analysis){el.facts.innerHTML='';return;}const added=scopedPoints.filter(p=>p.isAdded).length,existing=scopedPoints.filter(p=>p.isExisting).length,events=analysis.events||[],park=window.GungiParkIntro?.modelFromResolved?.(parkIntroResolved);const rows=[`全Point：${points.length}件`,`判定対象：${scopedPoints.length}件（既存 ${existing} / 追加 ${added}）`,`活動範囲：${analysis.hasScope?'適用':'未検出'}`,`40m未満：${analysis.warnings.active.length}件`,`自動軍議：${events.length}件`,events.length?`最優先：${events[0].id}`:'最優先：なし',`エンジン：${window.GungiAutoEvents?.version||'unknown'}`];if(park)rows.unshift(`FACILITY：${park.confidence}${park.demo?' / DEMO':''}`,`住所：${park.displayAddress||'未取得'}`,`公園：${park.parkName}`);el.facts.innerHTML=rows.map(x=>`<div class=\"fact\">${esc(x)}</div>`).join('');}"
+replace_once(old_facts, new_facts, 'facts')
+
+marker = "  function setRikuExpression(name){const src=RIKU_IMAGES[name]||RIKU_IMAGES.normal;if(el.riku.getAttribute('src')!==src)el.riku.setAttribute('src',src);}"
+card_fn = "  function renderParkCard(step){const p=step?.parkIntro||null;el.scene.classList.toggle('park-intro-active',!!p);if(!p)return;el.parkName.textContent=p.parkName||'';el.parkAddress.textContent=p.displayAddress||'住所情報なし';el.parkConfidence.textContent=p.confidence||'UNKNOWN';const q=p.poiSummary||{};const summary=q.total?`POIカテゴリ信頼度：HIGH ${q.HIGH||0} / MEDIUM ${q.MEDIUM||0} / LOW ${q.LOW||0} / UNKNOWN ${q.UNKNOWN||0}`:'Park Identity / FACILITY AI';el.parkEvidence.innerHTML=`${esc(summary)}${p.demo?'<br><span class=\"park-demo\">DEMO DATA / live AI lookupではありません</span>':''}`;}\n"
+replace_once(marker, card_fn + marker, 'park card renderer')
+
+old_render = "  function renderStep(i){const step=sequence[i];if(!step)return;stepIndex=i;setRikuExpression(step.rikuExpression||'normal');setActor(step.speaker);el.dialog.textContent=step.text;if(step.warning)focusWarning(step.warning);if(step.event)focusEvent(step.event);if(step.eventRef)el.banner.textContent=`EVENT ${step.eventNo}/${step.eventTotal} · ${step.eventRef.title}`;else el.banner.textContent=step.banner||'ADV COUNCIL';sync();}"
+new_render = "  function renderStep(i){const step=sequence[i];if(!step)return;stepIndex=i;setRikuExpression(step.rikuExpression||'normal');setActor(step.speaker);renderParkCard(step);el.dialog.textContent=step.text;if(step.warning)focusWarning(step.warning);if(step.event)focusEvent(step.event);if(step.eventRef)el.banner.textContent=`EVENT ${step.eventNo}/${step.eventTotal} · ${step.eventRef.title}`;else el.banner.textContent=step.banner||'ADV COUNCIL';sync();}"
+replace_once(old_render, new_render, 'render step')
+
+old_handle = "  async function handle(file){el.scene.classList.add('signal-cut');el.banner.textContent='ANALYZING MAP...';el.status.textContent='KMZを解析しています…';el.next.disabled=el.back.disabled=el.restart.disabled=true;setRikuExpression('normal');setActor('system');el.dialog.textContent='地図を読み込んでいます。';const parsed=parseKml(await readKml(file));points=parsed.points;if(!points.length)throw new Error('Point形式のPOIを取得できませんでした。');scopedPoints=parsed.activityPolygon?window.GungiAutoEvents.scopePoints(points,{activityPolygon:parsed.activityPolygon}):points;drawPoints(points);const warnings=distanceWarnings(scopedPoints),events=window.GungiAutoEvents?.detectAll({points,activityPolygon:parsed.activityPolygon})||[];analysis={warnings,events,hasScope:!!parsed.activityPolygon};sequence=buildSequence(warnings,events);renderFacts();el.status.innerHTML=`<strong class=\"ok\">✓ ${esc(file.name)} を読み込みました。</strong><br>判定対象 ${scopedPoints.length} POI / 自動軍議 ${events.length}イベント。`;el.scene.classList.remove('signal-cut');renderStep(0);}"
+new_handle = "  async function handle(file){el.scene.classList.add('signal-cut');el.banner.textContent='ANALYZING MAP...';el.status.textContent='KMZを解析しています…';el.next.disabled=el.back.disabled=el.restart.disabled=true;setRikuExpression('normal');setActor('system');el.dialog.textContent='地図を読み込んでいます。';const parsed=parseKml(await readKml(file));points=parsed.points;if(!points.length)throw new Error('Point形式のPOIを取得できませんでした。');scopedPoints=parsed.activityPolygon?window.GungiAutoEvents.scopePoints(points,{activityPolygon:parsed.activityPolygon}):points;parkIntroResolved=await window.GungiParkIntro?.resolve?.({points:scopedPoints,activityPolygon:parsed.activityPolygon,fileName:file.name})||null;drawPoints(points);const warnings=distanceWarnings(scopedPoints),events=window.GungiAutoEvents?.detectAll({points,activityPolygon:parsed.activityPolygon})||[];analysis={warnings,events,hasScope:!!parsed.activityPolygon};sequence=buildSequence(warnings,events);renderFacts();const park=window.GungiParkIntro?.modelFromResolved?.(parkIntroResolved);el.status.innerHTML=`<strong class=\"ok\">✓ ${esc(file.name)} を読み込みました。</strong><br>${park?`公園 ${esc(park.parkName)} / `:''}判定対象 ${scopedPoints.length} POI / 自動軍議 ${events.length}イベント。`;el.scene.classList.remove('signal-cut');renderStep(0);}"
+replace_once(old_handle, new_handle, 'handle')
+
+replace_once(
+    "points=[];scopedPoints=[];analysis=null;sequence=[];poiLayer.clearLayers();",
+    "points=[];scopedPoints=[];analysis=null;sequence=[];parkIntroResolved=null;poiLayer.clearLayers();",
+    'error reset',
+)
+
+final_controls = "  el.back.addEventListener('click',()=>{if(stepIndex>0)renderStep(stepIndex-1);});el.next.addEventListener('click',()=>{if(stepIndex<sequence.length-1)renderStep(stepIndex+1);});el.restart.addEventListener('click',()=>{if(!sequence.length)return;drawPoints(points);renderStep(0);});"
+demo_init = """  el.back.addEventListener('click',()=>{if(stepIndex>0)renderStep(stepIndex-1);});el.next.addEventListener('click',()=>{if(stepIndex<sequence.length-1)renderStep(stepIndex+1);});el.restart.addEventListener('click',()=>{if(!sequence.length)return;drawPoints(points);renderStep(0);});
+  async function initParkIntroPreview(){if(!window.GungiParkIntro?.isDemoMode?.())return;parkIntroResolved=await window.GungiParkIntro.resolve({points:[],fileName:'PARK_INTRO_01 preview'});sequence=window.GungiParkIntro.buildSequence(parkIntroResolved);if(!sequence.length)return;analysis={warnings:{active:[],reference:[]},events:[],hasScope:false};renderFacts();el.status.innerHTML='<strong class="ok">✓ PARK_INTRO_01 プレビュー</strong><br>DEMO DATAです。KMZを選択すると通常解析へ切り替わります。';renderStep(0);}initParkIntroPreview();"""
+replace_once(final_controls, demo_init, 'demo preview init')
+
+replace_once('⚔️ 自動軍議室 v0.3.4', '⚔️ 自動軍議室 v0.3.4 + PARK INTRO', 'title')
+replace_once('KMZ → 活動範囲 → 24イベント判定 → リク＆ミナ軍議', 'KMZ → Park Intelligence → 公園紹介 → 24イベント判定 → リク＆ミナ軍議', 'subtitle')
+
+path.write_text(s, encoding='utf-8')
+print('PARK_INTRO_01 patch applied')
