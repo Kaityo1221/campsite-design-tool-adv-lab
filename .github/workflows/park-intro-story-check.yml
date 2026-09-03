@@ -1,0 +1,39 @@
+name: Check PARK_INTRO and PARK_STORY
+
+on:
+  push:
+    branches:
+      - feature/park-intro-v0.1
+    paths:
+      - prototype/gungi-park-intro.js
+      - prototype/gungi-auto-room.html
+      - .github/workflows/park-intro-story-check.yml
+  pull_request:
+    paths:
+      - prototype/gungi-park-intro.js
+      - prototype/gungi-auto-room.html
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript syntax
+        run: node --check prototype/gungi-park-intro.js
+      - name: Check Park Story markers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          js = Path('prototype/gungi-park-intro.js').read_text(encoding='utf-8')
+          required = [
+              'PARK_STORY_01',
+              'PARK_HIGHLIGHT_01',
+              'current_notices',
+              'storyFromResolved',
+              'DEMO payload for visual preview only',
+          ]
+          missing = [item for item in required if item not in js]
+          if missing:
+              raise SystemExit(f'missing Park Story markers: {missing}')
+          print('PARK_STORY markers OK')
+          PY
