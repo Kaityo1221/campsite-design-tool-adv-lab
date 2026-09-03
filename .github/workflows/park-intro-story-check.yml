@@ -27,23 +27,9 @@ jobs:
           from pathlib import Path
           js = Path('prototype/gungi-park-intro.js').read_text(encoding='utf-8')
           html = Path('prototype/gungi-auto-room.html').read_text(encoding='utf-8')
-          required_js = [
-              'PARK_STORY_01',
-              'PARK_HIGHLIGHT_01',
-              'current_notices',
-              'storyFromResolved',
-              'DEMO payload for visual preview only',
-              'PARK HIGHLIGHT',
-              'CURRENT NOTICE',
-          ]
-          required_html = [
-              'gungi-park-intro.js?v=0.2.0',
-              'parkInfoKicker',
-              '公園紹介：見どころ',
-              'PARK_STORY_01 プレビュー',
-          ]
-          missing = [item for item in required_js if item not in js]
-          missing += [item for item in required_html if item not in html]
+          required_js = ['PARK_STORY_01','PARK_HIGHLIGHT_01','current_notices','storyFromResolved','DEMO payload for visual preview only','PARK HIGHLIGHT','CURRENT NOTICE']
+          required_html = ['gungi-park-intro.js?v=0.2.0','parkInfoKicker','公園紹介：見どころ','PARK_STORY_01 プレビュー']
+          missing = [item for item in required_js if item not in js] + [item for item in required_html if item not in html]
           if missing:
               raise SystemExit(f'missing Park Story markers: {missing}')
           print('PARK_STORY markers OK')
