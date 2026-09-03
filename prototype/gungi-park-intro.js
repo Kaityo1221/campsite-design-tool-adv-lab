@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.2.0';
+  const VERSION = '0.3.0';
   const VALID_CONFIDENCE = new Set(['HIGH', 'MEDIUM', 'LOW', 'UNKNOWN']);
   const HIGHLIGHT_ICONS = {
     AQUARIUM: '🐧',
@@ -18,6 +18,27 @@
     return normalized || null;
   };
 
+  const finiteNumber = value => {
+    const candidate = Number(value);
+    return Number.isFinite(candidate) ? candidate : null;
+  };
+
+  function pointFrom(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    const lat = finiteNumber(raw.lat);
+    const lon = finiteNumber(raw.lon ?? raw.lng);
+    if (lat === null || lon === null || lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
+    return {
+      lat,
+      lon,
+      role: text(raw.role) || 'DISPLAY_POINT',
+      confidence: VALID_CONFIDENCE.has(String(raw.confidence || '').toUpperCase()) ? String(raw.confidence).toUpperCase() : 'UNKNOWN',
+      displayOnly: raw.display_only !== false,
+      notIdentityEvidence: raw.not_identity_evidence !== false,
+      source: raw.source || null
+    };
+  }
+
   const params = () => {
     try { return new URLSearchParams(window.location?.search || ''); }
     catch (_) { return new URLSearchParams(); }
@@ -30,9 +51,9 @@
   function demoPayload() {
     return {
       status: 'READY',
-      target: { lat: 35.64, lon: 139.86 },
+      target: { lat: 35.6420254, lon: 139.8606395 },
       adv: {
-        schema_version: '0.2.0',
+        schema_version: '0.3.0',
         target_system: 'ADV',
         source_system: 'Campsite AI / FACILITY',
         read_only: true,
@@ -85,6 +106,22 @@
               title: '葛西臨海水族園',
               summary: '2,200トンのドーナツ型大水槽を泳ぐクロマグロや、国内最大級のペンギン展示場など、600種を超える世界の海の生き物を楽しめます。',
               confidence: 'HIGH',
+              location: {
+                lat: 35.640083,
+                lon: 139.862167,
+                geometry_type: 'POINT',
+                role: 'DISPLAY_POINT',
+                confidence: 'MEDIUM',
+                review_status: 'VERIFIED',
+                display_only: true,
+                not_identity_evidence: true,
+                source: {
+                  provider: 'secondary coordinate cross-check',
+                  source_title: '葛西臨海水族園 coordinate reference',
+                  source_url: 'https://www.wikidata.org/wiki/Q1151559',
+                  source_authority_class: 'SECONDARY_MAP'
+                }
+              },
               source: {
                 provider: '東京都公園協会',
                 source_title: '葛西臨海公園 施設について',
@@ -99,6 +136,22 @@
               title: 'ダイヤと花の大観覧車',
               summary: '高さ117mの大観覧車。晴れた日には東京のランドマークや海側の景色を広く見渡せます。',
               confidence: 'HIGH',
+              location: {
+                lat: 35.6439793,
+                lon: 139.8570808,
+                geometry_type: 'POINT',
+                role: 'DISPLAY_POINT',
+                confidence: 'MEDIUM',
+                review_status: 'VERIFIED',
+                display_only: true,
+                not_identity_evidence: true,
+                source: {
+                  provider: 'MapFan',
+                  source_title: 'ダイヤと花の大観覧車 地図',
+                  source_url: 'https://mapfan.com/spots/SC54Q%2CJ%2CRY',
+                  source_authority_class: 'SECONDARY_MAP'
+                }
+              },
               source: {
                 provider: '東京都公園協会',
                 source_title: '葛西臨海公園 施設について',
@@ -113,6 +166,22 @@
               title: '鳥類園',
               summary: '二つの池や観察施設があり、野鳥などの自然観察ができるゾーンです。',
               confidence: 'HIGH',
+              location: {
+                lat: 35.6398294,
+                lon: 139.8655679,
+                geometry_type: 'POINT',
+                role: 'DISPLAY_POINT',
+                confidence: 'MEDIUM',
+                review_status: 'VERIFIED',
+                display_only: true,
+                not_identity_evidence: true,
+                source: {
+                  provider: 'secondary coordinate cross-check',
+                  source_title: '葛西臨海公園 鳥類園 coordinate reference',
+                  source_url: 'https://zoopicker.com/en/places/109',
+                  source_authority_class: 'SECONDARY_MAP'
+                }
+              },
               source: {
                 provider: '東京都公園協会',
                 source_title: '葛西臨海公園 公式案内',
@@ -144,7 +213,9 @@
             authoritative_evidence_required: true,
             separate_evergreen_story_from_current_notices: true,
             do_not_infer_attractions_from_name_geometry_or_administration: true,
-            current_notice_should_include_as_of_when_available: true
+            current_notice_should_include_as_of_when_available: true,
+            highlight_location_is_display_only: true,
+            do_not_geocode_missing_highlight_location: true
           }
         },
         poi_category_summary: {
@@ -153,7 +224,8 @@
         },
         points: [],
         limitations: [
-          'DEMO payload for visual preview only. It is not a live Campsite AI lookup.'
+          'DEMO payload for visual preview only. It is not a live Campsite AI lookup.',
+          'DEMO highlight coordinates are reviewed display points from secondary coordinate references and are not facility identity or boundary evidence.'
         ]
       }
     };
@@ -219,6 +291,7 @@
     const counts = payload?.adv?.poi_category_summary?.confidence_counts || {};
     const totalPoi = Number(payload?.adv?.poi_category_summary?.total || 0);
     const assertive = Boolean(intro?.narration_policy?.allow_assertive_park_name) && ['HIGH', 'MEDIUM'].includes(confidence);
+    const parkFocus = pointFrom(payload?.target);
 
     return {
       eventId: 'PARK_INTRO_01',
@@ -230,6 +303,7 @@
       confidence,
       identityKey: text(identity?.identity_key),
       assertive,
+      parkFocus,
       source: resolved?.source || 'UNKNOWN',
       demo: resolved?.source === 'DEMO',
       poiSummary: {
@@ -254,6 +328,7 @@
           title: text(item.title),
           summary: text(item.summary),
           confidence: VALID_CONFIDENCE.has(String(item.confidence || '').toUpperCase()) ? String(item.confidence).toUpperCase() : 'UNKNOWN',
+          location: pointFrom(item.location),
           source: item.source || null
         }))
       : [];
@@ -289,6 +364,21 @@
     return { ...base, ...overrides };
   }
 
+  function mapFocus(location, title, icon, confidence) {
+    if (!location) return null;
+    return {
+      kind: 'PARK_HIGHLIGHT',
+      lat: location.lat,
+      lon: location.lon,
+      title,
+      icon: icon || '✨',
+      confidence: location.confidence || confidence || 'UNKNOWN',
+      displayOnly: location.displayOnly !== false,
+      notIdentityEvidence: location.notIdentityEvidence !== false,
+      source: location.source || null
+    };
+  }
+
   function buildSequence(resolved) {
     const model = modelFromResolved(resolved);
     if (!model) return [];
@@ -300,10 +390,20 @@
       ? `ここは${model.parkName}。\nまず、どんな場所なのか全体像を見てみよう。`
       : `${model.parkName}の候補情報がある。\n断定せず、公園全体の情報から順に確認しよう。`;
     const banner = `PARK INFO · ${model.confidence}${model.demo ? ' · DEMO' : ''}`;
+    const parkCenterFocus = model.parkFocus ? {
+      kind: 'PARK_CENTER',
+      lat: model.parkFocus.lat,
+      lon: model.parkFocus.lon,
+      title: model.parkName,
+      icon: '🌳',
+      confidence: model.confidence,
+      displayOnly: true,
+      notIdentityEvidence: true
+    } : null;
     const out = [
-      { kind: 'park-intro', speaker: 'system', text: systemText, parkIntro: model, rikuExpression: 'normal', banner },
-      { kind: 'park-intro', speaker: 'riku', text: rikuText, parkIntro: model, rikuExpression: 'normal', banner },
-      { kind: 'park-intro', speaker: 'mina', text: 'どんな公園なんだろう？\n見どころも見てみたい！', parkIntro: model, rikuExpression: 'normal', banner }
+      { kind: 'park-intro', speaker: 'system', text: systemText, parkIntro: model, mapFocus: parkCenterFocus, rikuExpression: 'normal', banner },
+      { kind: 'park-intro', speaker: 'riku', text: rikuText, parkIntro: model, mapFocus: parkCenterFocus, rikuExpression: 'normal', banner },
+      { kind: 'park-intro', speaker: 'mina', text: 'どんな公園なんだろう？\n見どころも見てみたい！', parkIntro: model, mapFocus: parkCenterFocus, rikuExpression: 'normal', banner }
     ];
 
     if (story?.description) {
@@ -318,6 +418,7 @@
           panelSubtitle: model.parkName,
           panelEvidence: `${source} · ${story.description.confidence}`
         }),
+        mapFocus: parkCenterFocus,
         rikuExpression: 'curious',
         banner: `PARK STORY · ${story.description.confidence}${model.demo ? ' · DEMO' : ''}`
       });
@@ -326,6 +427,7 @@
     (story?.highlights || []).forEach((item, index) => {
       const icon = HIGHLIGHT_ICONS[item.kind] || HIGHLIGHT_ICONS.FEATURE;
       const source = sourceLabel(item.source);
+      const focus = mapFocus(item.location, item.title, icon, item.confidence);
       out.push({
         kind: 'park-highlight',
         speaker: index % 2 === 0 ? 'mina' : 'riku',
@@ -333,9 +435,10 @@
         parkIntro: panel(model, {
           panelKind: `PARK HIGHLIGHT ${index + 1}`,
           panelTitle: `${icon} ${item.title}`,
-          panelSubtitle: model.parkName,
-          panelEvidence: `${source} · ${item.confidence}`
+          panelSubtitle: focus ? '地図上の見どころを表示中' : model.parkName,
+          panelEvidence: `${source} · ${item.confidence}${focus ? ` · MAP ${focus.confidence}` : ' · MAP位置なし'}`
         }),
+        mapFocus: focus,
         rikuExpression: index % 2 === 0 ? 'curious' : 'normal',
         banner: `PARK HIGHLIGHT ${index + 1}/${story.highlights.length} · ${item.confidence}${model.demo ? ' · DEMO' : ''}`
       });
@@ -354,6 +457,7 @@
           panelSubtitle: item.asOf ? `${item.asOf}時点` : model.parkName,
           panelEvidence: `${source} · ${item.confidence}`
         }),
+        mapFocus: parkCenterFocus,
         rikuExpression: 'normal',
         banner: `PARK NOTICE · ${item.confidence}${model.demo ? ' · DEMO' : ''}`
       });
@@ -361,11 +465,11 @@
 
     if (story) {
       out.push(
-        { kind: 'park-story-end', speaker: 'riku', text: '公園の特徴はつかめた。\n次は、この舞台の中でPOIがどう配置されているか見よう。', parkIntro: model, rikuExpression: 'normal', banner },
-        { kind: 'park-story-end', speaker: 'mina', text: 'よーし！\nここからPOIを見ながら歩き方を考えていこう！', parkIntro: model, rikuExpression: 'normal', banner }
+        { kind: 'park-story-end', speaker: 'riku', text: '公園の特徴はつかめた。\n次は、この舞台の中でPOIがどう配置されているか見よう。', parkIntro: model, restorePoiMap: true, rikuExpression: 'normal', banner },
+        { kind: 'park-story-end', speaker: 'mina', text: 'よーし！\nここからPOIを見ながら歩き方を考えていこう！', parkIntro: model, restorePoiMap: true, rikuExpression: 'normal', banner }
       );
     } else {
-      out.push({ kind: 'park-intro', speaker: 'mina', text: '公園紹介の公式データはまだ少ないみたい。\nじゃあ、分かっているPOIから見ていこう！', parkIntro: model, rikuExpression: 'normal', banner });
+      out.push({ kind: 'park-intro', speaker: 'mina', text: '公園紹介の公式データはまだ少ないみたい。\nじゃあ、分かっているPOIから見ていこう！', parkIntro: model, restorePoiMap: true, rikuExpression: 'normal', banner });
     }
 
     return out;
