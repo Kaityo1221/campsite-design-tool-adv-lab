@@ -49,7 +49,7 @@ jobs:
           Root site remains main. /preview contains feature/park-intro-v0.1.
           Use ?demoParkIntro=1 to display explicit demo FACILITY / Park Story data until live Campsite AI HTTP wiring is available.
           Preview refresh: 2026-09-03 Park Story + highlights + current notice.
-          Feature snapshot includes gungi-park-intro.js v0.2.0 cache-bust.
+          Feature snapshot includes gungi-park-intro.js v0.2.0 and dynamic Park Story cards.
           EOF
 
       - name: Configure Pages
