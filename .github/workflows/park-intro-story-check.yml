@@ -1,0 +1,54 @@
+name: Check PARK_INTRO and PARK_STORY
+
+on:
+  push:
+    branches:
+      - feature/park-intro-v0.1
+    paths:
+      - prototype/gungi-park-intro.js
+      - prototype/gungi-auto-room.html
+      - .github/workflows/park-intro-story-check.yml
+  pull_request:
+    paths:
+      - prototype/gungi-park-intro.js
+      - prototype/gungi-auto-room.html
+      - .github/workflows/park-intro-story-check.yml
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript syntax
+        run: node --check prototype/gungi-park-intro.js
+      - name: Check Park Story and map sync markers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          js = Path('prototype/gungi-park-intro.js').read_text(encoding='utf-8')
+          html = Path('prototype/gungi-auto-room.html').read_text(encoding='utf-8')
+          required_js = [
+              "const VERSION = '0.3.0'",
+              'PARK_STORY_01',
+              'PARK_HIGHLIGHT_01',
+              'current_notices',
+              'storyFromResolved',
+              'mapFocus',
+              'restorePoiMap',
+              'display_only',
+              'not_identity_evidence',
+          ]
+          required_html = [
+              'gungi-park-intro.js?v=0.3.0',
+              'focusParkMapPoint',
+              'restorePoiMap',
+              'renderMapStep(step)',
+              'park-highlight-pulse',
+              'park-highlight-halo',
+              'PARK STORY MAP',
+          ]
+          missing = [item for item in required_js if item not in js] + [item for item in required_html if item not in html]
+          if missing:
+              raise SystemExit(f'missing Park Story map markers: {missing}')
+          print('PARK_STORY map sync markers OK')
+          PY
