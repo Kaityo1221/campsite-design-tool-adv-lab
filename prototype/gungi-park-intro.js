@@ -1,8 +1,16 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.1.0';
+  const VERSION = '0.2.0';
   const VALID_CONFIDENCE = new Set(['HIGH', 'MEDIUM', 'LOW', 'UNKNOWN']);
+  const HIGHLIGHT_ICONS = {
+    AQUARIUM: '🐧',
+    FERRIS_WHEEL: '🎡',
+    BIRD_SANCTUARY: '🦆',
+    VIEWPOINT: '🔭',
+    NATURE: '🌿',
+    FEATURE: '✨'
+  };
 
   const text = value => {
     if (value === null || value === undefined) return null;
@@ -24,7 +32,7 @@
       status: 'READY',
       target: { lat: 35.64, lon: 139.86 },
       adv: {
-        schema_version: '0.1.0',
+        schema_version: '0.2.0',
         target_system: 'ADV',
         source_system: 'Campsite AI / FACILITY',
         read_only: true,
@@ -46,7 +54,7 @@
               address_type: 'ADMINISTRATIVE_AREA_LABEL',
               confidence: 'HIGH'
             },
-            park_area_m2: null,
+            park_area_m2: 816177.05,
             inside_park: true
           },
           narration_policy: {
@@ -54,6 +62,89 @@
             allow_assertive_park_name: true,
             address_is_disambiguation_not_ownership: true,
             do_not_claim_manager_owner_permission_safety: true
+          }
+        },
+        park_story: {
+          event_id: 'PARK_STORY_01',
+          status: 'READY',
+          description: {
+            text: '東京湾に面し、緑・水・人のふれあいをテーマに複数のゾーンが広がる大規模な臨海公園です。',
+            confidence: 'HIGH',
+            source: {
+              provider: '東京都公園協会',
+              source_title: '葛西臨海公園 公式案内',
+              source_url: 'https://www.tokyo-park.or.jp/park/kasairinkai/index.html',
+              source_date: '2026-09-03',
+              source_authority_class: 'PARK_MANAGER_OFFICIAL'
+            }
+          },
+          highlights: [
+            {
+              highlight_id: 'PARK_HIGHLIGHT_01',
+              kind: 'AQUARIUM',
+              title: '葛西臨海水族園',
+              summary: '2,200トンのドーナツ型大水槽を泳ぐクロマグロや、国内最大級のペンギン展示場など、600種を超える世界の海の生き物を楽しめます。',
+              confidence: 'HIGH',
+              source: {
+                provider: '東京都公園協会',
+                source_title: '葛西臨海公園 施設について',
+                source_url: 'https://www.tokyo-park.or.jp/park/kasairinkai/facility/index.html',
+                source_date: '2026-09-03',
+                source_authority_class: 'PARK_MANAGER_OFFICIAL'
+              }
+            },
+            {
+              highlight_id: 'PARK_HIGHLIGHT_02',
+              kind: 'FERRIS_WHEEL',
+              title: 'ダイヤと花の大観覧車',
+              summary: '高さ117mの大観覧車。晴れた日には東京のランドマークや海側の景色を広く見渡せます。',
+              confidence: 'HIGH',
+              source: {
+                provider: '東京都公園協会',
+                source_title: '葛西臨海公園 施設について',
+                source_url: 'https://www.tokyo-park.or.jp/park/kasairinkai/facility/index.html',
+                source_date: '2026-09-03',
+                source_authority_class: 'PARK_MANAGER_OFFICIAL'
+              }
+            },
+            {
+              highlight_id: 'PARK_HIGHLIGHT_03',
+              kind: 'BIRD_SANCTUARY',
+              title: '鳥類園',
+              summary: '二つの池や観察施設があり、野鳥などの自然観察ができるゾーンです。',
+              confidence: 'HIGH',
+              source: {
+                provider: '東京都公園協会',
+                source_title: '葛西臨海公園 公式案内',
+                source_url: 'https://www.tokyo-park.or.jp/park/kasairinkai/index.html',
+                source_date: '2026-09-03',
+                source_authority_class: 'PARK_MANAGER_OFFICIAL'
+              }
+            }
+          ],
+          current_notices: [
+            {
+              notice_id: 'PARK_NOTICE_01',
+              title: 'ペンギン展示の最新案内',
+              summary: 'オウサマペンギンとミナミイワトビペンギンは展示休止中です。ペンギンの「エサの時間」ガイドは2026年9月15日まで中止予定です。',
+              status: 'ACTIVE',
+              as_of: '2026-08-18',
+              valid_until: '2026-09-15',
+              confidence: 'HIGH',
+              source: {
+                provider: '葛西臨海水族園',
+                source_title: '展示休止やイベント中止などのお知らせ',
+                source_url: 'https://www.tokyo-zoo.net/kasai/news/4184/index.html',
+                source_date: '2026-08-18',
+                source_authority_class: 'FACILITY_OFFICIAL'
+              }
+            }
+          ],
+          narration_policy: {
+            authoritative_evidence_required: true,
+            separate_evergreen_story_from_current_notices: true,
+            do_not_infer_attractions_from_name_geometry_or_administration: true,
+            current_notice_should_include_as_of_when_available: true
           }
         },
         poi_category_summary: {
@@ -151,23 +242,133 @@
     };
   }
 
+  function storyFromResolved(resolved) {
+    const payload = normalizePayload(resolved?.payload);
+    const story = payload?.adv?.park_story;
+    if (!story || typeof story !== 'object') return null;
+    const descriptionText = text(story?.description?.text);
+    const highlights = Array.isArray(story?.highlights)
+      ? story.highlights.filter(item => item && text(item.title) && text(item.summary)).map(item => ({
+          id: text(item.highlight_id),
+          kind: text(item.kind) || 'FEATURE',
+          title: text(item.title),
+          summary: text(item.summary),
+          confidence: VALID_CONFIDENCE.has(String(item.confidence || '').toUpperCase()) ? String(item.confidence).toUpperCase() : 'UNKNOWN',
+          source: item.source || null
+        }))
+      : [];
+    const notices = Array.isArray(story?.current_notices)
+      ? story.current_notices.filter(item => item && ['ACTIVE', 'CURRENT'].includes(String(item.status || '').toUpperCase()) && text(item.title) && text(item.summary)).map(item => ({
+          id: text(item.notice_id),
+          title: text(item.title),
+          summary: text(item.summary),
+          asOf: text(item.as_of),
+          validUntil: text(item.valid_until),
+          confidence: VALID_CONFIDENCE.has(String(item.confidence || '').toUpperCase()) ? String(item.confidence).toUpperCase() : 'UNKNOWN',
+          source: item.source || null
+        }))
+      : [];
+    if (!descriptionText && !highlights.length && !notices.length) return null;
+    return {
+      status: text(story.status) || 'PARTIAL',
+      description: descriptionText ? {
+        text: descriptionText,
+        confidence: VALID_CONFIDENCE.has(String(story?.description?.confidence || '').toUpperCase()) ? String(story.description.confidence).toUpperCase() : 'UNKNOWN',
+        source: story?.description?.source || null
+      } : null,
+      highlights,
+      notices
+    };
+  }
+
+  function sourceLabel(source) {
+    return text(source?.provider) || text(source?.source_title) || '公式情報';
+  }
+
+  function panel(base, overrides = {}) {
+    return { ...base, ...overrides };
+  }
+
   function buildSequence(resolved) {
     const model = modelFromResolved(resolved);
     if (!model) return [];
+    const story = storyFromResolved(resolved);
 
     const sourceSuffix = model.demo ? '\n※ 画面確認用DEMOデータ' : '';
     const systemText = `公園情報を読み込みました。\n${model.parkName}${model.displayAddress ? `\n${model.displayAddress}` : ''}${sourceSuffix}`;
     const rikuText = model.assertive
-      ? `ここは${model.parkName}。\nまず公園全体を見てから、各ポイントを確認していこう。`
+      ? `ここは${model.parkName}。\nまず、どんな場所なのか全体像を見てみよう。`
       : `${model.parkName}の候補情報がある。\n断定せず、公園全体の情報から順に確認しよう。`;
-    const minaText = 'よーし！\nじゃあ、この公園を歩いて見てみよう！';
     const banner = `PARK INFO · ${model.confidence}${model.demo ? ' · DEMO' : ''}`;
-
-    return [
+    const out = [
       { kind: 'park-intro', speaker: 'system', text: systemText, parkIntro: model, rikuExpression: 'normal', banner },
       { kind: 'park-intro', speaker: 'riku', text: rikuText, parkIntro: model, rikuExpression: 'normal', banner },
-      { kind: 'park-intro', speaker: 'mina', text: minaText, parkIntro: model, rikuExpression: 'normal', banner }
+      { kind: 'park-intro', speaker: 'mina', text: 'どんな公園なんだろう？\n見どころも見てみたい！', parkIntro: model, rikuExpression: 'normal', banner }
     ];
+
+    if (story?.description) {
+      const source = sourceLabel(story.description.source);
+      out.push({
+        kind: 'park-story',
+        speaker: 'system',
+        text: story.description.text,
+        parkIntro: panel(model, {
+          panelKind: 'PARK STORY',
+          panelTitle: 'この公園について',
+          panelSubtitle: model.parkName,
+          panelEvidence: `${source} · ${story.description.confidence}`
+        }),
+        rikuExpression: 'curious',
+        banner: `PARK STORY · ${story.description.confidence}${model.demo ? ' · DEMO' : ''}`
+      });
+    }
+
+    (story?.highlights || []).forEach((item, index) => {
+      const icon = HIGHLIGHT_ICONS[item.kind] || HIGHLIGHT_ICONS.FEATURE;
+      const source = sourceLabel(item.source);
+      out.push({
+        kind: 'park-highlight',
+        speaker: index % 2 === 0 ? 'mina' : 'riku',
+        text: `${item.title}。\n${item.summary}`,
+        parkIntro: panel(model, {
+          panelKind: `PARK HIGHLIGHT ${index + 1}`,
+          panelTitle: `${icon} ${item.title}`,
+          panelSubtitle: model.parkName,
+          panelEvidence: `${source} · ${item.confidence}`
+        }),
+        rikuExpression: index % 2 === 0 ? 'curious' : 'normal',
+        banner: `PARK HIGHLIGHT ${index + 1}/${story.highlights.length} · ${item.confidence}${model.demo ? ' · DEMO' : ''}`
+      });
+    });
+
+    (story?.notices || []).forEach(item => {
+      const source = sourceLabel(item.source);
+      const asOf = item.asOf ? ` · ${item.asOf}時点` : '';
+      out.push({
+        kind: 'park-notice',
+        speaker: 'system',
+        text: `${item.title}\n${item.summary}${asOf}\n※ 現在情報は公式案内も確認してください。`,
+        parkIntro: panel(model, {
+          panelKind: 'CURRENT NOTICE',
+          panelTitle: `📢 ${item.title}`,
+          panelSubtitle: item.asOf ? `${item.asOf}時点` : model.parkName,
+          panelEvidence: `${source} · ${item.confidence}`
+        }),
+        rikuExpression: 'normal',
+        banner: `PARK NOTICE · ${item.confidence}${model.demo ? ' · DEMO' : ''}`
+      });
+    });
+
+    if (story) {
+      out.push(
+        { kind: 'park-story-end', speaker: 'riku', text: '公園の特徴はつかめた。\n次は、この舞台の中でPOIがどう配置されているか見よう。', parkIntro: model, rikuExpression: 'normal', banner },
+        { kind: 'park-story-end', speaker: 'mina', text: 'よーし！\nここからPOIを見ながら歩き方を考えていこう！', parkIntro: model, rikuExpression: 'normal', banner }
+      );
+    } else {
+      out.push({ kind: 'park-intro', speaker: 'mina', text: '公園紹介の公式データはまだ少ないみたい。\nじゃあ、分かっているPOIから見ていこう！', parkIntro: model, rikuExpression: 'normal', banner });
+    }
+
+    return out;
   }
 
   function poiEvidence(resolved) {
@@ -183,6 +384,7 @@
     representativePoint,
     resolve,
     modelFromResolved,
+    storyFromResolved,
     buildSequence,
     poiEvidence
   };
