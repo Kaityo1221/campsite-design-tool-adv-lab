@@ -74,7 +74,7 @@
   const el={file:document.getElementById('kmzFile'),status:document.getElementById('status'),facts:document.getElementById('facts'),speaker:document.getElementById('speaker'),dialog:document.getElementById('dialogText'),back:document.getElementById('backBtn'),next:document.getElementById('nextBtn'),restart:document.getElementById('restartBtn'),riku:document.getElementById('actorRiku'),mina:document.getElementById('actorMina'),scene:document.getElementById('strategyScene'),banner:document.getElementById('eventBanner')};
   const RX={added:/(追加|追加希望|希望|新規|候補|add|addition|proposed|candidate|new|cagym|capokestop|capowerspot)/i,existing:/(既存|existing|current)/i,support:/(トイレ|便所|restroom|toilet|水飲|給水|休憩|ベンチ|bench|東屋|あずまや|四阿|売店|カフェ|cafe|案内所|information)/i,aux:/(50m|40m|30m|円|buffer|100ft|100feet|100フィート|ダミー)/i,activity:/(活動範囲|活動エリア|活動区域|対象範囲|対象エリア|activity\s*(area|range)|event\s*area)/i};
   let points=[],scopedPoints=[],analysis=null,sequence=[],stepIndex=0;
-  const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[ch]));
+  const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
   const distanceMeters=(a,b)=>window.GungiAutoEvents?.distanceMeters?.(a,b)??0;
   const dialogueEngine=()=>window.GungiDialogueEngineV2||window.GungiDialogueEngineV1||null;
   function directChildText(node,tag){const t=Array.from(node.children||[]).find(c=>c.localName===tag||c.tagName===tag);return t?(t.textContent||'').trim():'';}
