@@ -1,0 +1,55 @@
+name: ADV Dialogue Engine Check
+
+on:
+  push:
+    branches:
+      - feature/adv-dialogue-engine-v1
+    paths:
+      - 'prototype/gungi-auto-room.html'
+      - 'prototype/gungi-dialogue-engine-v1.js'
+      - 'prototype/gungi-dialogue-engine-v2.js'
+      - '.github/workflows/adv-dialogue-engine-check.yml'
+  pull_request:
+    paths:
+      - 'prototype/gungi-auto-room.html'
+      - 'prototype/gungi-dialogue-engine-v1.js'
+      - 'prototype/gungi-dialogue-engine-v2.js'
+      - '.github/workflows/adv-dialogue-engine-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check dialogue JavaScript syntax
+        run: |
+          node --check prototype/gungi-dialogue-engine-v1.js
+          node --check prototype/gungi-dialogue-engine-v2.js
+      - name: Check ADV inline JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path('prototype/gungi-auto-room.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', html, flags=re.S | re.I)
+          inline = '\n'.join(part for part in scripts if part.strip())
+          Path('/tmp/adv-inline.js').write_text(inline, encoding='utf-8')
+          PY
+          node --check /tmp/adv-inline.js
+      - name: Load dialogue engines and verify inventory
+        run: |
+          node - <<'NODE'
+          global.window = global;
+          require('./prototype/gungi-dialogue-engine-v1.js');
+          require('./prototype/gungi-dialogue-engine-v2.js');
+          if (!global.GungiDialogueEngineV1) throw new Error('V1 did not load');
+          if (!global.GungiDialogueEngineV2) throw new Error('V2 did not load');
+          if (global.GungiDialogueEngineV1.bankSize !== 144) throw new Error(`Unexpected V1 bank: ${global.GungiDialogueEngineV1.bankSize}`);
+          if (global.GungiDialogueEngineV2.scenarioCount !== 66) throw new Error(`Unexpected scenario count: ${global.GungiDialogueEngineV2.scenarioCount}`);
+          if (global.GungiDialogueEngineV2.scenarioLineCount !== 264) throw new Error(`Unexpected scenario lines: ${global.GungiDialogueEngineV2.scenarioLineCount}`);
+          if (global.GungiDialogueEngineV2.totalCuratedLines !== 408) throw new Error(`Unexpected curated total: ${global.GungiDialogueEngineV2.totalCuratedLines}`);
+          console.log('Dialogue Engine V2 smoke check OK');
+          NODE
