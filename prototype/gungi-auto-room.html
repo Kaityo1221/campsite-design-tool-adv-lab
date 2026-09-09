@@ -30,8 +30,8 @@
 <body>
 <main class="page">
   <header class="labbar">
-    <div><div class="labtitle">⚔️ 自動軍議室 v0.3.4</div><div class="labsub">KMZ → 活動範囲 → 24イベント判定 → リク＆ミナ軍議</div></div>
-    <div class="filebox"><input id="kmzFile" type="file" accept=".kmz,.kml"><span class="pill">24 EVENT ENGINE</span></div>
+    <div><div class="labtitle">⚔️ 自動軍議室 v0.3.5</div><div class="labsub">KMZ → 活動範囲 → 24イベント判定 → 状況別リク＆ミナ軍議</div></div>
+    <div class="filebox"><input id="kmzFile" type="file" accept=".kmz,.kml"><span class="pill">24 EVENT + DIALOGUE V2</span></div>
   </header>
 
   <section id="strategyScene" class="strategy-scene" data-speaker="system" aria-label="Campsite Design Tool 自動軍議画面">
@@ -56,6 +56,8 @@
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="./gungi-auto-engine.js?v=0.3.4"></script>
 <script src="./gungi-dialogues-v0.3.js?v=0.3.4"></script>
+<script src="./gungi-dialogue-engine-v1.js?v=1.0.0-alpha.1"></script>
+<script src="./gungi-dialogue-engine-v2.js?v=2.0.0-alpha.1"></script>
 <script>
 (() => {
   'use strict';
@@ -72,8 +74,9 @@
   const el={file:document.getElementById('kmzFile'),status:document.getElementById('status'),facts:document.getElementById('facts'),speaker:document.getElementById('speaker'),dialog:document.getElementById('dialogText'),back:document.getElementById('backBtn'),next:document.getElementById('nextBtn'),restart:document.getElementById('restartBtn'),riku:document.getElementById('actorRiku'),mina:document.getElementById('actorMina'),scene:document.getElementById('strategyScene'),banner:document.getElementById('eventBanner')};
   const RX={added:/(追加|追加希望|希望|新規|候補|add|addition|proposed|candidate|new|cagym|capokestop|capowerspot)/i,existing:/(既存|existing|current)/i,support:/(トイレ|便所|restroom|toilet|水飲|給水|休憩|ベンチ|bench|東屋|あずまや|四阿|売店|カフェ|cafe|案内所|information)/i,aux:/(50m|40m|30m|円|buffer|100ft|100feet|100フィート|ダミー)/i,activity:/(活動範囲|活動エリア|活動区域|対象範囲|対象エリア|activity\s*(area|range)|event\s*area)/i};
   let points=[],scopedPoints=[],analysis=null,sequence=[],stepIndex=0;
-  const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[ch]));
   const distanceMeters=(a,b)=>window.GungiAutoEvents?.distanceMeters?.(a,b)??0;
+  const dialogueEngine=()=>window.GungiDialogueEngineV2||window.GungiDialogueEngineV1||null;
   function directChildText(node,tag){const t=Array.from(node.children||[]).find(c=>c.localName===tag||c.tagName===tag);return t?(t.textContent||'').trim():'';}
   function folderName(pm){let n=pm.parentElement,names=[];while(n){if(n.localName==='Folder'||n.tagName==='Folder'){const x=directChildText(n,'name');if(x)names.unshift(x);}n=n.parentElement;}return names.join(' / ');}
   function polygonCoords(pm){const node=pm.getElementsByTagNameNS('*','Polygon')[0]?.getElementsByTagNameNS('*','coordinates')[0];if(!node)return null;const coords=(node.textContent||'').trim().split(/\s+/).map(raw=>{const [lngRaw,latRaw]=raw.split(','),lat=Number(latRaw),lng=Number(lngRaw);return Number.isFinite(lat)&&Number.isFinite(lng)?{lat,lng}:null;}).filter(Boolean);return coords.length>=3?coords:null;}
@@ -87,15 +90,34 @@
   function warningSequence(w){const d=w.distance,rounded=d.toFixed(1);let riku='',mina='';if(d<DENSE_LIMIT_M){riku=`ここは ${rounded}m。かなり近い。\nまず配置を調整した方がいい。`;mina='魅力は残したいけど、ここは少し離した方が良さそうだね。';}else if(d<STAY_LIMIT_M){riku=`ここは ${rounded}m。30mを切っている。\n滞留の影響を強く見たい。`;mina='じゃあ、どっちかを少し動かして使いやすくしよ！';}else{riku=`ここは ${rounded}m。40mには届いていない。\n調整候補として確認しておこう。`;mina='あとちょっとなら、雰囲気を壊さず調整できそう！';}return[{speaker:'system',text:`追加POIに関係する距離注意を検出しました。\n${w.a.name} × ${w.b.name}：${rounded}m（${w.type}）`,warning:w,rikuExpression:'surprised',banner:'DISTANCE CHECK'},{speaker:'riku',text:riku,rikuExpression:'surprised',banner:'DISTANCE CHECK'},{speaker:'mina',text:mina,rikuExpression:'surprised',banner:'DISTANCE CHECK'}];}
   function normalizeEvents(events){const list=[...events];if(list.some(e=>e.id==='DENSITY_REST_01'))return list.filter(e=>e.id!=='DENSITY_01');return list;}
   function formatText(text,event){const category=CATEGORY_LABELS[event?.metrics?.category]||event?.metrics?.category||'同種POI';return String(text||'').replaceAll('{category}',category).replaceAll('{reason}',event?.reason||'');}
-  function eventSequence(events){const out=[];events.forEach((event,idx)=>{const presentation=window.GUNGI_DIALOGUES_V03?.[event.id],cuts=presentation?.cuts?.length?presentation.cuts:(event.cuts||[]),expr=presentation?.riku||'normal';cuts.forEach((cut,cutIndex)=>out.push({speaker:cut.speaker,text:formatText(cut.text,event),event:cutIndex===0?event:null,eventRef:event,eventId:event.id,eventTitle:event.title,eventNo:idx+1,eventTotal:events.length,rikuExpression:expr}));});return out;}
+  function eventSequence(events){
+    const out=[];
+    const eventIds=events.map(event=>event.id);
+    events.forEach((event,idx)=>{
+      const base=window.GUNGI_DIALOGUES_V03?.[event.id];
+      let presentation=base;
+      const engine=dialogueEngine();
+      if(engine?.resolve&&base){
+        try{
+          presentation=engine.resolve(event,base,{eventIndex:idx,eventTotal:events.length,events,eventIds});
+        }catch(error){
+          console.warn('[ADV] Dialogue Engine fallback',event.id,error);
+          presentation=base;
+        }
+      }
+      const cuts=presentation?.cuts?.length?presentation.cuts:(event.cuts||[]),expr=presentation?.riku||'normal',dialogueMeta=presentation?.dialogueMeta||null;
+      cuts.forEach((cut,cutIndex)=>out.push({speaker:cut.speaker,text:formatText(cut.text,event),event:cutIndex===0?event:null,eventRef:event,eventId:event.id,eventTitle:event.title,eventNo:idx+1,eventTotal:events.length,rikuExpression:expr,dialogueMeta}));
+    });
+    return out;
+  }
   function buildSequence(warnings,events){const out=[];if(warnings.active.length)out.push(...warningSequence(warnings.active[0]));const normalized=normalizeEvents(events);if(normalized.length)out.push(...eventSequence(normalized));if(!out.length)out.push({speaker:'system',text:'大きな距離注意や自動軍議イベントは見つかりませんでした。',rikuExpression:'normal',banner:'ADV COUNCIL'},{speaker:'riku',text:'距離条件はよく整理されている。この段階で無理に触る必要はない。',rikuExpression:'normal',banner:'ADV COUNCIL'},{speaker:'mina',text:'よしっ！ 次は実際に歩いて楽しいか見てみよう！',rikuExpression:'normal',banner:'ADV COUNCIL'});return out;}
-  function renderFacts(){if(!analysis){el.facts.innerHTML='';return;}const added=scopedPoints.filter(p=>p.isAdded).length,existing=scopedPoints.filter(p=>p.isExisting).length,events=analysis.events||[];const rows=[`全Point：${points.length}件`,`判定対象：${scopedPoints.length}件（既存 ${existing} / 追加 ${added}）`,`活動範囲：${analysis.hasScope?'適用':'未検出'}`,`40m未満：${analysis.warnings.active.length}件`,`自動軍議：${events.length}件`,events.length?`最優先：${events[0].id}`:'最優先：なし',`エンジン：${window.GungiAutoEvents?.version||'unknown'}`];el.facts.innerHTML=rows.map(x=>`<div class="fact">${esc(x)}</div>`).join('');}
+  function renderFacts(){if(!analysis){el.facts.innerHTML='';return;}const added=scopedPoints.filter(p=>p.isAdded).length,existing=scopedPoints.filter(p=>p.isExisting).length,events=analysis.events||[],dialogue=dialogueEngine();const rows=[`全Point：${points.length}件`,`判定対象：${scopedPoints.length}件（既存 ${existing} / 追加 ${added}）`,`活動範囲：${analysis.hasScope?'適用':'未検出'}`,`40m未満：${analysis.warnings.active.length}件`,`自動軍議：${events.length}件`,events.length?`最優先：${events[0].id}`:'最優先：なし',`判定エンジン：${window.GungiAutoEvents?.version||'unknown'}`,`会話エンジン：${dialogue?.version||'fixed'}`];el.facts.innerHTML=rows.map(x=>`<div class="fact">${esc(x)}</div>`).join('');}
   function setRikuExpression(name){const src=RIKU_IMAGES[name]||RIKU_IMAGES.normal;if(el.riku.getAttribute('src')!==src)el.riku.setAttribute('src',src);}
   el.riku.addEventListener('error',()=>{if(el.riku.getAttribute('src')!==RIKU_IMAGES.normal)el.riku.setAttribute('src',RIKU_IMAGES.normal);});
   function setActor(s){el.riku.classList.toggle('active',s==='riku');el.mina.classList.toggle('active',s==='mina');el.scene.dataset.speaker=s;el.speaker.textContent=s==='riku'?'リク':s==='mina'?'ミナ':'SYSTEM';}
   function sync(){el.back.disabled=stepIndex<=0;el.next.disabled=stepIndex>=sequence.length-1;el.restart.disabled=!sequence.length;}
   function renderStep(i){const step=sequence[i];if(!step)return;stepIndex=i;setRikuExpression(step.rikuExpression||'normal');setActor(step.speaker);el.dialog.textContent=step.text;if(step.warning)focusWarning(step.warning);if(step.event)focusEvent(step.event);if(step.eventRef)el.banner.textContent=`EVENT ${step.eventNo}/${step.eventTotal} · ${step.eventRef.title}`;else el.banner.textContent=step.banner||'ADV COUNCIL';sync();}
-  async function handle(file){el.scene.classList.add('signal-cut');el.banner.textContent='ANALYZING MAP...';el.status.textContent='KMZを解析しています…';el.next.disabled=el.back.disabled=el.restart.disabled=true;setRikuExpression('normal');setActor('system');el.dialog.textContent='地図を読み込んでいます。';const parsed=parseKml(await readKml(file));points=parsed.points;if(!points.length)throw new Error('Point形式のPOIを取得できませんでした。');scopedPoints=parsed.activityPolygon?window.GungiAutoEvents.scopePoints(points,{activityPolygon:parsed.activityPolygon}):points;drawPoints(points);const warnings=distanceWarnings(scopedPoints),events=window.GungiAutoEvents?.detectAll({points,activityPolygon:parsed.activityPolygon})||[];analysis={warnings,events,hasScope:!!parsed.activityPolygon};sequence=buildSequence(warnings,events);renderFacts();el.status.innerHTML=`<strong class="ok">✓ ${esc(file.name)} を読み込みました。</strong><br>判定対象 ${scopedPoints.length} POI / 自動軍議 ${events.length}イベント。`;el.scene.classList.remove('signal-cut');renderStep(0);}
+  async function handle(file){el.scene.classList.add('signal-cut');el.banner.textContent='ANALYZING MAP...';el.status.textContent='KMZを解析しています…';el.next.disabled=el.back.disabled=el.restart.disabled=true;setRikuExpression('normal');setActor('system');el.dialog.textContent='地図を読み込んでいます。';dialogueEngine()?.reset?.();const parsed=parseKml(await readKml(file));points=parsed.points;if(!points.length)throw new Error('Point形式のPOIを取得できませんでした。');scopedPoints=parsed.activityPolygon?window.GungiAutoEvents.scopePoints(points,{activityPolygon:parsed.activityPolygon}):points;drawPoints(points);const warnings=distanceWarnings(scopedPoints),events=window.GungiAutoEvents?.detectAll({points,activityPolygon:parsed.activityPolygon})||[];analysis={warnings,events,hasScope:!!parsed.activityPolygon};sequence=buildSequence(warnings,events);renderFacts();const dialogue=dialogueEngine();el.status.innerHTML=`<strong class="ok">✓ ${esc(file.name)} を読み込みました。</strong><br>判定対象 ${scopedPoints.length} POI / 自動軍議 ${events.length}イベント / 会話 ${esc(dialogue?.version||'fixed')}。`;el.scene.classList.remove('signal-cut');renderStep(0);}
   el.file.addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{await handle(file);}catch(error){console.error(error);points=[];scopedPoints=[];analysis=null;sequence=[];poiLayer.clearLayers();highlightLayer.clearLayers();el.scene.classList.remove('signal-cut');el.status.innerHTML=`<strong class="warn">⚠ ${esc(error.message||'読み込みに失敗しました。')}</strong>`;setRikuExpression('normal');setActor('system');el.banner.textContent='ADV COUNCIL / ERROR';el.dialog.textContent='別のKMZ / KMLで試してください。';renderFacts();sync();}});
   el.back.addEventListener('click',()=>{if(stepIndex>0)renderStep(stepIndex-1);});el.next.addEventListener('click',()=>{if(stepIndex<sequence.length-1)renderStep(stepIndex+1);});el.restart.addEventListener('click',()=>{if(!sequence.length)return;drawPoints(points);renderStep(0);});
 })();
