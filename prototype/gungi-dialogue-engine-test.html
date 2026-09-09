@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ADV Dialogue Engine V1 Test</title>
+<style>
+body{margin:0;padding:20px;background:#08111d;color:#eef6ff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic",sans-serif}main{max-width:820px;margin:auto}.card{background:#101d2c;border:1px solid #2e4660;border-radius:18px;padding:18px;margin-bottom:14px}h1{font-size:22px;margin-top:0}label{display:block;font-size:12px;color:#aac0d6;margin-bottom:6px}select,button{width:100%;min-height:46px;border-radius:12px;border:1px solid #45627f;background:#172a3d;color:#fff;padding:10px;font:inherit}button{margin-top:10px;font-weight:900;cursor:pointer;background:#234c74}.line{padding:12px 0;border-top:1px solid #24394f}.line:first-child{border-top:0}.speaker{font-size:11px;font-weight:900;color:#8fcfff}.text{margin-top:5px;font-size:16px;line-height:1.65}.meta{font-size:11px;color:#90a4b8;line-height:1.6}.count{font-weight:900;color:#b7f7c4}
+</style>
+</head>
+<body>
+<main>
+<div class="card">
+<h1>ADV Dialogue Engine V1</h1>
+<div class="meta">監修済み固定セリフを材料に、イベント・履歴・順番から候補を選択するテスト画面。自由生成AIは使用しません。</div>
+<div id="engineInfo" class="meta"></div>
+</div>
+<div class="card">
+<label for="eventId">イベント</label>
+<select id="eventId"></select>
+<button id="generate">別の言い回しを見る</button>
+</div>
+<div id="output" class="card"></div>
+</main>
+<script src="./gungi-dialogues-v0.3.js"></script>
+<script src="./gungi-dialogue-engine-v1.js"></script>
+<script>
+(() => {
+  const dialogues=window.GUNGI_DIALOGUES_V03||{};
+  const engine=window.GungiDialogueEngineV1;
+  const select=document.getElementById('eventId');
+  const out=document.getElementById('output');
+  const ids=Object.keys(dialogues).filter(id=>/^[A-Z0-9_]+$/.test(id));
+  ids.forEach(id=>{const o=document.createElement('option');o.value=id;o.textContent=id;select.appendChild(o);});
+  document.getElementById('engineInfo').innerHTML=`Engine: ${engine?.version||'not loaded'} / 候補追加数: <span class="count">${engine?.bankSize||0}</span>`;
+  function render(){
+    const id=select.value;
+    const event={id,title:id,metrics:{count:8,category:'landmark'}};
+    const base=dialogues[id];
+    const resolved=engine.resolve(event,base,{eventIndex:0,eventTotal:ids.length});
+    const cuts=resolved?.cuts||[];
+    out.innerHTML=cuts.map(c=>`<div class="line"><div class="speaker">${c.speaker}</div><div class="text">${String(c.text||'').replaceAll('{category}','ランドマーク')}</div></div>`).join('')+`<div class="meta">tags: ${(resolved?.dialogueMeta?.tags||[]).join(', ')||'none'}</div>`;
+  }
+  select.addEventListener('change',()=>{engine.reset();render();});
+  document.getElementById('generate').addEventListener('click',render);
+  engine.reset();render();
+})();
+</script>
+</body>
+</html>
