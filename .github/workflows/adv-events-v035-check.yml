@@ -1,0 +1,141 @@
+name: ADV Events v0.3.5 Check
+
+on:
+  push:
+    branches:
+      - feature/adv-events-v035
+    paths:
+      - 'prototype/gungi-events-v035-extension.js'
+      - 'prototype/gungi-dialogue-events-v035.js'
+      - 'prototype/gungi-v035-loader.js'
+      - 'prototype/gungi-auto-room-approved.html'
+      - '.github/workflows/adv-events-v035-check.yml'
+  pull_request:
+    paths:
+      - 'prototype/gungi-events-v035-extension.js'
+      - 'prototype/gungi-dialogue-events-v035.js'
+      - 'prototype/gungi-v035-loader.js'
+      - 'prototype/gungi-auto-room-approved.html'
+      - '.github/workflows/adv-events-v035-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check prototype/gungi-events-v035-extension.js
+          node --check prototype/gungi-dialogue-events-v035.js
+          node --check prototype/gungi-v035-loader.js
+
+      - name: Check approved-room inline JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path('prototype/gungi-auto-room-approved.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', html, flags=re.S | re.I)
+          inline = '\n'.join(part for part in scripts if part.strip())
+          Path('/tmp/adv-approved-inline.js').write_text(inline, encoding='utf-8')
+          PY
+          node --check /tmp/adv-approved-inline.js
+
+      - name: Verify 35-event detector and dialogue inventory
+        run: |
+          node - <<'NODE'
+          global.window = global;
+          require('./prototype/gungi-auto-engine.js');
+          require('./prototype/gungi-dialogues-v0.3.js');
+          require('./prototype/gungi-dialogue-engine-v1.js');
+          require('./prototype/gungi-dialogue-engine-v2.js');
+          require('./prototype/gungi-events-v035-extension.js');
+          require('./prototype/gungi-dialogue-events-v035.js');
+
+          if (!global.GungiAutoEvents) throw new Error('detector did not load');
+          if (global.GungiAutoEvents.version !== '0.3.5') throw new Error(`unexpected detector version ${global.GungiAutoEvents.version}`);
+          if (global.GungiAutoEvents.extensionEventCount !== 11) throw new Error(`unexpected extension count ${global.GungiAutoEvents.extensionEventCount}`);
+          if (Object.keys(global.GungiAutoEvents.eventDefs).length !== 35) throw new Error(`unexpected event total ${Object.keys(global.GungiAutoEvents.eventDefs).length}`);
+
+          if (!global.GungiDialogueEngineV2) throw new Error('dialogue engine did not load');
+          if (global.GungiDialogueEngineV2.version !== '2.1.0-alpha.1') throw new Error(`unexpected dialogue version ${global.GungiDialogueEngineV2.version}`);
+          if (global.GungiDialogueEngineV2.extensionBankSize !== 66) throw new Error(`unexpected extension bank ${global.GungiDialogueEngineV2.extensionBankSize}`);
+          if (global.GungiDialogueEngineV2.totalCuratedLines !== 474) throw new Error(`unexpected curated total ${global.GungiDialogueEngineV2.totalCuratedLines}`);
+
+          console.log('35-event inventory OK');
+          NODE
+
+      - name: Exercise all 11 new detectors
+        run: |
+          node - <<'NODE'
+          global.window = global;
+          require('./prototype/gungi-auto-engine.js');
+          require('./prototype/gungi-dialogues-v0.3.js');
+          require('./prototype/gungi-dialogue-engine-v1.js');
+          require('./prototype/gungi-dialogue-engine-v2.js');
+          require('./prototype/gungi-events-v035-extension.js');
+          require('./prototype/gungi-dialogue-events-v035.js');
+
+          const p = (id, name, lat, lng, extra = {}) => ({ id, name, lat, lng, ...extra });
+          const pts = [
+            p('center', '遊具 追加候補', 35.00000, 139.00000, { isAdded: true }),
+            p('e1', '既存POI 1', 35.00010, 139.00000, { isExisting: true }),
+            p('e2', '既存POI 2', 35.00015, 139.00005, { isExisting: true }),
+            p('e3', '既存POI 3', 35.00020, 139.00000, { isExisting: true }),
+            p('e4', '既存POI 4', 35.00025, 139.00005, { isExisting: true }),
+            p('e5', '既存POI 5', 35.00030, 139.00000, { isExisting: true }),
+            p('e6', '既存POI 6', 35.00035, 139.00005, { isExisting: true }),
+            p('entrance', '公園入口', 35.00010, 139.00010),
+            p('station', '中央駅', 35.00050, 139.00010),
+            p('parking', '駐車場', 35.00020, 139.00015),
+            p('landmark1', '記念碑', 35.00030, 139.00010),
+            p('landmark2', '時計塔', 35.00035, 139.00010),
+            p('rest1', '東屋 トイレ 水飲み場', 35.00040, 139.00020),
+            p('loop1', '園路A', 35.00060, 139.00020),
+            p('loop2', '園路B', 35.00070, 139.00020),
+            p('rest2', '休憩所', 35.00130, 139.00020),
+            p('dead', '行き止まり', 35.00400, 139.00020)
+          ];
+
+          const events = global.GungiAutoEvents.detectAll({ points: pts });
+          const ids = new Set(events.map(e => e.id));
+          const required = [
+            'SHADE_01',
+            'TOILET_01',
+            'WATER_SUPPLY_01',
+            'DEAD_END_01',
+            'LONG_GAP_01',
+            'REST_BALANCE_01',
+            'TRANSIT_ENTRANCE_01',
+            'LANDMARK_ENTRANCE_01',
+            'PLAYGROUND_DENSITY_01',
+            'PARKING_ENTRANCE_01',
+            'LOOP_REST_01'
+          ];
+
+          for (const id of required) {
+            if (!ids.has(id)) throw new Error(`missing detector ${id}: ${[...ids].join(', ')}`);
+            const presentation = global.GUNGI_DIALOGUES_V03[id];
+            if (!presentation) throw new Error(`missing base dialogue ${id}`);
+            const resolved = global.GungiDialogueEngineV2.resolve(
+              events.find(e => e.id === id),
+              presentation,
+              { eventIndex: 0, eventTotal: events.length, events, eventIds: [...ids] }
+            );
+            if (!resolved?.cuts?.some(c => c.speaker === 'riku') || !resolved?.cuts?.some(c => c.speaker === 'mina')) {
+              throw new Error(`dialogue resolution failed ${id}`);
+            }
+          }
+
+          if (global.GungiAutoEvents.constants.longGapM !== 150) throw new Error('LONG_GAP threshold');
+          if (global.GungiAutoEvents.constants.restBalanceM !== 80) throw new Error('REST_BALANCE threshold');
+          if (global.GungiAutoEvents.constants.transitEntranceM !== 100) throw new Error('TRANSIT_ENTRANCE threshold');
+          if (global.GungiAutoEvents.constants.landmarkEntranceM !== 80) throw new Error('LANDMARK_ENTRANCE threshold');
+          if (global.GungiAutoEvents.constants.parkingEntranceM !== 80) throw new Error('PARKING_ENTRANCE threshold');
+
+          console.log('All 11 v0.3.5 detectors and dialogues OK');
+          NODE
