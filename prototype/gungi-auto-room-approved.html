@@ -122,18 +122,27 @@
         }
         .strategy-scene[data-speaker="riku"] .speech-image,
         .strategy-scene[data-speaker="mina"] .speech-image {
-          transform: translateX(-50%) translateY(-3px) !important;
+          bottom: calc(-27% + 3px) !important;
+          transform: translateX(-50%) !important;
         }
         .strategy-scene[data-speaker="riku"] .dialog-text,
         .strategy-scene[data-speaker="mina"] .dialog-text {
-          transform: translateY(calc(-50% - 3px)) !important;
+          top: calc(84.5% - 3px) !important;
+          transform: translateY(-50%) !important;
         }
         @media (max-width:760px) {
+          .strategy-scene[data-speaker="riku"] .speech-image,
+          .strategy-scene[data-speaker="mina"] .speech-image {
+            bottom: calc(-15% + 3px) !important;
+            transform: translateX(-50%) !important;
+          }
           .strategy-scene[data-speaker="riku"] .dialog-text {
+            top: auto !important;
             bottom: calc(3% + 3px) !important;
             transform: none !important;
           }
           .strategy-scene[data-speaker="mina"] .dialog-text {
+            top: auto !important;
             bottom: calc(4% + 3px) !important;
             transform: none !important;
           }
