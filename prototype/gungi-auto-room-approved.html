@@ -96,7 +96,8 @@
           position: absolute !important;
           z-index: 40 !important;
           top: 2% !important;
-          left: 2% !important;
+          right: 2% !important;
+          left: auto !important;
           width: auto !important;
           min-width: 0 !important;
           max-width: none !important;
@@ -118,6 +119,24 @@
         }
         #restartBtn.approved-restart-top-left:disabled {
           opacity: .38 !important;
+        }
+        .strategy-scene[data-speaker="riku"] .speech-image,
+        .strategy-scene[data-speaker="mina"] .speech-image {
+          transform: translateX(-50%) translateY(-3px) !important;
+        }
+        .strategy-scene[data-speaker="riku"] .dialog-text,
+        .strategy-scene[data-speaker="mina"] .dialog-text {
+          transform: translateY(calc(-50% - 3px)) !important;
+        }
+        @media (max-width:760px) {
+          .strategy-scene[data-speaker="riku"] .dialog-text {
+            bottom: calc(3% + 3px) !important;
+            transform: none !important;
+          }
+          .strategy-scene[data-speaker="mina"] .dialog-text {
+            bottom: calc(4% + 3px) !important;
+            transform: none !important;
+          }
         }
       `;
       doc.head.appendChild(style);
