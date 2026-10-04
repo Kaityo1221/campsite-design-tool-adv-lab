@@ -1,0 +1,6 @@
+Campsite Bridge preview
+source_repo=Kaityo1221/Campsite-Design-Tool-JP
+source_ref=feature/wm-wayfarer-observe-flow
+source_sha=c6bebdcebd909c0c9229ac2608c14b41c485e40a
+preview_scope=receiver+gateway only
+production_campsite_pages=unchanged
